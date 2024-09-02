@@ -1,70 +1,72 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep  2 23:26:57 2024
+
+@author: doomd
+"""
+
+import pandas as pd
+import numpy as np
+import math
 import os
+import QuantLib as ql
+from itertools import product
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
-import numpy as np
-from settings import random_state
-np.random.seed(random_state)
 
-# =============================================================================
-                                                            # Generate features
-# =============================================================================
-# from AdataGeneration import generate_features, generate_qldates_grid
-# features, feature_names = generate_features()
-# features.to_csv(r'features.csv')
-# features = generate_qldates_grid(features)
-# print(r"Features generated!")
-# =============================================================================
-                                                       # Generate test features
-# =============================================================================
-# from AdataGeneration import generate_small_features, generate_qldates_grid
-# features, feature_names = generate_small_features()
-# features.to_csv(r'features.csv')
-# features = generate_qldates_grid(features)
-# print(r"Features generated!")
-# =============================================================================
+def generate_features():
+    S = np.linspace(50, 500, 100)
+    K = np.linspace(25, 750, 50)
+    r = np.arange(0, 0.051, 0.01)
+    T = np.arange(3/12, 2.01, 1/12)
+    sigma = np.arange(0.1, 0.81, 0.1)
+    w = np.array((-1,1))
 
-# =============================================================================
-                                                              # Import features
-# =============================================================================
-# import pandas as pd
-# from AdataGeneration import generate_qldates_grid
-# features = pd.read_csv(r'features.csv')
-# features = features.iloc[:,1:]
-# features = generate_qldates_grid(features)
-# =============================================================================
+    features = pd.DataFrame(
+        product(S, K, r, T, sigma, w),
+        columns=["spot_price", 
+                  "strike_price", 
+                  "risk_free_rate", 
+                  "years_to_maturity", 
+                  "volatility", 
+                  "w"]
+    )
 
-# =============================================================================
-                                                             # Price securities
-# =============================================================================
-# from Bpricing import BS_price_vanillas
-# from Bpricing import heston_price_vanillas
-# import concurrent.futures
-# def run_in_parallel(features):
-#     with concurrent.futures.ThreadPoolExecutor() as executor:
-#         future_bs = executor.submit (BS_price_vanillas, 
-#                                     features)
-#         future_heston = executor.submit(heston_price_vanillas, 
-#                                         features)
-#         
-#         BS_vanillas = future_bs.result()
-#         heston_vanillas = future_heston.result()
-#         
-#     return BS_vanillas, heston_vanillas
-# 
-# BS_vanillas, heston_vanillas = run_in_parallel(features)
-# 
-# print(r'Securities priced!')
-# =============================================================================
+    feature_names = features.copy()
+    feature_names = features.columns
+    return features, feature_names
 
-# =============================================================================
-                                                                # Import prices
-import pandas as pd
-heston_vanillas = pd.read_csv(r'heston_vanillas.csv')
-heston_vanillas = heston_vanillas.iloc[:,1:]
 
-BS_vanillas = pd.read_csv(r'BS_vanillas.csv')
-BS_vanillas = BS_vanillas.iloc[:,1:]
 
-option_prices = heston_vanillas.copy()
+def generate_small_features():
+    S = np.array((90, 100, 110))
+    K = np.array((80, 100, 120))
+    r = np.ones(3)*0.05
+    T = np.ones(3)
+    sigma = np.array((0.1, 0.81))
+    w = np.array((-1,1))
 
-print(r'Data imported!')
+    features = pd.DataFrame(
+        product(S, K, r, T, sigma, w),
+        columns=["spot_price", 
+                  "strike_price", 
+                  "risk_free_rate", 
+                  "years_to_maturity", 
+                  "volatility", 
+                  "w"]
+    )
+    feature_names = features.copy()
+    feature_names = features.columns
+    return features, feature_names
+    
+
+
+def generate_qldates(features):
+    features['calculation_date'] = ql.Date.todaysDate()
+    features['maturity_date'] = features.apply(
+        lambda row: row['calculation_date'] + ql.Period(
+            int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
+    return features
+
+
