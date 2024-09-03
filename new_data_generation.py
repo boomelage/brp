@@ -10,6 +10,7 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
+from pricing import heston_price_vanillas
 
 lower_moneyness = 0.2
 upper_moneyness = 1.5
@@ -38,3 +39,7 @@ def generate_features():
         lambda row: row['calculation_date'] + ql.Period(
             int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
     return features
+
+features = generate_features()
+dataset = heston_price_vanillas(features)
+dataset
