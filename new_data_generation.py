@@ -39,7 +39,3 @@ def generate_features():
         lambda row: row['calculation_date'] + ql.Period(
             int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
     return features
-
-features = generate_features()
-dataset = heston_price_vanillas(features)
-dataset
