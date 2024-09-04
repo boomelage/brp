@@ -82,9 +82,6 @@ def BS_price_vanillas(features):
 
     BS_features['black_scholes'] = BS_features.apply(
         lambda row: black_scholes_price(row), axis = 1)
-    
-    noisyfier(BS_features)
-    
     BS_vanillas = BS_features.copy()
     return BS_vanillas
 
