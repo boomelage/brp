@@ -34,17 +34,11 @@ def generate_features():
             "years_to_maturity"
                  ]
     )
-    features['calculation_date'] = ql.Date.todaysDate()
-    features['maturity_date'] = features.apply(
-        lambda row: row['calculation_date'] + ql.Period(
-            int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
     return features
 
 generate_features()
 
 features = generate_features()
-
-print(features)
 
 min_vol = 0.01
 max_vol = 0.8
@@ -55,14 +49,23 @@ features['volatility'] = sigma
 features['risk_free_rate'] = 0.01
 features['w'] = 1
 
-print(features)
 # r = np.linspace(0.005,0.05,n_maturities)
 # for j in range (0,len(sigma)):
 #     if features['years_to_maturity'][j] == T[i]:
 #        features['risk_free_rate'][j] = r[i]
+features['calculation_date'] = ql.Date.todaysDate()
+features['maturity_date'] = features.apply(
+    lambda row: row['calculation_date'] + ql.Period(
+        int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
+∂
+vanilla_prices = BS_price_vanillas(features)
 
+vanilla_prices['dividend_rate'] = 0
+vanilla_prices['v0'] = 0.04
+vanilla_prices['kappa'] = 1.0
+vanilla_prices['theta'] = 0.04
+vanilla_prices['sigma'] = 0.2
+vanilla_prices['rho'] = -0.5
 
-bs_vanilla_calls = BS_price_vanillas(features)
-
-print(bs_vanilla_calls)
+print(vanilla_prices)
 

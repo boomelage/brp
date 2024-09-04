@@ -87,21 +87,15 @@ def BS_price_vanillas(features):
 
 def heston_price_vanillas(features):
     
-    heston_features = features.copy()
-    heston_features['dividend_rate'] = 0
-    heston_features['kappa'] = 1.0
-    heston_features['theta'] = 0.04
-    heston_features['sigma'] = 0.2
-    heston_features['rho'] = -0.5
-    heston_features['v0'] = 0.04
-    heston_features['heston_price'] = heston_features.apply(
+    heston_params = features.copy()
+    heston_params['heston_price'] = heston_params.apply(
         heston_price_vanilla_row, 
         axis=1)
-    heston_vanillas = heston_features.copy()
-    heston_vanillas = heston_features.drop(
+    heston_vanillas = heston_params.copy()
+    heston_vanillas = heston_vanillas.drop(
         columns = ['calculation_date','maturity_date'])
-    noisyfier(heston_vanillas)
     return heston_vanillas
 
 # Independent pricing functions                   Independent pricing functions
 # =============================================================================
+
