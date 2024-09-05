@@ -21,8 +21,8 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                # StandardScaler(),
-                QuantileTransformer(),
+                StandardScaler(),
+                # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
@@ -75,11 +75,13 @@ feature_set = [
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-spotmin = 97
-spotmax = 103
+spotmin = 95
+spotmax = 105
 nspots = 1000
+tl_ivol = 0.374
 spots = np.linspace(spotmin,spotmax,nspots)
-dataset = generate_dataset(spots)
+dataset, tl_ivol = generate_dataset(spots,tl_ivol)
+dataset.to_csv(f'{spotmin}-{spotmax}_tl_ivol{str(tl_ivol*100)}div10_{start_tag}')
 
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 
@@ -174,6 +176,8 @@ print(f'\n Total model runtime: {str(total_runtime)} seconds')
 # model_plot.save(filename = f'{end_tag}.png',
 #                 path = r"E:\OneDrive - rsbrc\Files\Dissertation",
 #                 dpi = 600)
+
+print('DATA NOT ROUNDED!')
 
 model_plot.show()
 

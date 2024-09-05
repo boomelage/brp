@@ -25,7 +25,7 @@ def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay)
         for j in range(n_elements):
             # Decrease values for each element in the list
             value = base_value - j * decay_rate
-            current_list.append(round(value, 5))  # Round to match the original data format
+            current_list.append(value)
         data.append(current_list)
     
     return data

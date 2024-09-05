@@ -17,8 +17,14 @@ from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 
-def generate_data_subset(S):
+def generate_data_subset(S, tl_ivol):
     spots = np.ones(1) * S
+# =============================================================================
+#     
+# =============================================================================
+
+    dividend_rate = 0.0
+    r = 0.05
     
     lower_moneyness = 0.5
     upper_moneyness = 1.5
@@ -30,7 +36,9 @@ def generate_data_subset(S):
     
     # n_maturities = 20
     # T = np.linspace(3/12, 2.01, n_maturities)
-    
+# =============================================================================
+#     
+# =============================================================================
     def generate_features():
         features = pd.DataFrame(
             product(spots, K, T),
@@ -57,15 +65,16 @@ def generate_data_subset(S):
     # data = [arr.tolist() for arr in data]
     # flattened_data = [item for sublist in data for item in sublist]
     # features['volatility'] = flattened_data
+    
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    start_value = 0.456
-    decay_rate = 1/(1e6*n_maturities*n_strikes)
+    decay_rate = 1/(1e2*n_maturities*n_strikes)
     row_decay = decay_rate/10
-    data = generate_ivol_table(n_lists, n_elements, start_value, 
+    data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
                                decay_rate, row_decay)
-
+    
+    
     # data = [
     # [0.37819, 0.34177, 0.30394, 0.27832, 0.26453, 0.25916, 0.25941, 0.26127],
     # [0.3445, 0.31769, 0.2933, 0.27614, 0.26575, 0.25729, 0.25228, 0.25202],
@@ -91,11 +100,10 @@ def generate_data_subset(S):
     # [0.34934, 0.34181, 0.33561, 0.32964, 0.33658, 0.33235, 0.32769, 0.32368],
     # [0.34912, 0.34167, 0.3355, 0.32967, 0.33701, 0.33288, 0.32827, 0.32432],
     # [0.34891, 0.34154, 0.33539, 0.3297, 0.33742, 0.33337, 0.32881, 0.32492]]
-
-    r = 0.05
+    
     features['risk_free_rate'] = r
     
-    dividend_rate = 0.0
+    
     features['dividend_rate'] = dividend_rate
     
     features['w'] = 1
@@ -123,13 +131,17 @@ def generate_data_subset(S):
     
     prices = noisyfier(prices)
     
-    return prices
+    print(f"\nTime decay: {row_decay}")
+    print(f"\nMoneyness decay: {decay_rate}")
+    
+    return prices, tl_ivol
 
-def generate_dataset(spots):
+def generate_dataset(spots, tl_ivol):
     data_subsets = []
+    tl_ivol = tl_ivol
     for spot in spots:
         spot = spot
-        subset = generate_data_subset(spot)
+        subset = generate_data_subset(spot, tl_ivol)
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
-    return dataset
+    return dataset, tl_ivol
