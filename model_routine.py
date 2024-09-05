@@ -78,7 +78,7 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 spotmin = 95
 spotmax = 105
 nspots = 1000
-tl_ivol = 0.374
+tl_ivol = 0.357
 spots = np.linspace(spotmin,spotmax,nspots)
 dataset, tl_ivol = generate_dataset(spots,tl_ivol)
 dataset.to_csv(f'{spotmin}-{spotmax}_tl_ivol{str(tl_ivol*100)}div10_{start_tag}')
