@@ -22,7 +22,7 @@ def generate_data_subset(S):
     
     lower_moneyness = 0.2
     upper_moneyness = 1.5
-    n_strikes = 50
+    n_strikes = 1000
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
     
     # T = np.arange(3/12, 2.01, 1/12)

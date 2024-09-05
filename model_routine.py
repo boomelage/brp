@@ -21,8 +21,8 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                StandardScaler(),
-                # QuantileTransformer(),
+                # StandardScaler(),
+                QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
@@ -42,7 +42,7 @@ activation_function = [
     'tanh',
     # 'relu',
     ]
-hidden_layer_sizes=(100, 100, 100)
+hidden_layer_sizes=(10, 10, 10)
 solver= [
             # "lbfgs",
             "sgd",
@@ -58,24 +58,26 @@ rf_min_samples_leaf = 2000
                                                                # Model Settings
 target_name = 'observed_price'
 security_tag = 'vanilla options'
-feature_set = ['spot_price', 
-               'strike_price',
-               'risk_free_rate',
-               'years_to_maturity',
-                # 'volatility',
-               'dividend_rate',
-               'kappa',
-               'theta',
-               'sigma',
-               'rho',
-               'v0']
+feature_set = [
+    'spot_price',
+    'strike_price',
+    'risk_free_rate',
+    'years_to_maturity',
+    # 'volatility',
+    # 'dividend_rate',
+    # 'kappa',
+    # 'theta',
+    # 'sigma',
+    # 'rho',
+    # 'v0'
+    ]
 
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-spotmin = 95
-spotmax = 105
-nspots = 1000
+spotmin = 450
+spotmax = 550
+nspots = 10000
 spots = np.linspace(spotmin,spotmax,nspots)
 dataset = generate_dataset(spots)
 
