@@ -45,7 +45,7 @@ def heston_price_vanilla_row(row):
                        day_count))
     dividend_yield = ql.YieldTermStructureHandle(
         ql.FlatForward(price_date, 
-                       float(row['dividend_rate']), 
+                       row['dividend_rate'], 
                        day_count))
     
     heston_process = ql.HestonProcess(flat_ts, 

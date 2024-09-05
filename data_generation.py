@@ -13,7 +13,9 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
-from pricing import BS_price_vanillas
+from heston_calibration import calibrate_heston
+from pricing import heston_price_vanillas, BS_price_vanillas
+
 S = 220
 spots = np.ones(1) * S
 
@@ -45,25 +47,30 @@ generate_features()
 
 features = generate_features()
 
-min_vol = 0.01
-max_vol = 0.8
+min_vol = 0.28
+max_vol = 0.4
 n_vols = n_maturities * nstrikes
 sigma = np.linspace(min_vol, max_vol, n_vols)
-
 features['volatility'] = sigma
-r = 0.01
+
+r = 0.05
 features['risk_free_rate'] = r
+
+dividend_rate = 0.0
+features['dividend_rate'] = dividend_rate
+
 features['w'] = 1
 
-# r = np.linspace(0.005,0.05,n_maturities)
-# for j in range (0,len(sigma)):
-#     if features['years_to_maturity'][j] == T[i]:
-#        features['risk_free_rate'][j] = r[i]
+# =============================================================================
+# 
+# =============================================================================
 
+# vanilla_prices = BS_price_vanillas(features)
+vanilla_prices = features
 
-vanilla_prices = BS_price_vanillas(features)
-
-
+# =============================================================================
+# 
+# =============================================================================
 
 vanilla_prices['calculation_date'] = ql.Date.todaysDate()
 vanilla_prices['maturity_date'] = vanilla_prices.apply(
@@ -82,4 +89,9 @@ strikes = data['strike_price'].unique()
 
 implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
 
-print(vanilla_prices)
+calibrated_features = calibrate_heston(vanilla_prices, dividend_rate, r)
+
+dataset = heston_price_vanillas(calibrated_features)
+
+print(dataset)
+
