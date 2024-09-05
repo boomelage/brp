@@ -69,7 +69,7 @@ def generate_data_subset(S, tl_ivol):
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    decay_rate = 1/(1e2*n_maturities*n_strikes)
+    decay_rate = 1/(1e4*n_maturities*n_strikes)
     row_decay = decay_rate/10
     data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
                                decay_rate, row_decay)

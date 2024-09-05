@@ -21,8 +21,8 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                StandardScaler(),
-                # QuantileTransformer(),
+                # StandardScaler(),
+                QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
