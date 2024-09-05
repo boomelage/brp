@@ -30,20 +30,22 @@ def heston_price_vanilla_row(row):
     
     day_count = ql.Actual365Fixed()
     # calendar = ql.UnitedStates(ql.UnitedStates.GovernmentBond)
-    ql.Settings.instance().evaluationDate = row['calculation_date']
+    ql.Settings.instance().evaluationDate = ql.Date.todaysDate()
     
+    price_date = row['calculation_date']
     payoff = ql.PlainVanillaPayoff(option_type, row['strike_price'])
     exercise = ql.EuropeanExercise(row['maturity_date'])
     european_option = ql.VanillaOption(payoff, exercise)
     
     spot_handle = ql.QuoteHandle(ql.SimpleQuote(row['spot_price']))
+    
     flat_ts = ql.YieldTermStructureHandle(
-        ql.FlatForward(row['calculation_date'], 
-                       row['risk_free_rate'], 
+        ql.FlatForward(price_date, 
+                       float(row['risk_free_rate']), 
                        day_count))
     dividend_yield = ql.YieldTermStructureHandle(
-        ql.FlatForward(row['calculation_date'], 
-                       row['dividend_rate'], 
+        ql.FlatForward(price_date, 
+                       float(row['dividend_rate']), 
                        day_count))
     
     heston_process = ql.HestonProcess(flat_ts, 
