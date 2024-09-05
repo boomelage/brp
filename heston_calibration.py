@@ -12,7 +12,11 @@ import QuantLib as ql
 import numpy as np
 
 
-def calibrate_heston(vanilla_prices, dividend_rate, risk_free_rate):
+def calibrate_heston(vanilla_prices, 
+                     dividend_rate, 
+                     risk_free_rate,
+                     implied_vols
+                     ):
     day_count = ql.Actual365Fixed()
     calendar = ql.UnitedStates(m=1)
     
@@ -119,7 +123,7 @@ def calibrate_heston(vanilla_prices, dividend_rate, risk_free_rate):
     print ("Average Abs Error (%%) : %5.3f" % (avg))
     
     
-    vanilla_prices['dividend_rate'] = dividend_rate
+    vanilla_prices['dividend_rate'] = dividend_rate.value()
     vanilla_prices['v0'] = v0
     vanilla_prices['kappa'] = kappa
     vanilla_prices['theta'] = theta
@@ -128,9 +132,6 @@ def calibrate_heston(vanilla_prices, dividend_rate, risk_free_rate):
     
     dataset = vanilla_prices
     
-    print('\nData columns:')
-    for col in vanilla_prices.columns:
-        print(col)
     return dataset
 
 

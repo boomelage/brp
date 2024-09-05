@@ -116,7 +116,7 @@ def noisyfier(prices):
     prices['observed_price'] = prices['observed_price']\
                             .apply(lambda x: max(x, 0))
     
-    prices
+    return prices
 
 # =============================================================================
 # Independent pricing functions                   Independent pricing functions
