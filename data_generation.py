@@ -1,72 +1,85 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep  2 23:26:57 2024
+Created on Wed Sep  4 17:22:26 2024
 
-@author: doomd
 """
-
-import pandas as pd
-import numpy as np
-import math
 import os
-import QuantLib as ql
-from itertools import product
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
+import pandas as pd
+import numpy as np
+from itertools import product
+import QuantLib as ql
+import math
+from pricing import BS_price_vanillas
+S = 220
+spots = np.ones(1) * S
+
+lower_moneyness = 0.2
+upper_moneyness = 1.5
+nstrikes = 8
+K = np.linspace(S * lower_moneyness, S * upper_moneyness, nstrikes)
+
+# smallest_mat = 1/365
+# biggest_mat = 1.5
+# n_maturities = 24
+# T = np.linspace(smallest_mat, biggest_mat, n_maturities)
+
+T = np.arange(3/12, 2.01, 1/12)
+n_maturities = len(T)
+
 def generate_features():
-    S = np.linspace(50, 500, 100)
-    K = np.linspace(25, 750, 50)
-    r = np.arange(0, 0.051, 0.01)
-    T = np.arange(3/12, 2.01, 1/12)
-    sigma = np.arange(0.1, 0.81, 0.1)
-    w = np.array((-1,1))
-
     features = pd.DataFrame(
-        product(S, K, r, T, sigma, w),
-        columns=["spot_price", 
-                  "strike_price", 
-                  "risk_free_rate", 
-                  "years_to_maturity", 
-                  "volatility", 
-                  "w"]
+        product(spots, K, T),
+        columns=[
+            "spot_price", 
+            "strike_price", 
+            "years_to_maturity"
+                 ]
     )
-
-    feature_names = features.copy()
-    feature_names = features.columns
-    return features, feature_names
-
-
-
-def generate_small_features():
-    S = np.array((90, 100, 110))
-    K = np.array((80, 100, 120))
-    r = np.ones(3)*0.05
-    T = np.ones(3)
-    sigma = np.array((0.1, 0.81))
-    w = np.array((-1,1))
-
-    features = pd.DataFrame(
-        product(S, K, r, T, sigma, w),
-        columns=["spot_price", 
-                  "strike_price", 
-                  "risk_free_rate", 
-                  "years_to_maturity", 
-                  "volatility", 
-                  "w"]
-    )
-    feature_names = features.copy()
-    feature_names = features.columns
-    return features, feature_names
-    
-
-
-def generate_qldates(features):
-    features['calculation_date'] = ql.Date.todaysDate()
-    features['maturity_date'] = features.apply(
-        lambda row: row['calculation_date'] + ql.Period(
-            int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
     return features
 
+generate_features()
 
+features = generate_features()
+
+min_vol = 0.01
+max_vol = 0.8
+n_vols = n_maturities * nstrikes
+sigma = np.linspace(min_vol, max_vol, n_vols)
+
+features['volatility'] = sigma
+r = 0.01
+features['risk_free_rate'] = r
+features['w'] = 1
+
+# r = np.linspace(0.005,0.05,n_maturities)
+# for j in range (0,len(sigma)):
+#     if features['years_to_maturity'][j] == T[i]:
+#        features['risk_free_rate'][j] = r[i]
+
+
+vanilla_prices = BS_price_vanillas(features)
+
+
+
+vanilla_prices['calculation_date'] = ql.Date.todaysDate()
+vanilla_prices['maturity_date'] = vanilla_prices.apply(
+    lambda row: row['calculation_date'] + ql.Period(
+        int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
+
+data = vanilla_prices
+
+row = data.iloc[0,:]
+
+rates = np.ones(len(T))*r
+
+expiration_dates = data['maturity_date'].unique()
+
+strikes = data['strike_price'].unique()
+
+implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
+
+print(vanilla_prices)

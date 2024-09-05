@@ -65,6 +65,49 @@ def heston_price_vanilla_row(row):
     h_price_vanilla = european_option.NPV()
     return h_price_vanilla
 
+def heston_price_one_vanilla(w,calculation_date,strike_price,maturity_date,
+                             spot_price,risk_free_rate,dividend_rate,v0,kappa,
+                             theta,sigma,rho):
+    call, put = ql.Option.Call, ql.Option.Put
+    option_type = call if w == 1 else put
+    
+    day_count = ql.Actual365Fixed()
+    # calendar = ql.UnitedStates(ql.UnitedStates.GovernmentBond)
+    ql.Settings.instance().evaluationDate = ql.Date.todaysDate()
+    
+    price_date = calculation_date
+    payoff = ql.PlainVanillaPayoff(option_type, strike_price)
+    exercise = ql.EuropeanExercise(maturity_date)
+    european_option = ql.VanillaOption(payoff, exercise)
+    
+    spot_handle = ql.QuoteHandle(ql.SimpleQuote(spot_price))
+    
+    flat_ts = ql.YieldTermStructureHandle(
+        ql.FlatForward(price_date, 
+                       float(risk_free_rate), 
+                       day_count))
+    dividend_yield = ql.YieldTermStructureHandle(
+        ql.FlatForward(price_date, 
+                       float(dividend_rate), 
+                       day_count))
+    
+    heston_process = ql.HestonProcess(flat_ts, 
+                                      dividend_yield, 
+                                      spot_handle, 
+                                      v0, 
+                                      kappa, 
+                                      theta, 
+                                      sigma, 
+                                      rho)
+    
+    engine = ql.AnalyticHestonEngine(ql.HestonModel(heston_process), 
+                                     0.01, 
+                                     1000)
+    european_option.setPricingEngine(engine)
+    
+    h_price_vanilla = european_option.NPV()
+    return h_price_vanilla
+
 def noisyfier(prices):
     price = prices.columns[-1]
     
