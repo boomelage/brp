@@ -25,11 +25,11 @@ def generate_data_subset(S):
     n_strikes = 1000
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
     
-    # T = np.arange(3/12, 2.01, 1/12)
-    # n_maturities = len(T)
+    T = np.arange(3/12, 2.01, 1/12)
+    n_maturities = len(T)
     
-    n_maturities = 20
-    T = np.linspace(3/12, 2.01, n_maturities)
+    # n_maturities = 20
+    # T = np.linspace(3/12, 2.01, n_maturities)
     
     def generate_features():
         features = pd.DataFrame(
@@ -60,8 +60,8 @@ def generate_data_subset(S):
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    start_value = 0.374
-    decay_rate = 0.000001
+    start_value = 0.456
+    decay_rate = 1/(1e6*n_maturities*n_strikes)
     row_decay = decay_rate/10
     data = generate_ivol_table(n_lists, n_elements, start_value, 
                                decay_rate, row_decay)
