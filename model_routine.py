@@ -171,7 +171,7 @@ print(datetime.fromtimestamp(end_time))
 print(f'\nModel estimated using {len(dataset)} options')
 print(f'with {nspots} spot prices equidistantly spaced between {spotmin} to {spotmax}')
 
-print(f'\n Total model runtime: {str(total_runtime)} seconds')
+print(f'\nTotal model runtime: {str(total_runtime)} seconds')
 
 # model_plot.save(filename = f'{end_tag}.png',
 #                 path = r"E:\OneDrive - rsbrc\Files\Dissertation",
