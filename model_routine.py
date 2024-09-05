@@ -21,12 +21,12 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                # StandardScaler(),
+                StandardScaler(),
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
-                Normalizer(),
+                # Normalizer(),
                 # PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
@@ -73,13 +73,11 @@ feature_set = ['spot_price',
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-spotmin = 60
-spotmax = 140
-nspots = 10000
+spotmin = 95
+spotmax = 105
+nspots = 1000
 spots = np.linspace(spotmin,spotmax,nspots)
-# dataset = generate_dataset(spots)
-# dataset.to_csv(f'{spotmin}-{spotmax}_{nspots} spots_{start_tag}.csv')
-dataset = pd.read_csv(r'60-140_10000 spots_05092024-152016.csv')
+dataset = generate_dataset(spots)
 
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 
@@ -171,9 +169,10 @@ print(f'with {nspots} spot prices equidistantly spaced between {spotmin} to {spo
 
 print(f'\n Total model runtime: {str(total_runtime)} seconds')
 
-model_plot.save(filename = f'{end_tag}.png',
-                path = r"E:\OneDrive - rsbrc\Files\Dissertation",
-                dpi = 600)
+# model_plot.save(filename = f'{end_tag}.png',
+#                 path = r"E:\OneDrive - rsbrc\Files\Dissertation",
+#                 dpi = 600)
+
 model_plot.show()
 
 # =============================================================================
