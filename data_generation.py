@@ -20,7 +20,7 @@ from generate_ivols import generate_ivol_table
 def generate_data_subset(S):
     spots = np.ones(1) * S
     
-    lower_moneyness = 0.2
+    lower_moneyness = 0.5
     upper_moneyness = 1.5
     n_strikes = 1000
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
@@ -28,7 +28,7 @@ def generate_data_subset(S):
     # T = np.arange(3/12, 2.01, 1/12)
     # n_maturities = len(T)
     
-    n_maturities = 15
+    n_maturities = 20
     T = np.linspace(3/12, 2.01, n_maturities)
     
     def generate_features():
@@ -60,7 +60,11 @@ def generate_data_subset(S):
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    data = generate_ivol_table(n_lists, n_elements)
+    start_value = 0.374
+    decay_rate = 0.000001
+    row_decay = decay_rate/10
+    data = generate_ivol_table(n_lists, n_elements, start_value, 
+                               decay_rate, row_decay)
 
     # data = [
     # [0.37819, 0.34177, 0.30394, 0.27832, 0.26453, 0.25916, 0.25941, 0.26127],

@@ -75,9 +75,9 @@ feature_set = [
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-spotmin = 450
-spotmax = 550
-nspots = 10000
+spotmin = 97
+spotmax = 103
+nspots = 1000
 spots = np.linspace(spotmin,spotmax,nspots)
 dataset = generate_dataset(spots)
 
