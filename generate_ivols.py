@@ -6,8 +6,6 @@ Created on Thu Sep  5 19:04:39 2024
 @author: doomd
 """
 
-import random
-
 def generate_ivol_table(n_lists, n_elements, start_value=0.378, decay_rate=0.000001, row_decay=0.0001):
     """
     Generates a list of lists with n_lists number of lists and n_elements number of elements in each list.
@@ -31,5 +29,3 @@ def generate_ivol_table(n_lists, n_elements, start_value=0.378, decay_rate=0.000
         data.append(current_list)
     
     return data
-
-

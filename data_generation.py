@@ -49,26 +49,19 @@ def generate_data_subset(S):
     # n_vols = n_maturities * n_strikes
     # sigma = np.linspace(min_vol, max_vol, n_vols)
     # features['volatility'] = sigma
-    # Define the number of lists and the range size
-    
-
+    # # Define the number of lists and the range size
     # lower_vol = 0.28
     # upper_vol = 0.40
     # n_vols = n_strikes
-    
     # data = [np.linspace(lower_vol, upper_vol, n_vols) for _ in range(n_vols)]
     # data = [arr.tolist() for arr in data]
-    
     # flattened_data = [item for sublist in data for item in sublist]
     # features['volatility'] = flattened_data
-    # Example Usage
-    
+            # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
     data = generate_ivol_table(n_lists, n_elements)
 
-
-    
     # data = [
     # [0.37819, 0.34177, 0.30394, 0.27832, 0.26453, 0.25916, 0.25941, 0.26127],
     # [0.3445, 0.31769, 0.2933, 0.27614, 0.26575, 0.25729, 0.25228, 0.25202],
@@ -94,7 +87,7 @@ def generate_data_subset(S):
     # [0.34934, 0.34181, 0.33561, 0.32964, 0.33658, 0.33235, 0.32769, 0.32368],
     # [0.34912, 0.34167, 0.3355, 0.32967, 0.33701, 0.33288, 0.32827, 0.32432],
     # [0.34891, 0.34154, 0.33539, 0.3297, 0.33742, 0.33337, 0.32881, 0.32492]]
-    
+
     r = 0.05
     features['risk_free_rate'] = r
     
@@ -119,7 +112,8 @@ def generate_data_subset(S):
     
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
     
-    calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, implied_vols, data)
+    calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, 
+                                           implied_vols, data)
     
     prices = heston_price_vanillas(calibrated_features)
     
@@ -135,8 +129,3 @@ def generate_dataset(spots):
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
     return dataset
-
-
-
-        
-    
