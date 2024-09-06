@@ -13,10 +13,11 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-
-from data_generation import generate_dataset, spotmin, spotmax, nspots
-
+from data_generation import generate_dataset, spotmin, spotmax, nspots, \
+    n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
+        shortest_maturity, longest_maturity
 import time
+import textwrap
 from datetime import datetime
 from mlop import mlop
 
@@ -65,15 +66,15 @@ security_tag = 'vanilla options'
 feature_set = [
     'spot_price',
     'strike_price',
-    'risk_free_rate',
     'years_to_maturity',
     # 'volatility',
-    'dividend_rate',
-    'kappa',
-    'theta',
-    'sigma',
-    'rho',
-    'v0'
+    # 'risk_free_rate',
+    # 'dividend_rate',
+    # 'kappa',
+    # 'theta',
+    # 'sigma',
+    # 'rho',
+    # 'v0'
     ]
 
 start_time = time.time()
@@ -157,7 +158,7 @@ model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit,
                                                   model_name)
 print(model_stats)
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
-                                         security_tag)
+                                          security_tag)
 
 end_time = time.time()
 
@@ -165,20 +166,23 @@ end_tag = datetime.fromtimestamp(end_time)
 end_tag = end_tag.strftime('%d%m%Y-%H%M%S')
 total_runtime = int(end_time - start_time)
 
-print(datetime.fromtimestamp(end_time))
-
-print(f'\nModel estimated using {len(dataset)} options')
-print(f'with {nspots} spot prices equidistantly spaced between {spotmin} to {spotmax}')
-
-print(f'\nTotal model runtime: {str(total_runtime)} seconds')
-
-# model_plot.save(filename = f'{end_tag}.png',
-#                 path = r"E:\OneDrive - rsbrc\Files\Dissertation",
-#                 dpi = 600)
-
-print('DATA NOT ROUNDED!')
-
+model_plot.save(filename = f'{end_tag}.png',
+                path = r"E:\OneDrive - rsbrc\Files\Dissertation",
+                dpi = 600)
 model_plot.show()
+
+print(f"\n{datetime.fromtimestamp(end_time)}")
+print("\n ")
+output = f"""Model estimated using {len(dataset)} options
+with {nspots} spot prices between {spotmin} to {spotmax},
+{n_strikes} strikes between {int(lower_moneyness*100)}% and
+{int(upper_moneyness*100)}% moneyness, and {n_maturities} maturities between
+{round(shortest_maturity,2)} and {round(longest_maturity,2)} years (act/365)"""
+wrapped_output = textwrap.fill(output, width=70)
+print(wrapped_output)
+print("\nDATA NOT ROUNDED!")
+
+
 
 # =============================================================================
 
