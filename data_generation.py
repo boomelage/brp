@@ -19,23 +19,27 @@ from generate_ivols import generate_ivol_table
                                                                      # Settings
 spotmin = 90
 spotmax = 120
+spots_coef = 4
+strikes_coef = 7
+
+lower_moneyness = 0.5
+upper_moneyness = 1.5
+
+shortest_maturity = 1/12
+longest_maturity = 2.01
+maturity_step = 1/12
 
 tl_ivol = 0.357
 dividend_rate = 0.0
 r = 0.05
 
-lower_moneyness = 0.5
-upper_moneyness = 1.5
-n_strikes = 500
-
-shortest_maturity = 1/12
-longest_maturity = 2.01
-
-nspots = 3*(spotmax-spotmin)
-spots = np.linspace(spotmin,spotmax,nspots)
-T = np.arange(shortest_maturity, longest_maturity, 1/12)
-n_maturities = len(T)
 # =============================================================================
+
+n_strikes = int(strikes_coef*(spotmax-spotmin)/2)
+nspots = spots_coef*(spotmax-spotmin)
+spots = np.linspace(spotmin,spotmax,nspots)
+T = np.arange(shortest_maturity, longest_maturity, maturity_step)
+n_maturities = len(T)
 
 def generate_data_subset(S,counter,of_total):
     spots = np.ones(1) * S
@@ -113,4 +117,3 @@ def generate_dataset():
         data_subsets.append(subset)
     dataset = pd.concat(data_subsets, ignore_index=True)
     return dataset
-

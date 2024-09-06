@@ -22,12 +22,12 @@ from mlop import mlop
                                                              # General Settings
 model_scaler = [
                 # StandardScaler(),
-                # QuantileTransformer(),
+                QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
                 # Normalizer(),
-                PowerTransformer(),
+                # PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
                 # KernelCenterer()
@@ -35,12 +35,12 @@ model_scaler = [
 random_state = None
 test_size = 0.05
                                                       # Neural Network Settings
-max_iter = 1000
+max_iter = 10000
 activation_function = [        
     # 'identity', 
     # 'logistic',
-    'tanh',
-    # 'relu',
+    # 'tanh',
+    'relu',
     ]
 hidden_layer_sizes=(10, 10, 10)
 solver= [
@@ -175,4 +175,3 @@ with open(txt_path, 'w') as file:
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)
-
