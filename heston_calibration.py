@@ -16,7 +16,9 @@ def calibrate_heston(vanilla_prices,
                      dividend_rate, 
                      risk_free_rate,
                      implied_vols,
-                     data
+                     data,
+                     counter,
+                     of_total
                      ):
     day_count = ql.Actual365Fixed()
     calendar = ql.UnitedStates(m=1)
@@ -99,6 +101,7 @@ def calibrate_heston(vanilla_prices,
     avg = avg*100.0/len(heston_helpers)
     print ("-"*70)
     print ("Average Abs Error (%%) : %5.3f" % (avg))
+    print(f"Set for spot {counter}/{of_total}")
     
     
     vanilla_prices['dividend_rate'] = dividend_rate.value()

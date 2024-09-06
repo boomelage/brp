@@ -19,7 +19,7 @@ from generate_ivols import generate_ivol_table
                                                                      # Settings
 spotmin = 90
 spotmax = 110
-nspots = 1
+nspots = 20
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -43,7 +43,7 @@ n_maturities = len(T)
 
 # =============================================================================
 
-def generate_data_subset(S):
+def generate_data_subset(S,counter,of_total):
     spots = np.ones(1) * S
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
     def generate_features():
@@ -102,19 +102,20 @@ def generate_data_subset(S):
     strikes = vanilla_params['strike_price'].unique()
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
     calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, 
-                                           implied_vols, data)
+                                           implied_vols, data, counter,of_total)
     prices = heston_price_vanillas(calibrated_features)
     dataset = noisyfier(prices)
-    print(f"\nTime decay: {row_decay}")
-    print(f"\nMoneyness decay: {decay_rate}")
     return dataset
 
 def generate_dataset():
     data_subsets = []
+    counter = 0
     for spot in spots:
+        counter = counter + 1
+        of_total = len(spots)
         spot = spot
-        subset = generate_data_subset(spot)
+        subset = generate_data_subset(spot, counter, of_total)
         data_subsets.append(subset)
-    dataset =pd.concat(data_subsets, ignore_index=True)
+    dataset = pd.concat(data_subsets, ignore_index=True)
     return dataset
 

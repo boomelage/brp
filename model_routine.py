@@ -191,5 +191,4 @@ with open(txt_path, 'w') as file:
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)
-
 print(wrapped_output)
