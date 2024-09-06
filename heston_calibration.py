@@ -116,10 +116,10 @@ class calibrate_heston_vanilla:
                 avg += abs(err)  # Accumulate the absolute error
             
             avg = avg*100.0/len(heston_helpers)
-            print(f"{int(current_index * n_strikes + i + 1)}/"
-                  f"{int(n_maturities * n_strikes * nspots)} "
-                  f"prices computed")
             print("-"*70)
+            print(f"{int(current_index * n_strikes + i + 1)}/"
+                  f"{int(n_maturities * n_strikes)} "
+                  f"prices computed")
             print(f"Set for spot {counter_spot}/{of_total_spots}")
             print("Total Average Abs Error (%%) : %5.3f" % (avg))
     
