@@ -17,18 +17,19 @@ from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 
-def generate_data_subset(S, tl_ivol):
+def generate_data_subset(S):
     spots = np.ones(1) * S
 # =============================================================================
 #     
 # =============================================================================
+    tl_ivol = 0.357
 
     dividend_rate = 0.0
     r = 0.05
     
     lower_moneyness = 0.5
     upper_moneyness = 1.5
-    n_strikes = 1000
+    n_strikes = 50
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
     
     T = np.arange(3/12, 2.01, 1/12)
@@ -134,14 +135,13 @@ def generate_data_subset(S, tl_ivol):
     print(f"\nTime decay: {row_decay}")
     print(f"\nMoneyness decay: {decay_rate}")
     
-    return prices, tl_ivol
+    return prices
 
-def generate_dataset(spots, tl_ivol):
+def generate_dataset(spots):
     data_subsets = []
-    tl_ivol = tl_ivol
     for spot in spots:
         spot = spot
-        subset = generate_data_subset(spot, tl_ivol)
+        subset = generate_data_subset(spot)
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
-    return dataset, tl_ivol
+    return dataset
