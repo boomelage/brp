@@ -119,8 +119,8 @@ class calibrate_heston_vanilla:
             print(f"{int(current_index * n_strikes + i + 1)}/"
                   f"{int(n_maturities * n_strikes * nspots)} "
                   f"prices computed")
-            print(f"Set for spot {counter_spot}/{of_total_spots}")
             print("-"*70)
+            print(f"Set for spot {counter_spot}/{of_total_spots}")
             print("Total Average Abs Error (%%) : %5.3f" % (avg))
     
         vanilla_prices['dividend_rate'] = dividend_rate.value()

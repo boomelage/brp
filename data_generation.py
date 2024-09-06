@@ -26,14 +26,15 @@ tl_ivol_q = 53.7231597900391
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365
+spots_subdivision = 3
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-nspots = int(3*(spotmax-spotmin))
+nspots = int(spots_subdivision*(spotmax-spotmin))
 
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = current_spot/tl_strike
-n_strikes = int(5*(current_spot*upper_moneyness-\
+n_strikes = int((spots_subdivision+2)*(current_spot*upper_moneyness-\
                    current_spot*lower_moneyness))
 
 # =============================================================================
