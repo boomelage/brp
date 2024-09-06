@@ -1,0 +1,29 @@
+Total model runtime: 7 seconds 
+Model estimated using 15360 options with 8 spot price(s)
+between 99 and 101 (mid-point if one), 80 strike(s) between
+90% and 110% moneyness, and 24 maturity/maturities between
+0.08 and 2.01 years (act/365)
+2024-09-06 14:34:23.260045
+
+Selected Parameters:
+
+Features: spot_price
+strike_price
+years_to_maturity
+
+Target: 
+observed_price
+
+Security: vanilla options
+
+2024-09-06 14:34:23.260045
+
+Selected Parameters:
+
+Scaler: QuantileTransformer
+Activation function: relu
+Maximum iterations: 10000
+Hidden Layer Sizes: (10, 10, 10)
+Solver: sgd
+Learning Rate: adaptive
+Alpha: 0.0001

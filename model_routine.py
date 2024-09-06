@@ -35,18 +35,18 @@ model_scaler = [
 random_state = None
 test_size = 0.05
                                                       # Neural Network Settings
-max_iter = 1000
+max_iter = 10000
 activation_function = [        
     # 'identity', 
     # 'logistic',
     'tanh',
     # 'relu',
     ]
-hidden_layer_sizes=(10, 10, 10)
+hidden_layer_sizes=(100, 100, 100)
 solver= [
             # "lbfgs",
-            "sgd",
-            # "adam"
+            # "sgd",
+            "adam"
         ]
 alpha = 0.0001 #can't be none
 learning_rate = 'adaptive'
@@ -72,7 +72,7 @@ feature_set = [
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
+
 
 dataset = generate_dataset()
 # dataset_filename = ''                      # Import data here instead and
@@ -80,6 +80,9 @@ dataset = generate_dataset()
 # dataset = pd.DataFrame(dataset_filename)
 # dataset = dataset.iloc[:,1:]
 
+# =============================================================================
+print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
+# =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
                                                                  # Loading mlop
@@ -105,8 +108,7 @@ mlop = mlop(
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n\nFeatures:"
-    f"\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: {security_tag}\n"
-    )
+    f"\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: {security_tag}\n"    )
 print(model_settings)
 # =============================================================================
                                                            # Preprocessing Data                                                 
@@ -165,7 +167,8 @@ with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
 between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
 (act/365)"""
-wrapped_output = textwrap.fill(output, width=70)
+wrapped_output = textwrap.fill(output, width=60)
+print(wrapped_output)
 txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
 with open(txt_path, 'w') as file:
     file.write(total_model_runtime)
