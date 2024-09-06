@@ -13,7 +13,9 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
+
 from data_generation import generate_dataset, spotmin, spotmax, nspots
+
 import time
 from datetime import datetime
 from mlop import mlop
@@ -33,7 +35,9 @@ model_scaler = [
                 # KernelCenterer()
                 ]
 random_state = None
-test_size = 0.01
+
+test_size = 0.05
+
                                                       # Neural Network Settings
 max_iter = 10000
 activation_function = [        
@@ -77,7 +81,6 @@ start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 
 dataset = generate_dataset()
-
 
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 
