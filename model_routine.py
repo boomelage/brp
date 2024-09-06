@@ -42,11 +42,11 @@ activation_function = [
     # 'tanh',
     'relu',
     ]
-hidden_layer_sizes=(10, 10, 10)
+hidden_layer_sizes=(100, 100, 100)
 solver= [
             # "lbfgs",
-            "sgd",
-            # "adam"
+            # "sgd",
+            "adam"
         ]
 alpha = 0.0001 #can't be none
 learning_rate = 'adaptive'

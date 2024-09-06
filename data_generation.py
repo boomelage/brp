@@ -20,15 +20,15 @@ r = 0.05
 
 spotmin = 90
 spotmax = 120
+nspots = 3*(spotmax-spotmin)
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 15000
+n_strikes = 5000
 
 shortest_maturity = 1/12
 longest_maturity = 2.01
 maturity_step = 1/12
-nspots = 3*(spotmax-spotmin)
 
 tl_ivol = 0.357
 dividend_rate = 0.0
