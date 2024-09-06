@@ -21,7 +21,7 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                RobustScaler(),
+                RobustScaler(), # always on to filter outliers
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),

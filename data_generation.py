@@ -17,19 +17,19 @@ from generate_ivols import generate_ivol_table
 dividend_rate = 0.0
 r = 0.05
 
-current_spot = 220.00
+current_spot = 460.00
 pricing_range = 1.03
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-nspots = 1 # int(3*(spotmax-spotmin))
+nspots = int(3*(spotmax-spotmin))
 
-tl_strike = 195
+tl_strike = 435.00
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = 1.5
-n_strikes = int(3*(current_spot*upper_moneyness-current_spot*lower_moneyness))
+n_strikes = 50 # int(3*(current_spot*upper_moneyness-current_spot*lower_moneyness))
 
-tl_ivol_q = 41.2680358886719
+tl_ivol_q = 22.1820743340134
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365
@@ -40,7 +40,7 @@ spots = np.linspace(spotmin,spotmax,nspots)
 T = np.arange(shortest_maturity, longest_maturity, maturity_step)
 n_maturities = len(T)
 
-def generate_data_subset(S,counter,of_total):
+def generate_data_subset(S,counter,of_total_spots):
     spots = np.ones(1) * S
     K = np.linspace(S*lower_moneyness, S*upper_moneyness, n_strikes)
     def generate_features():
@@ -100,19 +100,19 @@ def generate_data_subset(S,counter,of_total):
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
     calibrated_features = calibrate_heston_vanilla.calibrate_heston(
         vanilla_params, dividend_rate, r, implied_vols, data, counter, 
-        of_total, n_strikes, nspots, n_maturities)
+        of_total_spots, n_strikes, nspots, n_maturities)
     prices = heston_price_vanillas(calibrated_features)
     dataset = noisyfier(prices)
     return dataset
 
 def generate_dataset():
     data_subsets = []
-    counter = 0
+    counter_spot = 0
     for spot in spots:
-        counter = counter + 1
-        of_total = len(spots)
+        counter_spot = counter_spot + 1
+        of_total_spots = len(spots)
         spot = spot
-        subset = generate_data_subset(spot, counter, of_total)
+        subset = generate_data_subset(spot, counter_spot, of_total_spots)
         data_subsets.append(subset)
     dataset = pd.concat(data_subsets, ignore_index=True)
     return dataset

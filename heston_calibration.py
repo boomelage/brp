@@ -23,8 +23,8 @@ class calibrate_heston_vanilla:
                          risk_free_rate,
                          implied_vols,
                          data,
-                         counter,
-                         of_total,n_strikes, nspots, n_maturities
+                         counter_spot,
+                         of_total_spots,n_strikes, nspots, n_maturities
                          ):
         day_count = ql.Actual365Fixed()
         calendar = ql.UnitedStates(m=1)
@@ -114,13 +114,16 @@ class calibrate_heston_vanilla:
                 # Print the results in the formatted output
                 print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} "
                       f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
-    
-                avg += abs(err)  # Accumulate the absolute error
                 
+                avg += abs(err)  # Accumulate the absolute error
+            
             avg = avg*100.0/len(heston_helpers)
+            print(f"{int(i*current_index)}/"
+                  f"{int(n_maturities*n_strikes*nspots)}"
+                  f"prices computed")
             print("-"*70)
             print("Average Abs Error (%%) : %5.3f" % (avg))
-            print(f"Set for spot {counter}/{of_total}")
+            print(f"Set for spot {counter_spot}/{of_total_spots}")
     
         vanilla_prices['dividend_rate'] = dividend_rate.value()
         vanilla_prices['v0'] = v0
