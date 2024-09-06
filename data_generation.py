@@ -7,21 +7,21 @@ Created on Wed Sep  4 17:22:26 2024
 import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
-
 import pandas as pd
 import numpy as np
+import time
+from datetime import datetime
 from itertools import product
 import QuantLib as ql
 import math
 from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
-
 # =============================================================================
                                                                      # Settings
 spotmin = 95
 spotmax = 105
-nspots = 100
+nspots = 500
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -31,12 +31,12 @@ r = 0.05
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 1000
+n_strikes = 500
 
 T = np.arange(3/12, 2.01, 1/12)
 n_maturities = len(T)
 
-# n_maturities = 20
+n_maturities = 500
 # T = np.linspace(3/12, 2.01, n_maturities)
 
 # =============================================================================
@@ -51,12 +51,9 @@ def generate_data_subset(S):
                 "spot_price", 
                 "strike_price", 
                 "years_to_maturity"
-                     ]
-        )
+                     ])
         return features
-    
     features = generate_features()
-    
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
@@ -92,46 +89,35 @@ def generate_data_subset(S):
     # [0.34891, 0.34154, 0.33539, 0.3297, 0.33742, 0.33337, 0.32881, 0.32492]]
     
     features['risk_free_rate'] = r
-    
     features['dividend_rate'] = dividend_rate
-    
     features['w'] = 1
-    
     vanilla_params = features
-    
     vanilla_params['calculation_date'] = ql.Date.todaysDate()
     vanilla_params['maturity_date'] = vanilla_params.apply(
         lambda row: row['calculation_date'] + ql.Period(
             int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
-    
     expiration_dates = vanilla_params['maturity_date'].unique()
-    
     strikes = vanilla_params['strike_price'].unique()
-    
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
-    
     calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, 
                                            implied_vols, data)
-    
     prices = heston_price_vanillas(calibrated_features)
-    
     dataset = noisyfier(prices)
-    
     print(f"\nTime decay: {row_decay}")
     print(f"\nMoneyness decay: {decay_rate}")
-    
     return dataset
-
-
 
 def generate_dataset():
 
+    gen_start = datetime.fromtimestamp(time.time())
+    gen_start_tag = gen_start.strftime('%d%m%Y-%H%M%S')
     data_subsets = []
     for spot in spots:
         spot = spot
         subset = generate_data_subset(spot)
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
-    dataset.to_csv(f'{spotmin}-{spotmax}_tl_ivol_{str(tl_ivol*100)}_div100.csv')
-
+    dataset.to_csv(
+        f"{spotmin}-{spotmax}_tl_ivol_{str(int(tl_ivol*100))}_div100_"\
+        f"{gen_start_tag}.csv")
     return dataset
