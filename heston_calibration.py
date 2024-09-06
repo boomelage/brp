@@ -50,12 +50,11 @@ def calibrate_heston(vanilla_prices,
         expiration_dates, strikes,
         implied_vols, day_count)
     
-    strikes_grid = np.arange(strikes[0], strikes[-1],10)
-    expiry = 1.0 # years
-    implied_vols = [black_var_surface.blackVol(expiry, s)
-                    for s in strikes_grid] # can interpolate here
-    
-    
+    implied_vols_matrix = ql.Matrix(len(strikes), len(expiration_dates))
+    for i in range(implied_vols_matrix.rows()):
+        for j in range(implied_vols_matrix.columns()):
+            implied_vols_matrix[i][j] = data[j][i]  
+
     # dummy parameters
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
     
@@ -65,49 +64,61 @@ def calibrate_heston(vanilla_prices,
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []
-    black_var_surface.setInterpolation("bicubic")
-    one_year_idx = 11 # 12th row in data is for 1 year expiry
-    date = expiration_dates[one_year_idx]
-    for j, s in enumerate(strikes):
-        t = (date - calculation_date )
-        p = ql.Period(t, ql.Days)
-        sigma = data[one_year_idx][j]
-        #sigma = black_var_surface.blackVol(t/365.25, s)
-        helper = ql.HestonModelHelper(p, calendar, spot, s,
-                                      ql.QuoteHandle(ql.SimpleQuote(sigma)),
-                                      flat_ts,
-                                      dividend_ts)
-        helper.setPricingEngine(engine)
-        heston_helpers.append(helper)
-    lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
-    model.calibrate(heston_helpers, lm,
-                     ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
-    theta, kappa, sigma, rho, v0 = model.params()
     
-    print ("\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, 
-                                                                        kappa, 
-                                                                        sigma, 
-                                                                        rho, 
-                                                                        v0))
-    avg = 0.0
-    
-    print ("%15s %15s %15s %20s" % (
-        "Strikes", "Market Value",
-         "Model Value", "Relative Error (%)"))
-    print ("="*70)
-    for i, opt in enumerate(heston_helpers):
-        err = (opt.modelValue()/opt.marketValue() - 1.0)
-        print ("%15.2f %14.5f %15.5f %20.7f " % (
-            strikes[i], opt.marketValue(),
-            opt.modelValue(),
-            100.0*(opt.modelValue()/opt.marketValue() - 1.0)))
-        avg += abs(err)
-    avg = avg*100.0/len(heston_helpers)
-    print ("-"*70)
-    print ("Average Abs Error (%%) : %5.3f" % (avg))
-    print(f"Set for spot {counter}/{of_total} "
-          f"({counter*n_maturities*n_strikes}/{n_maturities*n_strikes*nspots}"
-          f" prices computed)")
+    # Loop through all maturities and perform calibration for each one
+    for current_index, date in enumerate(expiration_dates):
+        print(f"Calibrating for maturity: {date}")
+        black_var_surface.setInterpolation("bicubic")
+        for j, s in enumerate(strikes):
+           t = day_count.yearFraction(calculation_date, date)
+           sigma = black_var_surface.blackVol(t, s)  
+           
+           helper = ql.HestonModelHelper(
+               ql.Period(int(t * 365), ql.Days),
+               calendar, spot, s,
+               ql.QuoteHandle(ql.SimpleQuote(sigma)),
+               flat_ts, dividend_ts
+           )
+           helper.setPricingEngine(engine)
+           heston_helpers.append(helper)
+            
+            
+        lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
+        model.calibrate(heston_helpers, lm,
+                         ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+        theta, kappa, sigma, rho, v0 = model.params()
+        
+        print (
+            "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, 
+                                                                         kappa, 
+                                                                         sigma, 
+                                                                         rho, 
+                                                                         v0))
+        avg = 0.0
+        
+        print ("%15s %15s %15s %20s" % (
+            "Strikes", "Market Value",
+             "Model Value", "Relative Error (%)"))
+        print ("="*70)
+        print(f"Number of strikes: {len(strikes)}")
+        print(f"Number of Heston helpers: {len(heston_helpers)}")
+            
+        for i in range(min(len(heston_helpers), len(strikes))):
+            opt = heston_helpers[i]  # Get the Heston helper at index i
+            err = (opt.modelValue() / opt.marketValue() - 1.0)  # Calculate relative error
+        
+            # Print the results in the formatted output
+            print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} {opt.modelValue():15.5f} {100.0 * err:20.7f}")
+
+            avg += abs(err)  # Accumulate the absolute error
+            
+        avg = avg*100.0/len(heston_helpers)
+        print ("-"*70)
+        print ("Average Abs Error (%%) : %5.3f" % (avg))
+        print(f"Set for spot {counter}/{of_total} "
+              f"({counter*n_maturities*n_strikes}/{n_maturities*n_strikes*nspots}"
+              f" prices computed)")    
+
     vanilla_prices['dividend_rate'] = dividend_rate.value()
     vanilla_prices['v0'] = v0
     vanilla_prices['kappa'] = kappa

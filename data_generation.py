@@ -14,23 +14,24 @@ from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 # =============================================================================
                                                                      # Settings
-tl_ivol = 0.357
+
 dividend_rate = 0.0
 r = 0.05
 
-spotmin = 90
+spotmin = 80
 spotmax = 120
-nspots = 1 #3*(spotmax-spotmin)
+nspots = 100
 
-lower_moneyness = 0.5
+lower_moneyness = 92/101
 upper_moneyness = 1.5
-n_strikes = 8
+n_strikes = 100
 
-shortest_maturity = 1/12
+tl_ivol = 0.6433
+shortest_maturity = 14/365
 longest_maturity = 2.01
 maturity_step = 1/12
 
-tl_ivol = 0.357
+tl_ivol = 0.3
 dividend_rate = 0.0
 r = 0.05
 
@@ -42,7 +43,7 @@ n_maturities = len(T)
 
 def generate_data_subset(S,counter,of_total):
     spots = np.ones(1) * S
-    K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
+    K = np.linspace(S*lower_moneyness, S*upper_moneyness, n_strikes)
     def generate_features():
         features = pd.DataFrame(
             product(spots, K, T),
@@ -56,7 +57,7 @@ def generate_data_subset(S,counter,of_total):
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    decay_rate = 1/(10*n_maturities*n_strikes)
+    decay_rate = 1/(5*n_maturities*n_strikes)
     row_decay = decay_rate/10
     data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
                                decay_rate, row_decay)

@@ -35,14 +35,14 @@ model_scaler = [
 random_state = None
 test_size = 0.05
                                                       # Neural Network Settings
-max_iter = 10000
+max_iter = 1000
 activation_function = [        
     # 'identity', 
     # 'logistic',
     'tanh',
     # 'relu',
     ]
-hidden_layer_sizes=(100, 100, 100)
+hidden_layer_sizes=(10, 10, 10)
 solver= [
             # "lbfgs",
             # "sgd",
@@ -72,7 +72,9 @@ feature_set = [
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-
+# =============================================================================
+print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
+# =============================================================================
 
 dataset = generate_dataset()
 # dataset_filename = ''                      # Import data here instead and
@@ -80,8 +82,6 @@ dataset = generate_dataset()
 # dataset = pd.DataFrame(dataset_filename)
 # dataset = dataset.iloc[:,1:]
 
-# =============================================================================
-print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
