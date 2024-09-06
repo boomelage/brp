@@ -30,12 +30,12 @@ spots_subdivision = 3
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-nspots = int(spots_subdivision*(spotmax-spotmin))
+nspots = 3 # int(spots_subdivision*(spotmax-spotmin))
 
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = current_spot/tl_strike
-n_strikes = int((spots_subdivision+2)*(current_spot*upper_moneyness-\
-                   current_spot*lower_moneyness))
+n_strikes = 5# int((spots_subdivision+2)*(current_spot*upper_moneyness-\
+                    #current_spot*lower_moneyness))
 
 # =============================================================================
 tl_ivol = tl_ivol_q/100
