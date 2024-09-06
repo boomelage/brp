@@ -17,19 +17,19 @@ from generate_ivols import generate_ivol_table
 dividend_rate = 0.0
 r = 0.05
 
-current_spot = 460.00
+current_spot = 220.00
 pricing_range = 1.03
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-nspots = int(3*(spotmax-spotmin))
+nspots = 3 # int(3*(spotmax-spotmin))
 
-tl_strike = 435.00
+tl_strike = 195.00
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = 1.5
-n_strikes = 50 # int(3*(current_spot*upper_moneyness-current_spot*lower_moneyness))
+n_strikes = 5 # int(3*(current_spot*upper_moneyness-current_spot*lower_moneyness))
 
-tl_ivol_q = 22.1820743340134
+tl_ivol_q = 41.2680358886719
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365

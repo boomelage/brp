@@ -132,9 +132,15 @@ def BS_price_vanillas(features):
 
 def heston_price_vanillas(features):
     
+    def safe_heston_price_vanilla_row(row):
+        try:
+            return heston_price_vanilla_row(row)
+        except Exception:
+            pass
+    
     heston_params = features.copy()
     heston_params['heston_price'] = heston_params.apply(
-        heston_price_vanilla_row, 
+        safe_heston_price_vanilla_row, 
         axis=1)
     heston_vanillas = heston_params.copy()
     heston_vanillas = heston_vanillas.drop(

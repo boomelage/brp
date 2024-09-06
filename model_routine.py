@@ -85,7 +85,8 @@ dataset = generate_dataset()
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
-                                                                 # Loading mlop
+         
+dataset = dataset.dropna()                                                        # Loading mlop
 activation_function = activation_function[0]
 solver = solver[0]
 model_scaler1 = model_scaler[0]
@@ -176,4 +177,3 @@ with open(txt_path, 'w') as file:
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)
-print(wrapped_output)

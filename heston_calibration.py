@@ -73,7 +73,7 @@ class calibrate_heston_vanilla:
         
         # Loop through all maturities and perform calibration for each one
         for current_index, date in enumerate(expiration_dates):
-            print(f"Calibrating for maturity: {date}")
+            print(f"\nCurrently calibrating for maturity: {date}")
             black_var_surface.setInterpolation("bicubic")
             for j, s in enumerate(strikes):
                t = day_count.yearFraction(calculation_date, date)
@@ -95,11 +95,9 @@ class calibrate_heston_vanilla:
             theta, kappa, sigma, rho, v0 = model.params()
             
             print (
-                "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, 
-                                                                             kappa, 
-                                                                             sigma, 
-                                                                             rho, 
-                                                                             v0))
+                "\ntheta = %f, kappa = %f, "
+                "sigma = %f, rho = %f, v0 = %f" % (theta, kappa, 
+                                                   sigma, rho, v0))
             avg = 0.0
             
             print ("%15s %15s %15s %20s" % (
@@ -118,12 +116,12 @@ class calibrate_heston_vanilla:
                 avg += abs(err)  # Accumulate the absolute error
             
             avg = avg*100.0/len(heston_helpers)
-            print(f"{int(i*current_index)}/"
-                  f"{int(n_maturities*n_strikes*nspots)}"
+            print(f"{int(i*(1+current_index))}/"
+                  f"{int(n_maturities*n_strikes*nspots)} "
                   f"prices computed")
-            print("-"*70)
-            print("Average Abs Error (%%) : %5.3f" % (avg))
             print(f"Set for spot {counter_spot}/{of_total_spots}")
+            print("-"*70)
+            print("Total Average Abs Error (%%) : %5.3f" % (avg))
     
         vanilla_prices['dividend_rate'] = dividend_rate.value()
         vanilla_prices['v0'] = v0
