@@ -21,7 +21,7 @@ from generate_ivols import generate_ivol_table
                                                                      # Settings
 spotmin = 95
 spotmax = 105
-nspots = 100
+nspots = 1
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -31,7 +31,7 @@ r = 0.05
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 1000
+n_strikes = 10
 
 
 shortest_maturity = 1/12
@@ -112,16 +112,11 @@ def generate_data_subset(S):
     return dataset
 
 def generate_dataset():
-
-    gen_start = datetime.fromtimestamp(time.time())
-    gen_start_tag = gen_start.strftime('%d%m%Y-%H%M%S')
     data_subsets = []
     for spot in spots:
         spot = spot
         subset = generate_data_subset(spot)
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
-    dataset.to_csv(
-        f"{spotmin}-{spotmax}_tl_ivol_{str(int(tl_ivol*100))}_div100_"\
-        f"{gen_start_tag}.csv")
     return dataset
+

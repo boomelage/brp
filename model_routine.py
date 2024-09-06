@@ -44,8 +44,8 @@ max_iter = 10000
 activation_function = [        
     # 'identity', 
     # 'logistic',
-    # 'tanh',
-    'relu',
+    'tanh',
+    # 'relu',
     ]
 hidden_layer_sizes=(10, 10, 10)
 solver= [
@@ -111,14 +111,15 @@ mlop = mlop(
 # =============================================================================
 
 dataset.to_csv(f'{start_tag}.csv')
-print(f'\n{datetime.fromtimestamp(time.time())}')
-print("\nSelected Parameters:")
-print("\nFeatures:")
-for feature in feature_set:
-    print(feature)
-print(f"\nTarget: {target_name}")
-print(f"\nSecurity: {security_tag}")
 
+# =============================================================================
+feature_str_list = '\n'.join(feature_set)
+model_settings = (
+    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n\nFeatures:"
+    f"\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: {security_tag}\n"
+    )
+# model_settings = textwrap.fill(model_settings, width=70)
+print(model_settings)
 # =============================================================================
                                                            # Preprocessing Data                                                 
 preprocessor, train_data, train_X, train_y, \
@@ -136,13 +137,19 @@ preprocessor, train_data, train_X, train_y, \
 
 model_name = f"{hidden_layer_sizes} Deep Neural Network "\
 f"({activation_function}) ({model_scaler_str}) ({solver})"
-print(f'\nScaler: {model_scaler_str}')
-print(f'Activation function: {activation_function}')
-print(f'Maximum iterations: {max_iter}')
-print(f'Hidden Layer Sizes: {hidden_layer_sizes}')
-print(f'Solver: {solver}')
-print(f'Learning Rate: {learning_rate}')
-print(f'Alpha: {alpha}')
+
+
+ml_settings = (
+    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
+    f"\nScaler: {model_scaler_str}"
+    f"\nActivation function: {activation_function}"
+    f"\nMaximum iterations: {max_iter}"
+    f"\nHidden Layer Sizes: {hidden_layer_sizes}"
+    f"\nSolver: {solver}"
+    f"\nLearning Rate: {learning_rate}"
+    f"\nAlpha: {alpha}\n"
+)
+print(ml_settings)
 model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
                                         hidden_layer_sizes, solver, alpha, 
                                         learning_rate, model_name,
@@ -167,18 +174,26 @@ end_tag = end_tag.strftime('%d%m%Y-%H%M%S')
 total_runtime = int(end_time - start_time)
 
 model_plot.save(filename = f'{end_tag}.png',
-                path = r"E:\OneDrive - rsbrc\Files\Dissertation",
+                path = r"outputs",
                 dpi = 600)
 model_plot.show()
-
+csv_path = os.path.join('outputs',f"{end_tag}.csv")
+dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 print("\n ")
 output = f"""Model estimated using {len(dataset)} options
-with {nspots} spot prices between {spotmin} to {spotmax},
-{n_strikes} strikes between {int(lower_moneyness*100)}% and
-{int(upper_moneyness*100)}% moneyness, and {n_maturities} maturities between
-{round(shortest_maturity,2)} and {round(longest_maturity,2)} years (act/365)"""
+with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
+{n_strikes} strike(s) between {int(lower_moneyness*100)}% and
+{int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
+between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
+(act/365)"""
 wrapped_output = textwrap.fill(output, width=70)
+txt_path = os.path.join('outputs',f"{end_tag}.txt")
+with open(txt_path, 'w') as file:
+    file.write(wrapped_output)
+    file.write(model_settings)
+    file.write(ml_settings)
+
 print(wrapped_output)
 print("\nDATA NOT ROUNDED!")
 
