@@ -1,4 +1,5 @@
 *.csv
-*.xlsx
+*.xls
+*xlsx
 /__pycache__
 /old
