@@ -21,13 +21,13 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                StandardScaler(),
+                # StandardScaler(),
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # RobustScaler(),
                 # Normalizer(),
-                # PowerTransformer(),
+                PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
                 # KernelCenterer()

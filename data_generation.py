@@ -20,11 +20,7 @@ from generate_ivols import generate_ivol_table
 spotmin = 90
 spotmax = 120
 
-nspots = 5
-spots = np.linspace(spotmin,spotmax,nspots)
-
 tl_ivol = 0.357
-
 dividend_rate = 0.0
 r = 0.05
 
@@ -32,16 +28,13 @@ lower_moneyness = 0.5
 upper_moneyness = 1.5
 n_strikes = 500
 
-
 shortest_maturity = 1/12
 longest_maturity = 2.01
 
+nspots = 3*(spotmax-spotmin)
+spots = np.linspace(spotmin,spotmax,nspots)
 T = np.arange(shortest_maturity, longest_maturity, 1/12)
 n_maturities = len(T)
-
-# n_maturities = 10
-# T = np.linspace(shortest_maturity, shortest_maturity, n_maturities)
-
 # =============================================================================
 
 def generate_data_subset(S,counter,of_total):
