@@ -18,7 +18,7 @@ def calibrate_heston(vanilla_prices,
                      implied_vols,
                      data,
                      counter,
-                     of_total
+                     of_total,n_strikes, nspots, n_maturities
                      ):
     day_count = ql.Actual365Fixed()
     calendar = ql.UnitedStates(m=1)
@@ -84,7 +84,11 @@ def calibrate_heston(vanilla_prices,
                      ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
     theta, kappa, sigma, rho, v0 = model.params()
     
-    print ("\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, kappa, sigma, rho, v0))
+    print ("\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, 
+                                                                        kappa, 
+                                                                        sigma, 
+                                                                        rho, 
+                                                                        v0))
     avg = 0.0
     
     print ("%15s %15s %15s %20s" % (
@@ -101,9 +105,9 @@ def calibrate_heston(vanilla_prices,
     avg = avg*100.0/len(heston_helpers)
     print ("-"*70)
     print ("Average Abs Error (%%) : %5.3f" % (avg))
-    print(f"Set for spot {counter}/{of_total}")
-    
-    
+    print(f"Set for spot {counter}/{of_total} "
+          f"({counter*n_maturities*n_strikes}/{n_maturities*n_strikes*nspots}"
+          f" prices computed)")
     vanilla_prices['dividend_rate'] = dividend_rate.value()
     vanilla_prices['v0'] = v0
     vanilla_prices['kappa'] = kappa

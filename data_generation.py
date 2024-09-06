@@ -19,7 +19,7 @@ from generate_ivols import generate_ivol_table
                                                                      # Settings
 spotmin = 90
 spotmax = 110
-nspots = 20
+nspots = 5
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -102,7 +102,8 @@ def generate_data_subset(S,counter,of_total):
     strikes = vanilla_params['strike_price'].unique()
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
     calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, 
-                                           implied_vols, data, counter,of_total)
+                                           implied_vols, data, 
+                                           counter,of_total, n_strikes, nspots, n_maturities)
     prices = heston_price_vanillas(calibrated_features)
     dataset = noisyfier(prices)
     return dataset
