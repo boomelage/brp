@@ -193,8 +193,6 @@ with open(txt_path, 'w') as file:
     file.write(ml_settings)
 
 print(wrapped_output)
-print("\nDATA NOT ROUNDED!")
-
 
 
 # =============================================================================
