@@ -19,14 +19,14 @@ r = 0.05
 
 current_spot = 172.225
 pricing_range = 1.03
-nspots = 1
+nspots = 3
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
 
 tl_strike = 145
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = 1.5
-n_strikes = 10
+n_strikes = 1000
 
 tl_ivol = 0.5074
 shortest_maturity = 14/365
