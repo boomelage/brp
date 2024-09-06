@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
             QuantileTransformer
 from data_generation import generate_dataset, spotmin, spotmax, nspots, \
     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-        shortest_maturity, longest_maturity
+        shortest_maturity, longest_maturity, ticker
 import time
 import textwrap
 from datetime import datetime
@@ -162,7 +162,7 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
-output = f"""Model estimated using {len(dataset)} options
+output = f"""Model estimated using {len(dataset)} {ticker} options
 with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
 {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
