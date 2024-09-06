@@ -17,29 +17,33 @@ from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 
+# =============================================================================
+                                                                     # Settings
+spotmin = 95
+spotmax = 105
+nspots = 100
+spots = np.linspace(spotmin,spotmax,nspots)
+
+tl_ivol = 0.357
+
+dividend_rate = 0.0
+r = 0.05
+
+lower_moneyness = 0.5
+upper_moneyness = 1.5
+n_strikes = 500
+
+T = np.arange(3/12, 2.01, 1/12)
+n_maturities = len(T)
+
+# n_maturities = 20
+# T = np.linspace(3/12, 2.01, n_maturities)
+
+# =============================================================================
+
 def generate_data_subset(S):
     spots = np.ones(1) * S
-# =============================================================================
-#     
-# =============================================================================
-    tl_ivol = 0.357
-
-    dividend_rate = 0.0
-    r = 0.05
-    
-    lower_moneyness = 0.5
-    upper_moneyness = 1.5
-    n_strikes = 50
     K = np.linspace(S * lower_moneyness, S * upper_moneyness, n_strikes)
-    
-    T = np.arange(3/12, 2.01, 1/12)
-    n_maturities = len(T)
-    
-    # n_maturities = 20
-    # T = np.linspace(3/12, 2.01, n_maturities)
-# =============================================================================
-#     
-# =============================================================================
     def generate_features():
         features = pd.DataFrame(
             product(spots, K, T),
@@ -53,20 +57,6 @@ def generate_data_subset(S):
     
     features = generate_features()
     
-    # min_vol = 0.28
-    # max_vol = 0.4
-    # n_vols = n_maturities * n_strikes
-    # sigma = np.linspace(min_vol, max_vol, n_vols)
-    # features['volatility'] = sigma
-    # # Define the number of lists and the range size
-    # lower_vol = 0.28
-    # upper_vol = 0.40
-    # n_vols = n_strikes
-    # data = [np.linspace(lower_vol, upper_vol, n_vols) for _ in range(n_vols)]
-    # data = [arr.tolist() for arr in data]
-    # flattened_data = [item for sublist in data for item in sublist]
-    # features['volatility'] = flattened_data
-    
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
@@ -74,7 +64,6 @@ def generate_data_subset(S):
     row_decay = decay_rate/10
     data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
                                decay_rate, row_decay)
-    
     
     # data = [
     # [0.37819, 0.34177, 0.30394, 0.27832, 0.26453, 0.25916, 0.25941, 0.26127],
@@ -104,7 +93,6 @@ def generate_data_subset(S):
     
     features['risk_free_rate'] = r
     
-    
     features['dividend_rate'] = dividend_rate
     
     features['w'] = 1
@@ -115,9 +103,6 @@ def generate_data_subset(S):
     vanilla_params['maturity_date'] = vanilla_params.apply(
         lambda row: row['calculation_date'] + ql.Period(
             int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
-    
-    
-    # rates = np.ones(len(T))*r
     
     expiration_dates = vanilla_params['maturity_date'].unique()
     
@@ -137,11 +122,13 @@ def generate_data_subset(S):
     
     return prices
 
-def generate_dataset(spots):
+def generate_dataset():
+
     data_subsets = []
     for spot in spots:
         spot = spot
         subset = generate_data_subset(spot)
         data_subsets.append(subset)
     dataset =pd.concat(data_subsets, ignore_index=True)
+    dataset.to_csv(f'{spotmin}-{spotmax}_tl_ivol_{str(tl_ivol*100)}_div100.csv')
     return dataset
