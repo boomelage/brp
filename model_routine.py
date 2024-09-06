@@ -3,6 +3,10 @@
 """
 Created on Mon Sep  2 16:39:41 2024
 
+This is the principal file with which the model is estimated
+
+Market parameter settings are to be adjusted in data_generation.py
+
 """
 import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
