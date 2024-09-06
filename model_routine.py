@@ -85,8 +85,8 @@ dataset = generate_dataset()
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
-         
-dataset = dataset.dropna()                                                        # Loading mlop
+                                                                 # Loading mlop
+dataset = dataset.dropna()
 activation_function = activation_function[0]
 solver = solver[0]
 model_scaler1 = model_scaler[0]
@@ -109,8 +109,10 @@ mlop = mlop(
 )
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
-    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n\nFeatures:"
-    f"\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: {security_tag}\n"    )
+    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:"
+    f"\n\nFeatures:\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: "
+    f"{security_tag}\n"
+    )
 print(model_settings)
 # =============================================================================
                                                            # Preprocessing Data                                                 

@@ -19,10 +19,10 @@ r = 0.05
 
 pricing_range = 1.03
 
-ticker = 'NVO'
-current_spot = 131.00
-tl_strike = 115
-tl_ivol_q = 53.7231597900391
+ticker = 'AMZN'
+current_spot = 172.50
+tl_strike = 150
+tl_ivol_q = 44.6337508363281
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365
