@@ -19,7 +19,7 @@ from generate_ivols import generate_ivol_table
                                                                      # Settings
 spotmin = 90
 spotmax = 110
-nspots = 100
+nspots = 1
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -29,7 +29,7 @@ r = 0.05
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 1000
+n_strikes = 5
 
 
 shortest_maturity = 1/12

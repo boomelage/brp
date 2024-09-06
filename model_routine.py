@@ -176,7 +176,7 @@ csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
 dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
-print(f"{total_model_runtime}")
+print(f"{total_model_runtime}\n")
 output = f"""Model estimated using {len(dataset)} options
 with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
@@ -187,6 +187,7 @@ wrapped_output = textwrap.fill(output, width=70)
 txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
 with open(txt_path, 'w') as file:
     file.write(total_model_runtime)
+    file.write(" \n")
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)
