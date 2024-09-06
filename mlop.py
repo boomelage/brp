@@ -20,7 +20,7 @@ class mlop:
     Machine Learning Option Pricing with sklearn
     
     Parameters:
-        model_scaler
+        model_scaler1
         random_state
         activation_function
         max_iter
@@ -62,7 +62,7 @@ class mlop:
 # =============================================================================
                                                                 # Preprocessing
 
-    def process_user_data(self, test_size, random_state, model_scaler):
+    def split_user_data(self, test_size, random_state):
         train_data, test_data = train_test_split(
             self.user_dataset, 
             test_size=test_size, 
@@ -73,17 +73,20 @@ class mlop:
         
         train_y = train_data[self.target_name]
         test_y = test_data[self.target_name]
-            
-        preprocessor = ColumnTransformer(
-            transformers=[(
-                "normalize_predictors",
-                model_scaler,
-                self.feature_set,
-                )]
-            )
-        print(f'Data Processed with the {str(model_scaler)[:-2]}')
-        return preprocessor, train_data, train_X, train_y, \
+        
+        return train_data, train_X, train_y, \
             test_data, test_X, test_y
+            
+    def preprocess(self, model_scaler1, model_scaler2):
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ("remove_outliers",model_scaler1,self.feature_set),
+                ("normalize_predictors", model_scaler2,self.feature_set)
+                ]
+            )
+        print(f"Data Processed with the {str(model_scaler1)[:-2]}"
+              f"and {str(model_scaler2)[:-2]}")
+        return preprocessor
 # =============================================================================
                                                              # Model Estimation
 

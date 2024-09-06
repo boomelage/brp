@@ -21,16 +21,16 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                StandardScaler(),
+                RobustScaler(),
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
-                # RobustScaler(),
                 # Normalizer(),
                 # PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
-                # KernelCenterer()
+                # KernelCenterer(),
+                StandardScaler()
                 ]
 random_state = None
 test_size = 0.05
@@ -88,7 +88,8 @@ print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
                                                                  # Loading mlop
 activation_function = activation_function[0]
 solver = solver[0]
-model_scaler = model_scaler[0]
+model_scaler1 = model_scaler[0]
+model_scaler2 = model_scaler[1]
 model_scaler_str = str(model_scaler)[:-2]
 mlop = mlop(
     random_state=random_state,
@@ -112,9 +113,9 @@ model_settings = (
 print(model_settings)
 # =============================================================================
                                                            # Preprocessing Data                                                 
-preprocessor, train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.process_user_data(test_size, random_state, 
-                                                       model_scaler)
+train_data, train_X, train_y, \
+    test_data, test_X, test_y = mlop.split_user_data(test_size, random_state)
+preprocessor = mlop.preprocess(model_scaler1,model_scaler2)
 # =============================================================================
                                                               # Model Selection
 # print(f'Activation function: {activation_function}')
