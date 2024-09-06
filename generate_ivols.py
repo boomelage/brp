@@ -3,10 +3,14 @@
 """
 Created on Thu Sep  5 19:04:39 2024
 
+AN APPROXIMATION
+
 """
 
 def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay):
     """
+    AN APPROXIMATION OF IVOL TABLE
+    
     Generates a list of lists with n_lists number of lists and n_elements number of elements in each list.
     The values gradually decrease based on the start_value, decay_rate, and row_decay.
     
