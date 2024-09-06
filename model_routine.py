@@ -43,8 +43,8 @@ max_iter = 10000
 activation_function = [        
     # 'identity', 
     # 'logistic',
-    'tanh',
-    # 'relu',
+    # 'tanh',
+    'relu',
     ]
 hidden_layer_sizes=(10, 10, 10)
 solver= [
@@ -68,12 +68,12 @@ feature_set = [
     'risk_free_rate',
     'years_to_maturity',
     # 'volatility',
-    # 'dividend_rate',
-    # 'kappa',
-    # 'theta',
-    # 'sigma',
-    # 'rho',
-    # 'v0'
+    'dividend_rate',
+    'kappa',
+    'theta',
+    'sigma',
+    'rho',
+    'v0'
     ]
 
 start_time = time.time()
