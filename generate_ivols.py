@@ -3,7 +3,6 @@
 """
 Created on Thu Sep  5 19:04:39 2024
 
-@author: doomd
 """
 
 def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay):

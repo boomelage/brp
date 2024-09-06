@@ -45,8 +45,8 @@ activation_function = [
 hidden_layer_sizes=(10, 10, 10)
 solver= [
             # "lbfgs",
-            # "sgd",
-            "adam"
+            "sgd",
+            # "adam"
         ]
 alpha = 0.0001 #can't be none
 learning_rate = 'adaptive'
