@@ -156,7 +156,6 @@ total_runtime = int(end_time - start_time)
 model_plot.save(filename = f'{end_tag}.png',
                 path = outputs_path,
                 dpi = 600)
-model_plot.show()
 csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
 dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")

@@ -9,7 +9,7 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
-from heston_calibration import calibrate_heston
+from heston_calibration import calibrate_heston_vanilla
 from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 # =============================================================================
@@ -22,12 +22,12 @@ pricing_range = 1.03
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-nspots = int(3*(spotmax-spotmin))
+nspots = 1 # int(3*(spotmax-spotmin))
 
 tl_strike = 145
 lower_moneyness = tl_strike/current_spot
 upper_moneyness = 1.5
-n_strikes = int(5*(current_spot*upper_moneyness-current_spot*lower_moneyness))
+n_strikes = 5 # int(5*(current_spot*upper_moneyness-current_spot*lower_moneyness))
 
 tl_ivol = 0.5074
 shortest_maturity = 14/365
@@ -98,10 +98,9 @@ def generate_data_subset(S,counter,of_total):
     expiration_dates = vanilla_params['maturity_date'].unique()
     strikes = vanilla_params['strike_price'].unique()
     implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
-    calibrated_features = calibrate_heston(vanilla_params, dividend_rate, r, 
-                                           implied_vols, data, 
-                                           counter,of_total, n_strikes, nspots, 
-                                           n_maturities)
+    calibrated_features = calibrate_heston_vanilla.calibrate_heston(
+        vanilla_params, dividend_rate, r, implied_vols, data, counter, 
+        of_total, n_strikes, nspots, n_maturities)
     prices = heston_price_vanillas(calibrated_features)
     dataset = noisyfier(prices)
     return dataset

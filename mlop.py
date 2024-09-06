@@ -176,8 +176,8 @@ class mlop:
                  title=f'Prediction error for {security_tag} under Heston') + 
             theme(legend_position="")
             )
-        return predictive_performance_plot
-    
+        print(predictive_performance_plot)
+        return predictive_performance_plot    
     
     
     
