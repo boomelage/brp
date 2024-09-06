@@ -4,9 +4,6 @@
 Created on Wed Sep  4 17:22:26 2024
 
 """
-import os
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
 import pandas as pd
 import numpy as np
 from itertools import product
@@ -26,7 +23,7 @@ spotmax = 120
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 500
+n_strikes = 15000
 
 shortest_maturity = 1/12
 longest_maturity = 2.01
