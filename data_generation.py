@@ -19,10 +19,10 @@ r = 0.05
 
 pricing_range = 1.03
 
-ticker = 'AMZN'
-current_spot = 172.50
-tl_strike = 150
-tl_ivol_q = 44.6337508363281
+ticker = 'AAPL'
+current_spot = 220.00
+tl_strike = 195.00 
+tl_ivol_q = 41.2680358886719
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365
