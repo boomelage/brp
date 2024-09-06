@@ -20,11 +20,11 @@ r = 0.05
 
 spotmin = 80
 spotmax = 120
-nspots = 100
+nspots = 15
 
 lower_moneyness = 92/101
 upper_moneyness = 1.5
-n_strikes = 100
+n_strikes = 15
 
 tl_ivol = 0.6433
 shortest_maturity = 14/365
@@ -57,7 +57,7 @@ def generate_data_subset(S,counter,of_total):
             # GENERATING IVOLS
     n_lists = n_maturities
     n_elements = n_strikes
-    decay_rate = 1/(5*n_maturities*n_strikes)
+    decay_rate = 1/(10*n_maturities*n_strikes)
     row_decay = decay_rate/10
     data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
                                decay_rate, row_decay)

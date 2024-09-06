@@ -100,8 +100,6 @@ def calibrate_heston(vanilla_prices,
             "Strikes", "Market Value",
              "Model Value", "Relative Error (%)"))
         print ("="*70)
-        print(f"Number of strikes: {len(strikes)}")
-        print(f"Number of Heston helpers: {len(heston_helpers)}")
             
         for i in range(min(len(heston_helpers), len(strikes))):
             opt = heston_helpers[i]  # Get the Heston helper at index i
@@ -113,11 +111,9 @@ def calibrate_heston(vanilla_prices,
             avg += abs(err)  # Accumulate the absolute error
             
         avg = avg*100.0/len(heston_helpers)
-        print ("-"*70)
-        print ("Average Abs Error (%%) : %5.3f" % (avg))
-        print(f"Set for spot {counter}/{of_total} "
-              f"({counter*n_maturities*n_strikes}/{n_maturities*n_strikes*nspots}"
-              f" prices computed)")    
+        print("-"*70)
+        print("Average Abs Error (%%) : %5.3f" % (avg))
+        print(f"Set for spot {counter}/{of_total}")
 
     vanilla_prices['dividend_rate'] = dividend_rate.value()
     vanilla_prices['v0'] = v0
