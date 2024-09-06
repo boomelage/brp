@@ -14,25 +14,24 @@ from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 # =============================================================================
                                                                      # Settings
-
 dividend_rate = 0.0
 r = 0.05
 
-spotmin = 80
-spotmax = 120
-nspots = 20
+current_spot = 172.225
+pricing_range = 1.03
+nspots = 1
+spotmin = int(current_spot/pricing_range)
+spotmax = int(current_spot*pricing_range)
 
-lower_moneyness = 92/101
+tl_strike = 145
+lower_moneyness = tl_strike/current_spot
 upper_moneyness = 1.5
-n_strikes = 100
+n_strikes = 10
 
-tl_ivol = 0.6433
+tl_ivol = 0.5074
 shortest_maturity = 14/365
-longest_maturity = 52*2/365
+longest_maturity = 2*52*7/365
 maturity_step = 7/365
-
-dividend_rate = 0.0
-r = 0.05
 
 # =============================================================================
 
