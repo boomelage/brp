@@ -40,7 +40,7 @@ random_state = None
 test_size = 0.05
 
                                                       # Neural Network Settings
-max_iter = 10000
+max_iter = 1000
 activation_function = [        
     # 'identity', 
     # 'logistic',
@@ -107,19 +107,13 @@ mlop = mlop(
     alpha=alpha,
     learning_rate=learning_rate
 )
-
-# =============================================================================
-
-dataset.to_csv(f'{start_tag}.csv')
-
-# =============================================================================
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n\nFeatures:"
     f"\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: {security_tag}\n"
     )
-# model_settings = textwrap.fill(model_settings, width=70)
 print(model_settings)
+
 # =============================================================================
                                                            # Preprocessing Data                                                 
 preprocessor, train_data, train_X, train_y, \
@@ -170,17 +164,19 @@ model_plot = mlop.plot_model_performance(model_stats, model_runtime,
 end_time = time.time()
 
 end_tag = datetime.fromtimestamp(end_time)
-end_tag = end_tag.strftime('%d%m%Y-%H%M%S')
+end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
+outputs_path = os.path.join('outputs',end_tag)
+os.makedirs(outputs_path, exist_ok=True)
 total_runtime = int(end_time - start_time)
-
 model_plot.save(filename = f'{end_tag}.png',
-                path = r"outputs",
+                path = outputs_path,
                 dpi = 600)
 model_plot.show()
-csv_path = os.path.join('outputs',f"{end_tag}.csv")
+csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
 dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
-print("\n ")
+total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
+print(f"{total_model_runtime}")
 output = f"""Model estimated using {len(dataset)} options
 with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
@@ -188,8 +184,9 @@ with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
 (act/365)"""
 wrapped_output = textwrap.fill(output, width=70)
-txt_path = os.path.join('outputs',f"{end_tag}.txt")
+txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
 with open(txt_path, 'w') as file:
+    file.write(total_model_runtime)
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)

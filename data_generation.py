@@ -9,8 +9,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 import pandas as pd
 import numpy as np
-import time
-from datetime import datetime
 from itertools import product
 import QuantLib as ql
 import math
@@ -19,9 +17,9 @@ from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 # =============================================================================
                                                                      # Settings
-spotmin = 95
-spotmax = 105
-nspots = 1
+spotmin = 90
+spotmax = 110
+nspots = 100
 spots = np.linspace(spotmin,spotmax,nspots)
 
 tl_ivol = 0.357
@@ -31,7 +29,7 @@ r = 0.05
 
 lower_moneyness = 0.5
 upper_moneyness = 1.5
-n_strikes = 10
+n_strikes = 1000
 
 
 shortest_maturity = 1/12
