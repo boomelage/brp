@@ -92,7 +92,7 @@ implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
 # implied_vols_matrix[10][4] = ivol_table[0][0]
 # implied_vols_matrix[10][0] = ivol_table[0][0]
 # implied_vols_matrix[0][4] = ivol_table[0][0]
-#                   # i  j               i  j
+#                   # i  j               j  i
                 # chat, am i dumb?
                 
 for i in range(n_strikes):
