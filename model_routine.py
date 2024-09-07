@@ -22,7 +22,7 @@ import time
 import textwrap
 from datetime import datetime
 from mlop import mlop
-from generation_routine import dataset
+from generation_routine import generate_dateset
 # =============================================================================
                                                              # General Settings
 model_scaler = [
@@ -79,14 +79,14 @@ feature_set = [
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
+
 # =============================================================================
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
-
+dataset = generate_dateset()
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
-
                                                                  # Loading mlop
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
