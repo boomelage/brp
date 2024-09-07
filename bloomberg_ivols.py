@@ -41,7 +41,7 @@ n_bbivs = bbivs.shape[0]
 ivol_table = np.empty(n_maturities, dtype=object)
 for i in np.arange(1,n_bbivs,2):
     ivol_table[int((i+1)/2)-1] = (bbivs[i]+bbivs[i+1])/2
-
+                ##### ^ NEEDS CORRECTION, TOO HUNGRY
 
 S = [np.median(strikes)]
 K = strikes
