@@ -1,9 +1,9 @@
-Total model runtime: 4797 seconds 
-Model estimated using 160994 NVO options with 21 spot
-price(s) between 127 and 134 (mid-point if one), 82
-strike(s) between 93% and 106% moneyness, and 102
+Total model runtime: 21077 seconds 
+Model estimated using 697374 AAPL options with 43 spot
+price(s) between 199 and 242 (mid-point if one), 159
+strike(s) between 88% and 112% moneyness, and 102
 maturity/maturities between 0.04 and 1.99 years (act/365)
-2024-09-07 01:21:54.728233
+2024-09-07 07:23:31.186515
 
 Selected Parameters:
 
@@ -16,11 +16,11 @@ Target: observed_price
 
 Security: vanilla options
 
-2024-09-07 01:21:54.738231
+2024-09-07 07:23:31.228515
 
 Selected Parameters:
 
-Scaler: [RobustScaler(), StandardScaler(
+Scaler: QuantileTransformer(), StandardScaler(
 Activation function: tanh
 Maximum iterations: 1000
 Hidden Layer Sizes: (10, 10, 10)

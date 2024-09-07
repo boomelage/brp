@@ -1,9 +1,9 @@
-Total model runtime: 88 seconds 
-Model estimated using 4590 AAPL options with 3 spot price(s)
-between 213 and 226 (mid-point if one), 15 strike(s) between
-88% and 112% moneyness, and 102 maturity/maturities between
-0.04 and 1.99 years (act/365)
-2024-09-07 01:06:20.013893
+Total model runtime: 28763 seconds 
+Model estimated using 1058148 AAPL options with 39 spot
+price(s) between 213 and 226 (mid-point if one), 266
+strike(s) between 88% and 112% moneyness, and 102
+maturity/maturities between 0.04 and 1.99 years (act/365)
+2024-09-07 08:09:50.197625
 
 Selected Parameters:
 
@@ -16,7 +16,7 @@ Target: observed_price
 
 Security: vanilla options
 
-2024-09-07 01:06:20.014894
+2024-09-07 08:09:50.263626
 
 Selected Parameters:
 
