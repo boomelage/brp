@@ -4,7 +4,10 @@ Created on Sat Sep  7 15:38:52 2024
 
 """
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+pwd = str(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(pwd)
+files = os.listdir(pwd)
+excel_files = [file for file in files if file.endswith('.xlsx')]
 import numpy as np
 import pandas as pd
 from itertools import product
@@ -12,10 +15,12 @@ import QuantLib as ql
 import math
 from heston_calibration import calibrate_heston
 
+
+
 risk_free_rate = 0.00
 dividend_rate = 0.00
 
-bbivols = pd.read_excel(r'22000 AAPL.xlsx')
+bbivols = pd.read_excel(str(excel_files[0]))
 
 bbivols.columns = bbivols.iloc[1]
 bbivols = bbivols.drop([0,1])
@@ -105,4 +110,4 @@ heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot ,expiratio
     black_var_surface,strikes,day_count,calculation_date, calendar,
         dividend_rate, implied_vols_matrix)
 
-heston_params
+
