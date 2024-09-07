@@ -25,7 +25,7 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                # RobustScaler(), # always on to filter outliers
+                # RobustScaler(),
                 QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
@@ -38,6 +38,7 @@ model_scaler = [
                 ]
 random_state = None
 test_size = 0.05
+
                                                       # Neural Network Settings
 max_iter = 1000
 activation_function = [        
@@ -54,6 +55,7 @@ solver= [
         ]
 alpha = 0.0001 #can't be none
 learning_rate = 'adaptive'
+
                                                        # Random Forest Settings
 rf_n_estimators = 50
 rf_min_samples_leaf = 2000
@@ -89,12 +91,17 @@ dataset = generate_dataset()
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
+
                                                                  # Loading mlop
+model_scaler1 = model_scaler[0]
+model_scaler2 = model_scaler[1]
+transformers=[
+    ("transformation_1",model_scaler1,feature_set),
+    ("transformation_2", model_scaler2,feature_set)
+    ]                                                                 
 dataset = dataset.dropna()
 activation_function = activation_function[0]
 solver = solver[0]
-model_scaler1 = model_scaler[0]
-model_scaler2 = model_scaler[1]
 model_scaler_str = str(model_scaler)[1:-2]
 mlop = mlop(
     random_state=random_state,

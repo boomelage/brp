@@ -77,13 +77,8 @@ class mlop:
         return train_data, train_X, train_y, \
             test_data, test_X, test_y
             
-    def preprocess(self, model_scaler1, model_scaler2):
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ("remove_outliers",model_scaler1,self.feature_set),
-                ("normalize_predictors", model_scaler2,self.feature_set)
-                ]
-            )
+    def preprocess(self, model_scaler1, model_scaler2,transformers):
+        preprocessor = ColumnTransformer(transformers=transformers)
         print(f"Data Processed with the {str(model_scaler1)[:-2]}"
               f"and {str(model_scaler2)[:-2]}")
         return preprocessor
