@@ -14,10 +14,10 @@ from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
 # =============================================================================
                                                                      # Settings
-dividend_rate = 0.0
+dividend_rate = 0.00
 r = 0.05
 
-pricing_range = 1.1
+pricing_range = 0.1  # percentage delta effect accounted for
 
 ticker = 'AAPL'
 current_spot = 220.00
@@ -28,11 +28,11 @@ longest_maturity = 2*52*7/365
 maturity_step = 7/365
 spots_subdivision = 1
 
-spotmin = int(current_spot/pricing_range)
-spotmax = int(current_spot*pricing_range)
+spotmin = int(current_spot/(1+pricing_range))
+spotmax = int(current_spot*(1+pricing_range))
 nspots = int(spots_subdivision*(spotmax-spotmin))
-# nspots = 1
 
+# nspots = 1
 # lower_moneyness = 0.5
 # upper_moneyness = 1.5
 # n_strikes = 5
@@ -41,8 +41,7 @@ lower_moneyness = tl_strike/current_spot
 upper_moneyness = current_spot/tl_strike
 n_strikes = int((spots_subdivision+2)*(current_spot*upper_moneyness-\
                                         current_spot*lower_moneyness))
-
-
+    
 # =============================================================================
 tl_ivol = tl_ivol_q/100
 spots = np.linspace(spotmin,spotmax,nspots)
