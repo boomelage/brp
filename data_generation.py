@@ -63,7 +63,7 @@ class data_generation():
     def calibrate_data_subset(self, ivol_table, option_data):
         option_data,flat_ts,dividend_ts,spot,expiration_dates, \
             black_var_surface,strikes,day_count,calculation_date, calendar, \
-                implied_vols_matrix = \
+               implied_vols_matrix = \
                     heston_calibration.prepare_heston_calibration(
                         ivol_table,
                         option_data, 
@@ -82,7 +82,7 @@ class data_generation():
     
     
     
-    def generate_dataset(self,spots):
+    def calibrate_dataset(self,spots):
         data_subsets = []
         counter_spot = 0
         for spot in spots:
