@@ -89,7 +89,7 @@ print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
                                                                  # Loading mlop
 model_scaler1 = model_scaler[0]
-model_scaler2 = model_scaler[1]
+model_scaler2 = None #model_scaler[1]
 transformers=[
     ("transformation_1",model_scaler1,feature_set),
     # ("transformation_2", model_scaler2,feature_set)

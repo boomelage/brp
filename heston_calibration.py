@@ -15,7 +15,7 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
     black_var_surface,strikes,day_count,calculation_date, calendar,
         dividend_rate, implied_vols_matrix):
     heston_params = option_data.copy()
-    # dummy parameters
+    # initial guesses
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
     
     process = ql.HestonProcess(flat_ts, dividend_ts,
@@ -25,7 +25,7 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []
     
-    # Loop through all maturities and perform calibration for each one
+    # loop through all maturities and perform calibration for each one
     for current_index, date in enumerate(expiration_dates):
         print(f"\nCurrently calibrating for maturity: {date}")
         black_var_surface.setInterpolation("bicubic")
@@ -64,7 +64,8 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
         
             # print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} "
             #       f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
-            avg += abs(err)  # Accumulate the absolute error
+            
+            avg += abs(err)  # accumulate the absolute error
         
         avg = avg*100.0/len(heston_helpers)
         print("-"*70)
