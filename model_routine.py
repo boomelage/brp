@@ -25,8 +25,8 @@ from mlop import mlop
 # =============================================================================
                                                              # General Settings
 model_scaler = [
-                RobustScaler(), # always on to filter outliers
-                # QuantileTransformer(),
+                # RobustScaler(), # always on to filter outliers
+                QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # Normalizer(),
@@ -151,7 +151,6 @@ model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y,
                                                                 # Model Testing
 model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
                                                   model_name)
-print(model_stats)
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
                                           security_tag)
 end_time = time.time()
