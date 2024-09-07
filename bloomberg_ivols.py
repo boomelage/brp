@@ -35,6 +35,9 @@ bbiv_df = bbivols.filter(like='IVM')
 bbivs = bbiv_df.to_numpy()/100
 n_strikes = len(bbivs)
 n_maturities = int(len(bbivs[0])/2)
+S = [np.median(strikes)]
+K = strikes
+T = maturities
 
 ivol_table = np.empty(n_maturities,dtype=object)
 
@@ -53,9 +56,11 @@ for i in range(n_strikes):
 
 print(implied_vols_matrix)
 
-S = [np.median(strikes)]
-K = strikes
-T = maturities
+
+
+
+
+
 def generate_features():
     features = pd.DataFrame(
         product(S, K, T),
@@ -91,18 +96,15 @@ dividend_rate = dividend_yield
 flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, risk_free_rate, day_count))
 dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, dividend_rate, day_count))
 
-spot
-
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, K,
     implied_vols_matrix, day_count)
 
 heston_params = calibrate_heston(option_data,flat_ts,dividend_ts, spot, 
-                                 expiration_dates, black_var_surface,strikes,
-                                 day_count,calculation_date, calendar, 
-                                 dividend_rate, implied_vols_matrix)
-
+                                  expiration_dates, black_var_surface,strikes,
+                                  day_count,calculation_date, calendar, 
+                                  dividend_rate, implied_vols_matrix)
 
 heston_vanillas = heston_price_vanillas(heston_params)
 
@@ -123,7 +125,6 @@ dataset
 # legend = ax.legend(loc="upper right")
 # plot_years = np.arange(0, 2, 0.1)
 # plot_strikes = np.arange(535.0, 750.0, 1.0)
-
 
 # fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')

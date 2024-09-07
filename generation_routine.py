@@ -3,18 +3,14 @@
 """
 Created on Sat Sep  7 13:22:14 2024
 
-"""
-# Import necessary modules and settings
-from market_settings import lower_moneyness, upper_moneyness, \
-    n_strikes, n_maturities, T, tl_ivol, risk_free_rate, dividend_rate, \
-        current_spot, bb_table_path
-        
+"""     
 from data_generation import data_generation
 from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
-from bloomberg_ivols import read_bbiv_table
 
-def generate_dateset():
+def generate_dateset(ivol_table,lower_moneyness, upper_moneyness,
+    n_strikes, n_maturities, T, tl_ivol, risk_free_rate, dividend_rate,
+        current_spot):
     # Create an instance of the data_generation class
     dg = data_generation(lower_moneyness=lower_moneyness,
                          upper_moneyness=upper_moneyness,
@@ -28,15 +24,18 @@ def generate_dateset():
     # Call generate_data_subset method with current_spot
     option_data = dg.generate_data_subset(current_spot)
     
-    ivol_table = read_bbiv_table(bb_table_path)
-    
     option_data,flat_ts,dividend_ts,spot,expiration_dates, \
         black_var_surface,strikes,day_count,calculation_date, calendar, \
-            implied_vols_matrix = dg.prepare_calibration(ivol_table, option_data, dividend_rate, risk_free_rate)
+            implied_vols_matrix = dg.prepare_calibration(ivol_table, 
+                                                         option_data, 
+                                                         dividend_rate, 
+                                                         risk_free_rate)
             
-    heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
-        black_var_surface,strikes,day_count,calculation_date, calendar,
-            dividend_rate, implied_vols_matrix)
+    heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot,
+                                     expiration_dates, black_var_surface,
+                                     strikes,day_count,calculation_date, 
+                                     calendar, dividend_rate, 
+                                     implied_vols_matrix)
     
     heston_vanillas = heston_price_vanillas(heston_params)
     

@@ -9,7 +9,6 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
-from generate_ivols import generate_ivol_table
 
 
 class data_generation():

@@ -53,17 +53,18 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
                                                sigma, rho, v0))
         avg = 0.0
         
-        # print ("%15s %15s %15s %20s" % (
-        #     "Strikes", "Market Value",
-        #      "Model Value", "Relative Error (%)"))
-        # print ("="*70)
+        time.sleep(0.005)
+        print ("%15s %15s %15s %20s" % (
+            "Strikes", "Market Value",
+              "Model Value", "Relative Error (%)"))
+        print ("="*70)
             
         for i in range(min(len(heston_helpers), len(strikes))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
         
-            # print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} "
-            #       f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} "
+                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
             
             avg += abs(err)  # accumulate the absolute error
         

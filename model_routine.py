@@ -15,14 +15,13 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-# from market_settings import spotmin, spotmax, nspots, \
-#     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-#         shortest_maturity, longest_maturity, ticker
+from market_settings import spotmin, spotmax, nspots, \
+    n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
+        shortest_maturity, longest_maturity, ticker
 import time
 import textwrap
 from datetime import datetime
 from mlop import mlop
-# from generation_routine import generate_dateset
 # =============================================================================
                                                              # General Settings
 model_scaler = [
@@ -82,10 +81,14 @@ start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 
 # =============================================================================
-# print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
+print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
-from bloomberg_ivols import dataset
-# dataset = generate_dateset()
+
+
+# from bloomberg_ivols import dataset
+from market_settings import dataset
+
+
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
@@ -177,18 +180,18 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
-# output = f"""Model estimated using {len(dataset)} {ticker} options
-# with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
-# {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
-# {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
-# between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
-# (act/365)"""
-# wrapped_output = textwrap.fill(output, width=60)
-# print(wrapped_output)
-# txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
-# with open(txt_path, 'w') as file:
-#     file.write(total_model_runtime)
-#     file.write(" \n")
-#     file.write(wrapped_output)
-#     file.write(model_settings)
-#     file.write(ml_settings)
+output = f"""Model estimated using {len(dataset)} {ticker} options
+with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
+{n_strikes} strike(s) between {int(lower_moneyness*100)}% and
+{int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
+between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
+(act/365)"""
+wrapped_output = textwrap.fill(output, width=60)
+print(wrapped_output)
+txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
+with open(txt_path, 'w') as file:
+    file.write(total_model_runtime)
+    file.write(" \n")
+    file.write(wrapped_output)
+    file.write(model_settings)
+    file.write(ml_settings)
