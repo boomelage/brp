@@ -19,10 +19,10 @@ ticker = 'AAPL'
 current_spot = 220.00
 tl_strike = 195.00 
 tl_ivol_q = 41.2680358886719
-shortest_maturity = 14/365
-longest_maturity = 1
-maturity_step = 7/365
-spots_subdivision = 5
+shortest_maturity = 1/12
+longest_maturity = 2.01
+maturity_step = 1/12
+spots_subdivision = 1
 strikes_subdivision = 7
 
 spotmin = int(current_spot/(1+pricing_range))

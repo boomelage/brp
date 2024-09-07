@@ -27,7 +27,7 @@ from generation_routine import generate_dateset
                                                              # General Settings
 model_scaler = [
                 # RobustScaler(),
-                QuantileTransformer(),
+                # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # Normalizer(),
@@ -92,7 +92,7 @@ model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
 transformers=[
     ("transformation_1",model_scaler1,feature_set),
-    ("transformation_2", model_scaler2,feature_set)
+    # ("transformation_2", model_scaler2,feature_set)
     ]                                                                 
 dataset = dataset.dropna()
 activation_function = activation_function[0]
