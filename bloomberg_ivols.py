@@ -14,7 +14,11 @@ from itertools import product
 import QuantLib as ql
 import math
 from heston_calibration import calibrate_heston
-
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize']=(15,7)
+plt.style.use("dark_background")
+from matplotlib import cm
 
 
 risk_free_rate = 0.00
@@ -87,13 +91,6 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, divid
 
 
 implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
-
-# implied_vols_matrix[0][0] = ivol_table[0][0]
-# implied_vols_matrix[10][4] = ivol_table[0][0]
-# implied_vols_matrix[10][0] = ivol_table[0][0]
-# implied_vols_matrix[0][4] = ivol_table[0][0]
-#                   # i  j               j  i
-                # chat, am i dumb?
                 
 for i in range(n_strikes):
     for j in range(n_maturities):
@@ -111,3 +108,26 @@ heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot ,expiratio
         dividend_rate, implied_vols_matrix)
 
 
+# fig, ax = plt.subplots()
+# ax.plot(strikes, ivol_table, label="Black Surface")
+# ax.plot(strikes, ivol_table, "o", label="Actual")
+# ax.set_xlabel("Strikes", size=12)
+# ax.set_ylabel("Vols", size=12)
+# legend = ax.legend(loc="upper right")
+# plot_years = np.arange(0, 2, 0.1)
+# plot_strikes = np.arange(535.0, 750.0, 1.0)
+# fig = plt.figure()
+
+# ax = fig.add_subplot(projection='3d')
+# X, Y = np.meshgrid(plot_strikes, plot_years)
+
+# Z = np.array([black_var_surface.blackVol(y, x)
+#               for xr, yr in zip(X, Y)
+#                   for x, y in zip(xr,yr) ]
+#              ).reshape(len(X), len(X[0]))
+
+# surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+#                 linewidth=0.1)
+# fig.colorbar(surf, shrink=0.5, aspect=5)
+
+# plt.show()
