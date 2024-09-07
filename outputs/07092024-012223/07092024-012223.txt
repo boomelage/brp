@@ -1,0 +1,29 @@
+Total model runtime: 4797 seconds 
+Model estimated using 160994 NVO options with 21 spot
+price(s) between 127 and 134 (mid-point if one), 82
+strike(s) between 93% and 106% moneyness, and 102
+maturity/maturities between 0.04 and 1.99 years (act/365)
+2024-09-07 01:21:54.728233
+
+Selected Parameters:
+
+Features:
+spot_price
+strike_price
+years_to_maturity
+
+Target: observed_price
+
+Security: vanilla options
+
+2024-09-07 01:21:54.738231
+
+Selected Parameters:
+
+Scaler: [RobustScaler(), StandardScaler(
+Activation function: tanh
+Maximum iterations: 1000
+Hidden Layer Sizes: (10, 10, 10)
+Solver: sgd
+Learning Rate: adaptive
+Alpha: 0.0001

@@ -26,12 +26,12 @@ tl_ivol_q = 41.2680358886719
 shortest_maturity = 14/365
 longest_maturity = 2*52*7/365
 maturity_step = 7/365
-spots_subdivision = 3
+spots_subdivision = 1
 
 spotmin = int(current_spot/pricing_range)
 spotmax = int(current_spot*pricing_range)
-# nspots = int(spots_subdivision*(spotmax-spotmin))
-nspots = 1
+nspots = int(spots_subdivision*(spotmax-spotmin))
+# nspots = 1
 
 # lower_moneyness = 0.5
 # upper_moneyness = 1.5
