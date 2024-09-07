@@ -5,7 +5,7 @@ Created on Mon Sep  2 16:39:41 2024
 
 This is the principal file with which the model is estimated
 
-Market parameter settings are to be adjusted in data_generation.py
+Market parameter settings are to be adjusted in market_settings.py
 
 """
 import os
