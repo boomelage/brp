@@ -85,7 +85,7 @@ class mlop:
             
     def preprocess(self):
         preprocessor = ColumnTransformer(transformers=self.transformers)
-        print(f"Data Processed with the {str(self.model_scaler1)}"
+        print(f"Data Processed with the {str(self.model_scaler1)[:-2]}"
               f"{str(self.model_scaler2)}")
         return preprocessor
 # =============================================================================
@@ -157,9 +157,9 @@ class mlop:
             value_name="Predicted"
           )
           .assign(
-            moneyness=lambda x: x["spot_price"] - x["strike_price"],
+            moneyness=lambda x: x["spot_price"]*100/x["strike_price"],
             pricing_error=lambda x: 
-                np.abs(x["Predicted"] - x[self.target_name])
+                np.abs(abs(x["Predicted"] - x[self.target_name])*100/x[self.target_name])
           )
         )
         predictive_performance = predictive_performance.iloc[:,1:]
@@ -172,8 +172,8 @@ class mlop:
                    aes(x="moneyness", y="pricing_error")) + 
             geom_point(alpha=0.05) + 
             facet_wrap("Model") + 
-            labs(x="Moneyness (S - K)", 
-                 y=f"Absolute error ({runtime} second runtime)",
+            labs(x="Percentage moneyness (S/K)", 
+                 y=f"Absolute percentage error ({runtime} second runtime)",
                  title=f'Prediction error for {security_tag} under Heston') + 
             theme(legend_position="")
             )
