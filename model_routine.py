@@ -15,9 +15,10 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-from data_generation import generate_dataset, spotmin, spotmax, nspots, \
+from data_generation import spotmin, spotmax, nspots, \
     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
         shortest_maturity, longest_maturity, ticker
+from market_settings import dataset
 import time
 import textwrap
 from datetime import datetime
@@ -82,12 +83,6 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
 
-dataset = generate_dataset()
-# dataset_filename = ''                      # Import data here instead and
-# import pandas as pd                        # uncomment the line above
-# dataset = pd.DataFrame(dataset_filename)
-# dataset = dataset.iloc[:,1:]
-
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
@@ -129,7 +124,7 @@ print(model_settings)
                                                            # Preprocessing Data                                                 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data(test_size, random_state)
-preprocessor = mlop.preprocess(model_scaler1,model_scaler2)
+preprocessor = mlop.preprocess(transformers,model_scaler1,model_scaler2)
 # =============================================================================
                                                               # Model Selection
 # print(f'Activation function: {activation_function}')

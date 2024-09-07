@@ -32,4 +32,3 @@ def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay)
         data.append(current_list)
     
     return data
-

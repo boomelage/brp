@@ -10,27 +10,13 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 import QuantLib as ql
 
-
-class calibrate_heston_vanilla:
-    def __init__(self):
-        return
-        # self.strikes = None
-        # self.implied_vols_matrix = None
-        # self.black_var_surface = None
-        # self.data = None
-    def calibrate_heston(vanilla_prices, 
-                         dividend_rate, 
-                         risk_free_rate,
-                         implied_vols,
-                         data,
-                         counter_spot,
-                         of_total_spots,n_strikes, nspots, n_maturities
-                         ):
+class heston_calibration:
+    def prepare_heston_calibration(data,option_data, dividend_rate,risk_free_rate):
         day_count = ql.Actual365Fixed()
         calendar = ql.UnitedStates(m=1)
         
-        calculation_date = vanilla_prices['calculation_date'][0]
-        spot = vanilla_prices['spot_price'][0]
+        calculation_date = option_data['calculation_date'][0]
+        spot = option_data['spot_price'][0]
         ql.Settings.instance().evaluationDate = calculation_date
         
         
@@ -40,13 +26,11 @@ class calibrate_heston_vanilla:
         dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, dividend_rate, day_count))
         
         
-        expiration_dates = vanilla_prices['maturity_date'].unique()
+        expiration_dates = option_data['maturity_date'].unique()
         
-        strikes = vanilla_prices['strike_price'].unique()
-        
+        strikes = option_data['strike_price'].unique()
     
         implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
-        
         
         for i in range(implied_vols.rows()):
             for j in range(implied_vols.columns()):
@@ -60,7 +44,16 @@ class calibrate_heston_vanilla:
         for i in range(implied_vols_matrix.rows()):
             for j in range(implied_vols_matrix.columns()):
                 implied_vols_matrix[i][j] = data[j][i]  
-    
+                
+        return option_data,flat_ts,dividend_ts,spot,expiration_dates, \
+            black_var_surface,strikes,day_count,calculation_date, calendar, \
+                implied_vols_matrix
+
+
+    def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
+        black_var_surface,strikes,day_count,calculation_date, calendar,
+            dividend_rate, implied_vols_matrix):
+        heston_params = option_data.copy()
         # dummy parameters
         v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
         
@@ -87,7 +80,6 @@ class calibrate_heston_vanilla:
                )
                helper.setPricingEngine(engine)
                heston_helpers.append(helper)
-                
                 
             lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
             model.calibrate(heston_helpers, lm,
@@ -117,67 +109,18 @@ class calibrate_heston_vanilla:
             
             avg = avg*100.0/len(heston_helpers)
             print("-"*70)
-            print(f"{int(current_index * n_strikes + i + 1)}/"
-                  f"{int(n_maturities * n_strikes)} "
-                  f"prices computed (set for spot "
-                  f"{counter_spot}/{of_total_spots})")
+            # print(f"{int(current_index * n_strikes + i + 1)}/"
+            #       f"{int(n_maturities * n_strikes)} "
+            #       f"prices computed (set for spot "
+            #       f"{counter_spot}/{of_total_spots})")
             print("Total Average Abs Error (%%) : %5.3f" % (avg))
-    
-        vanilla_prices['dividend_rate'] = dividend_rate.value()
-        vanilla_prices['v0'] = v0
-        vanilla_prices['kappa'] = kappa
-        vanilla_prices['theta'] = theta
-        vanilla_prices['sigma'] = sigma
-        vanilla_prices['rho'] = rho
+            
+        heston_params['dividend_rate'] = dividend_rate
+        heston_params['v0'] = v0
+        heston_params['kappa'] = kappa
+        heston_params['theta'] = theta
+        heston_params['sigma'] = sigma
+        heston_params['rho'] = rho
         
-        vanilla_prices
-        return vanilla_prices
-    
-    
-    
-# =============================================================================
-# =============================================================================
-# =============================================================================
-# =============================================================================
-# =============================================================================
-# # # # # import numpy as np
-# # # # # import matplotlib.pyplot as plt
-# # # # # plt.rcParams['figure.figsize']=(15,7)
-# # # # # plt.style.use("dark_background")
-# # # # # from matplotlib import cm
-# # # # # from mpl_toolkits.mplot3d import Axes3D
-# # # # # import math
-# # # # # 
-# # # # # # First plot: 2D line plot of strikes vs vols
-# # # # # fig, ax = plt.subplots()  # Just a single plot
-# # # # # ax.plot(self.strikes, [self.implied_vols_matrix[i][0] for i in range(len(self.strikes))], label="Black Surface")
-# # # # # ax.plot(self.strikes, self.data[0], "o", label="Actual")
-# # # # # ax.set_xlabel("Strikes", size=12)
-# # # # # ax.set_ylabel("Vols", size=12)
-# # # # # legend = ax.legend(loc="upper right")
-# # # # # plt.show()
-# # # # # plt.close(fig)
-# # # # # 
-# # # # # 
-# # # # # # Second plot: 3D surface plot of strikes and years vs implied vols
-# # # # # plot_years = np.arange(0, 2, 0.1)
-# # # # # plot_strikes = np.arange(min(self.strikes), max(self.strikes), 1.0)
-# # # # # plt.show()
-# # # # # ax = fig.add_subplot(projection='3d')
-# # # # # X, Y = np.meshgrid(plot_strikes, plot_years)
-# # # # # 
-# # # # # # Calculate Z as implied volatilities over the strikes and years
-# # # # # Z = np.array([self.black_var_surface.blackVol(y, x) for xr, yr in zip(X, Y)
-# # # # #               for x, y in zip(xr, yr)]).reshape(len(X), len(X[0]))
-# # # # # 
-# # # # # surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
-# # # # # fig.colorbar(surf, shrink=0.5, aspect=5)
-# # # # # 
-# # # # # plt.show()
-# # # # # plt.close(fig)
-# # # # # =============================================================================
-# =============================================================================
-# =============================================================================
-# =============================================================================
-# 
-# =============================================================================
+        heston_params
+        return heston_params

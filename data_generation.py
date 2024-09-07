@@ -9,91 +9,88 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
-from heston_calibration import calibrate_heston_vanilla
-from pricing import heston_price_vanillas, noisyfier
 from generate_ivols import generate_ivol_table
-# =============================================================================
-                                                                     # Settings
-dividend_rate = 0.00
-r = 0.05
+from heston_calibration import heston_calibration
+from pricing import heston_price_vanillas, noisyfier
 
-pricing_range = 0.1  # percentage delta effect accounted for
-
-ticker = 'AAPL'
-current_spot = 220.00
-tl_strike = 195.00 
-tl_ivol_q = 41.2680358886719
-shortest_maturity = 14/365
-longest_maturity = 2*52*7/365
-maturity_step = 7/365
-spots_subdivision = 1
-strikes_subdivision = 3
-
-spotmin = int(current_spot/(1+pricing_range))
-spotmax = int(current_spot*(1+pricing_range))
-nspots = int(spots_subdivision*(spotmax-spotmin))
-
-# nspots = 1
-# lower_moneyness = 0.5
-# upper_moneyness = 1.5
-# n_strikes = 5
-
-lower_moneyness = tl_strike/current_spot
-upper_moneyness = current_spot/tl_strike
-n_strikes = int((strikes_subdivision)*(current_spot*upper_moneyness-\
-                                        current_spot*lower_moneyness))
+class data_generation():
+    def __init__(self, lower_moneyness=None, upper_moneyness=None,
+                 option_data=None, T=None, n_maturities = None,
+                 n_strikes = None, tl_ivol = None, risk_free_rate = None,
+                 dividend_rate = None):
+        self.lower_moneyness = lower_moneyness
+        self.upper_moneyness = upper_moneyness
+        self.option_data = option_data
+        self.T = T
+        self.n_maturities = n_maturities
+        self.n_strikes = n_strikes
+        self.tl_ivol = tl_ivol
+        self.risk_free_rate = risk_free_rate
+        self.dividend_rate = dividend_rate
+        
+    def generate_data_subset(self,S):
+        subset_spot = np.ones(1) * S
+        K = np.linspace(S * self.lower_moneyness, S * self.upper_moneyness, self.n_strikes)
+        def generate_features():
+            features = pd.DataFrame(
+                product(subset_spot, K, self.T),
+                columns=[
+                    "spot_price", 
+                    "strike_price", 
+                    "years_to_maturity"
+                         ])
+            return features
+        features = generate_features()
+        n_lists = self.n_maturities
+        n_elements = self.n_strikes
+        decay_rate = 1/(10*self.n_maturities*self.n_strikes)
+        row_decay = decay_rate/10
+        ivol_table = generate_ivol_table(n_lists, n_elements, self.tl_ivol, 
+                                   decay_rate, row_decay)
+        features['risk_free_rate'] = self.risk_free_rate
+        features['dividend_rate'] = self.dividend_rate
+        features['w'] = 1
+        option_data = features
+        option_data['calculation_date'] = ql.Date.todaysDate()
+        option_data['maturity_date'] = option_data.apply(
+            lambda row: row['calculation_date'] + ql.Period(
+                int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
+        return ivol_table, option_data
+        
     
-# =============================================================================
-tl_ivol = tl_ivol_q/100
-spots = np.linspace(spotmin,spotmax,nspots)
-T = np.arange(shortest_maturity, longest_maturity, maturity_step)
-n_maturities = len(T)
+    
+    
+    def calibrate_data_subset(self, ivol_table, option_data):
+        option_data,flat_ts,dividend_ts,spot,expiration_dates, \
+            black_var_surface,strikes,day_count,calculation_date, calendar, \
+                implied_vols_matrix = \
+                    heston_calibration.prepare_heston_calibration(
+                        ivol_table,
+                        option_data, 
+                        self.dividend_rate,
+                        self.risk_free_rate)
+        
+        heston_params = heston_calibration.calibrate_heston(option_data,
+            flat_ts,dividend_ts,spot,expiration_dates,black_var_surface,
+            strikes,day_count,calculation_date, calendar,self.dividend_rate, 
+            implied_vols_matrix)
+        
+        prices = heston_price_vanillas(heston_params)
+        
+        calibrated_subset = noisyfier(prices)
+        return calibrated_subset
+    
+    
+    
+    def generate_dataset(self,spots):
+        data_subsets = []
+        counter_spot = 0
+        for spot in spots:
+            counter_spot = counter_spot + 1
+            spot = spot
+            subset = data_generation.calibrate_data_subset(spot,self.option_data)
+            data_subsets.append(subset)
+        dataset = pd.concat(data_subsets, ignore_index=True)
+        return dataset
 
-def generate_data_subset(S,counter,of_total_spots):
-    spots = np.ones(1) * S
-    K = np.linspace(S*lower_moneyness, S*upper_moneyness, n_strikes)
-    def generate_features():
-        features = pd.DataFrame(
-            product(spots, K, T),
-            columns=[
-                "spot_price", 
-                "strike_price", 
-                "years_to_maturity"
-                     ])
-        return features
-    features = generate_features()
-    n_lists = n_maturities
-    n_elements = n_strikes
-    decay_rate = 1/(10*n_maturities*n_strikes)
-    row_decay = decay_rate/10
-    data = generate_ivol_table(n_lists, n_elements, tl_ivol, 
-                               decay_rate, row_decay)
-    features['risk_free_rate'] = r
-    features['dividend_rate'] = dividend_rate
-    features['w'] = 1
-    vanilla_params = features
-    vanilla_params['calculation_date'] = ql.Date.todaysDate()
-    vanilla_params['maturity_date'] = vanilla_params.apply(
-        lambda row: row['calculation_date'] + ql.Period(
-            int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
-    expiration_dates = vanilla_params['maturity_date'].unique()
-    strikes = vanilla_params['strike_price'].unique()
-    implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
-    calibrated_features = calibrate_heston_vanilla.calibrate_heston(
-        vanilla_params, dividend_rate, r, implied_vols, data, counter, 
-        of_total_spots, n_strikes, nspots, n_maturities)
-    prices = heston_price_vanillas(calibrated_features)
-    dataset = noisyfier(prices)
-    return dataset
 
-def generate_dataset():
-    data_subsets = []
-    counter_spot = 0
-    for spot in spots:
-        counter_spot = counter_spot + 1
-        of_total_spots = len(spots)
-        spot = spot
-        subset = generate_data_subset(spot, counter_spot, of_total_spots)
-        data_subsets.append(subset)
-    dataset = pd.concat(data_subsets, ignore_index=True)
-    return dataset
