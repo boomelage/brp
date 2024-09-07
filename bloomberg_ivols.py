@@ -13,13 +13,10 @@ import pandas as pd
 from itertools import product
 import QuantLib as ql
 import math
-from heston_calibration import calibrate_heston
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize']=(15,7)
-plt.style.use("dark_background")
-from matplotlib import cm
 
+from heston_calibration import calibrate_heston
+from pricing import heston_price_vanillas, noisyfier
+from data_generation import data_generation
 
 risk_free_rate = 0.00
 dividend_rate = 0.00
@@ -46,6 +43,16 @@ for i in range(n_maturities):
     for j in range(n_strikes):
         ivol_table[i].append((bbivs[j][2*i] + bbivs[j][2*i+1])/2)  
 
+ivol_table
+
+implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
+                
+for i in range(n_strikes):
+    for j in range(n_maturities):
+        implied_vols_matrix[i][j] = ivol_table[j][i]
+
+print(implied_vols_matrix)
+
 S = [np.median(strikes)]
 K = strikes
 T = maturities
@@ -69,12 +76,7 @@ option_data['maturity_date'] = option_data.apply(
     lambda row: row['calculation_date'] + ql.Period(
         int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
 
-
-
-
 spot = float(S[0])
-
-
 calculation_date = ql.Date.todaysDate()
 expiration_dates = []
 for maturity in maturities:
@@ -89,25 +91,30 @@ dividend_rate = dividend_yield
 flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, risk_free_rate, day_count))
 dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, dividend_rate, day_count))
 
-
-implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
-                
-for i in range(n_strikes):
-    for j in range(n_maturities):
-        implied_vols_matrix[i][j] = ivol_table[j][i]
-
-print(implied_vols_matrix)
+spot
 
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, K,
     implied_vols_matrix, day_count)
 
-heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot ,expiration_dates,
-    black_var_surface,strikes,day_count,calculation_date, calendar,
-        dividend_rate, implied_vols_matrix)
+heston_params = calibrate_heston(option_data,flat_ts,dividend_ts, spot, 
+                                 expiration_dates, black_var_surface,strikes,
+                                 day_count,calculation_date, calendar, 
+                                 dividend_rate, implied_vols_matrix)
 
 
+heston_vanillas = heston_price_vanillas(heston_params)
+
+dataset = noisyfier(heston_vanillas)
+
+dataset
+
+# from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt
+# plt.rcParams['figure.figsize']=(15,7)
+# plt.style.use("dark_background")
+# from matplotlib import cm
 # fig, ax = plt.subplots()
 # ax.plot(strikes, ivol_table, label="Black Surface")
 # ax.plot(strikes, ivol_table, "o", label="Actual")
@@ -116,15 +123,16 @@ heston_params = calibrate_heston(option_data,flat_ts,dividend_ts,spot ,expiratio
 # legend = ax.legend(loc="upper right")
 # plot_years = np.arange(0, 2, 0.1)
 # plot_strikes = np.arange(535.0, 750.0, 1.0)
-# fig = plt.figure()
 
+
+# fig = plt.figure()
 # ax = fig.add_subplot(projection='3d')
-# X, Y = np.meshgrid(plot_strikes, plot_years)
+# X, Y = np.meshgrid(strikes, maturities)
 
 # Z = np.array([black_var_surface.blackVol(y, x)
 #               for xr, yr in zip(X, Y)
 #                   for x, y in zip(xr,yr) ]
-#              ).reshape(len(X), len(X[0]))
+#               ).reshape(len(X), len(X[0]))
 
 # surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
 #                 linewidth=0.1)
