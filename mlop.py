@@ -85,8 +85,8 @@ class mlop:
             
     def preprocess(self):
         preprocessor = ColumnTransformer(transformers=self.transformers)
-        print(f"Data Processed with the {str(self.model_scaler1)[:-2]}"
-              f"and {str(self.model_scaler2)[:-2]}")
+        print(f"Data Processed with the {str(self.model_scaler1)}"
+              f"{str(self.model_scaler2)}")
         return preprocessor
 # =============================================================================
                                                              # Model Estimation

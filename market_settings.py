@@ -23,7 +23,7 @@ shortest_maturity = 1/12
 longest_maturity = 2.01
 maturity_step = 1/12
 spots_subdivision = 1
-strikes_subdivision = 7
+strikes_subdivision = 3
 
 spotmin = int(current_spot/(1+pricing_range))
 spotmax = int(current_spot*(1+pricing_range))

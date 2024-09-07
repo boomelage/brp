@@ -30,12 +30,13 @@ model_scaler = [
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
-                # Normalizer(),
+                Normalizer(),
                 # PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
                 # KernelCenterer(),
-                StandardScaler()
+                StandardScaler(),
+                ""
                 ]
 random_state = None
 test_size = 0.05
@@ -87,17 +88,18 @@ dataset = generate_dateset()
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
-                                                                 # Loading mlop
+# Loading mlop
 model_scaler1 = model_scaler[0]
-model_scaler2 = None #model_scaler[1]
+model_scaler2 = model_scaler[1]
+scaler1name = str(f"{str(model_scaler[0])[:-2]} ")
+scaler2name = str(f"{str(model_scaler[1])[:-2]}")
 transformers=[
     ("transformation_1",model_scaler1,feature_set),
-    # ("transformation_2", model_scaler2,feature_set)
+    ("transformation_2", model_scaler2,feature_set)
     ]                                                                 
 dataset = dataset.dropna()
 activation_function = activation_function[0]
 solver = solver[0]
-model_scaler_str = str(model_scaler)[1:-2]
 mlop = mlop(
     random_state = random_state,
     max_iter = max_iter,
@@ -139,10 +141,10 @@ preprocessor = mlop.preprocess()
 #                                           train_y, model_name)
 
 model_name = f"{hidden_layer_sizes} Deep Neural Network "\
-f"({activation_function}) ({model_scaler_str}) ({solver})"
+f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
 ml_settings = (
     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
-    f"\nScaler: {model_scaler_str}"
+    f"\nScaler: {scaler1name}{scaler2name}"
     f"\nActivation function: {activation_function}"
     f"\nMaximum iterations: {max_iter}"
     f"\nHidden Layer Sizes: {hidden_layer_sizes}"
