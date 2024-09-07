@@ -7,7 +7,6 @@ Created on Sat Sep  7 13:03:40 2024
 import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
-from data_generation import data_generation
 import numpy as np
 # =============================================================================
                                                                      # Settings
@@ -40,10 +39,6 @@ n_strikes = 8
 # upper_moneyness = current_spot/tl_strike
 # n_strikes = int((strikes_subdivision)*(current_spot*upper_moneyness-\
                                         # current_spot*lower_moneyness))
-
-ivol_table, option_data = generate_data_subset(100)
-calibrated_subset = calibrate_data_subset(ivol_table, option_data)
-
 tl_ivol = tl_ivol_q/100
 spots = np.linspace(spotmin,spotmax,nspots)
 T = np.arange(shortest_maturity, longest_maturity, maturity_step)
