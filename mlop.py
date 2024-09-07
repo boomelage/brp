@@ -45,7 +45,10 @@ class mlop:
                  target_name,
                  security_tag,
                  feature_set,
-                 user_dataset):
+                 user_dataset,
+                 transformers,
+                 model_scaler1,
+                 model_scaler2):
         self.random_state = random_state
         self.max_iter = max_iter
         self.hidden_layer_sizes = hidden_layer_sizes
@@ -59,14 +62,17 @@ class mlop:
         self.security_tag = security_tag
         self.feature_set = feature_set
         self.user_dataset = user_dataset
+        self.transformers = transformers
+        self.model_scaler1 = model_scaler1
+        self.model_scaler2 = model_scaler2
 # =============================================================================
                                                                 # Preprocessing
 
-    def split_user_data(self, test_size, random_state):
+    def split_user_data(self):
         train_data, test_data = train_test_split(
             self.user_dataset, 
-            test_size=test_size, 
-            random_state=random_state)
+            test_size=self.test_size, 
+            random_state=self.random_state)
          
         train_X = train_data[self.feature_set]
         test_X = test_data[self.feature_set]
@@ -77,10 +83,10 @@ class mlop:
         return train_data, train_X, train_y, \
             test_data, test_X, test_y
             
-    def preprocess(self, model_scaler1, model_scaler2,transformers):
-        preprocessor = ColumnTransformer(transformers=transformers)
-        print(f"Data Processed with the {str(model_scaler1)[:-2]}"
-              f"and {str(model_scaler2)[:-2]}")
+    def preprocess(self):
+        preprocessor = ColumnTransformer(transformers=self.transformers)
+        print(f"Data Processed with the {str(self.model_scaler1)[:-2]}"
+              f"and {str(self.model_scaler2)[:-2]}")
         return preprocessor
 # =============================================================================
                                                              # Model Estimation

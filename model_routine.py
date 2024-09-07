@@ -99,19 +99,22 @@ activation_function = activation_function[0]
 solver = solver[0]
 model_scaler_str = str(model_scaler)[1:-2]
 mlop = mlop(
-    random_state=random_state,
-    max_iter=max_iter,
-    test_size=test_size,
-    rf_n_estimators=rf_n_estimators,
-    rf_min_samples_leaf=rf_min_samples_leaf,
-    target_name=target_name,
-    security_tag=security_tag,
-    feature_set=feature_set,
-    user_dataset=dataset,
-    hidden_layer_sizes=hidden_layer_sizes,
-    solver=solver,
-    alpha=alpha,
-    learning_rate=learning_rate
+    random_state = random_state,
+    max_iter = max_iter,
+    test_size = test_size,
+    hidden_layer_sizes = hidden_layer_sizes,
+    solver = solver,
+    alpha = alpha,
+    learning_rate = learning_rate,
+    rf_n_estimators = rf_n_estimators,
+    rf_min_samples_leaf = rf_min_samples_leaf,
+    target_name = target_name,
+    security_tag = security_tag,
+    feature_set = feature_set,
+    user_dataset = dataset,
+    transformers = transformers,
+    model_scaler1 = model_scaler1,
+    model_scaler2 = model_scaler2
 )
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
@@ -123,8 +126,10 @@ print(model_settings)
 # =============================================================================
                                                            # Preprocessing Data                                                 
 train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data(test_size, random_state)
-preprocessor = mlop.preprocess(transformers,model_scaler1,model_scaler2)
+    test_data, test_X, test_y = mlop.split_user_data()
+    
+    
+preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
 # print(f'Activation function: {activation_function}')
