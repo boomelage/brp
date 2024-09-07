@@ -39,12 +39,6 @@ class data_generation():
                          ])
             return features
         features = generate_features()
-        n_lists = self.n_maturities
-        n_elements = self.n_strikes
-        decay_rate = 1/(10*self.n_maturities*self.n_strikes)
-        row_decay = decay_rate/10
-        ivol_table = generate_ivol_table(n_lists, n_elements, self.tl_ivol, 
-                                   decay_rate, row_decay)
         features['risk_free_rate'] = self.risk_free_rate
         features['dividend_rate'] = self.dividend_rate
         features['w'] = 1
@@ -53,7 +47,7 @@ class data_generation():
         option_data['maturity_date'] = option_data.apply(
             lambda row: row['calculation_date'] + ql.Period(
                 int(math.floor(row['years_to_maturity'] * 365)), ql.Days), axis=1)
-        return ivol_table, option_data
+        return option_data
         
     
     def prepare_calibration(self, ivol_table, option_data, dividend_rate, risk_free_rate):
