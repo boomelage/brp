@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from plotnine import ggplot, aes, geom_point, facet_wrap, labs, theme
 from time import time
+import matplotlib.pyplot as plt
 
 class mlop:
     
@@ -178,6 +179,8 @@ class mlop:
             theme(legend_position="")
             )
         print(predictive_performance_plot)
+        plt.cla()
+        plt.clf()
         return predictive_performance_plot    
     
     

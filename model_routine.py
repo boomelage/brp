@@ -99,8 +99,8 @@ print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
                                                                   # Data Source
                                                                   
 from bloomberg_ivols import generate_from_market_data
-dataset, ivol_table, implied_vols_matrix = generate_from_market_data(
-dividend_rate, risk_free_rate)
+dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
+    maturities = generate_from_market_data(dividend_rate, risk_free_rate)
 
 
 # from market_settings import generate_syntetic_subset
@@ -213,3 +213,7 @@ with open(txt_path, 'w') as file:
     file.write(wrapped_output)
     file.write(model_settings)
     file.write(ml_settings)
+
+from surface_plotting import plot_vol_surface
+plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
+                     black_var_surface, strikes, maturities)
