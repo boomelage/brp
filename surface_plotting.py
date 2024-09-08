@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
 """
 Created on Sun Sep  8 03:09:26 2024
-
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +9,7 @@ from matplotlib import cm
 
 def plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
                      black_var_surface, strikes, maturities):
-    plt.rcParams['figure.figsize']=(15,7)
+    plt.rcParams['figure.figsize']=(6,4)
     plt.style.use("dark_background")
     strikes_grid = strikes
     expiry = 0.3643 # years
@@ -28,8 +24,8 @@ def plot_vol_surface(dataset, ivol_table, implied_vols_matrix,
     # legend = ax.legend(loc="upper right")
     fig.show()
     
-    plottmin = (min(maturities)+1)/365
-    plottmax = (max(maturities)-1)/365
+    plottmin = (min(maturities)+0.05)/365
+    plottmax = (max(maturities)-0.05)/365
     plot_maturities = np.linspace(plottmin, plottmax, len(maturities))
     
     X, Y = np.meshgrid(strikes, plot_maturities)

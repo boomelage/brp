@@ -3,11 +3,6 @@
 Created on Sat Sep  7 15:38:52 2024
 
 """
-import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
-files = os.listdir(pwd)
-excel_files = [file for file in files if file.endswith('.xlsx')]
 import numpy as np
 import pandas as pd
 from itertools import product
@@ -17,8 +12,8 @@ from heston_calibration import calibrate_heston
 from pricing import heston_price_vanillas, noisyfier
 
 
-def generate_from_market_data(dividend_rate, risk_free_rate):
-    bbivols = pd.read_excel(str(excel_files[0]))
+def generate_from_market_data(file_path,dividend_rate, risk_free_rate):
+    bbivols = pd.read_excel(file_path)
     
     bbivols.columns = bbivols.iloc[1]
     bbivols = bbivols.drop([0,1])
@@ -77,7 +72,7 @@ def generate_from_market_data(dividend_rate, risk_free_rate):
     calculation_date = ql.Date.todaysDate()
     expiration_dates = []
     for maturity in maturities:
-        expiration_date = calculation_date + ql.Period(int(maturity), ql.Days)  # Adjust conversion as needed
+        expiration_date = calculation_date + ql.Period(int(maturity), ql.Days)
         expiration_dates.append(expiration_date)
     day_count = ql.Actual365Fixed()
     day_count = ql.Actual365Fixed()
@@ -85,24 +80,27 @@ def generate_from_market_data(dividend_rate, risk_free_rate):
     ql.Settings.instance().evaluationDate = calculation_date
     dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
     dividend_rate = dividend_yield
-    flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, risk_free_rate, day_count))
-    dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, dividend_rate, day_count))
+    flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+        calculation_date, risk_free_rate, day_count))
+    dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+        calculation_date, dividend_rate, day_count))
     
     black_var_surface = ql.BlackVarianceSurface(
         calculation_date, calendar,
         expiration_dates, K,
         implied_vols_matrix, day_count)
     
-    heston_params = calibrate_heston(option_data,flat_ts,dividend_ts, spot, 
-                                      expiration_dates, black_var_surface,strikes,
-                                      day_count,calculation_date, calendar, 
-                                      dividend_rate, implied_vols_matrix)
+    heston_params = calibrate_heston(
+        option_data,flat_ts,dividend_ts, spot, expiration_dates, 
+        black_var_surface,strikes, day_count,calculation_date, calendar, 
+        dividend_rate, implied_vols_matrix)
     
     heston_vanillas = heston_price_vanillas(heston_params)
     
     dataset = noisyfier(heston_vanillas)
 
-    return dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes, maturities
+    return dataset, ivol_table, implied_vols_matrix, \
+        black_var_surface, strikes, maturities
 
 
 

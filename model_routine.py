@@ -11,8 +11,17 @@ Bloomberg Bid/Ask IVOLs can be parsed and loaded via
 
 """
 import os
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+pwd = str(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(pwd)
+filenames = os.listdir(pwd)
+for i in range(len(filenames)):
+    if filenames[i].endswith('.xlsx'):
+        print(f"{i+1} {filenames[i]}")
+    else:
+        pass
+
+file_path =  r'22000 AAPL.xlsx'  
+
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
@@ -97,10 +106,10 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
                                                                   # Data Source
-                                                                  
+                            
 from bloomberg_ivols import generate_from_market_data
 dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-    maturities = generate_from_market_data(dividend_rate, risk_free_rate)
+    maturities = generate_from_market_data(file_path, dividend_rate, risk_free_rate)
 
 
 # from market_settings import generate_syntetic_subset
