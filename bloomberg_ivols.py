@@ -105,25 +105,12 @@ def generate_from_market_data(dividend_rate, risk_free_rate):
     return dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes, maturities
 
 
-# =============================================================================
-# dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-#     maturities = generate_from_market_data(0.00, 0.00) 
-# 
-# from mpl_toolkits.mplot3d import Axes3D
-# import matplotlib.pyplot as plt
-# plt.rcParams['figure.figsize']=(15,7)
-# plt.style.use("dark_background")
-# from matplotlib import cm
-# 
-# maxK = max(strikes)
-# minK = min(strikes)
-# theoretical_strikes = np.linspace(minK,maxK,int((maxK-minK)*3))
-# n_theostrikes = len(theoretical_strikes)
-# theoretical_maturities = np.arange(14/365, 2.01,7/365)
-# n_theomats = len(theoretical_maturities)
-# 
-# from generate_ivols import generate_ivol_table
-# theoretical_ivol_table = generate_ivol_table(n_theomats, n_theostrikes, max(max(ivol_table)))
-# theoretical_ivol_table
-# =============================================================================
+
+
+
+
+
+
+
+
 
