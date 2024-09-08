@@ -7,18 +7,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
-                     black_var_surface, strikes, maturities):
+def plot_vol_surface(dataset, target_maturity_ivols, implied_vols_matrix, 
+                     black_var_surface, strikes, maturities, target_maturity):
     plt.rcParams['figure.figsize']=(6,4)
     plt.style.use("dark_background")
     strikes_grid = strikes
-    expiry = 0.3643 # years
+    expiry = target_maturity/365
     implied_vols = [black_var_surface.blackVol(expiry, s)
-                    for s in strikes_grid] # can interpolate here
-    actual_data = ivol_table[4]
+                    for s in strikes_grid]
+    
     fig, ax = plt.subplots()
     ax.plot(strikes_grid, implied_vols, label="Black Surface")
-    ax.plot(strikes, actual_data, "o", label="Actual")
+    ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
     ax.set_xlabel("Strikes", size=9)
     ax.set_ylabel("Vols", size=9)
     legend = ax.legend(loc="upper right")
