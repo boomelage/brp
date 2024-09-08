@@ -13,32 +13,32 @@ from pricing import heston_price_vanillas, noisyfier
 
 
 def generate_from_market_data(file_path,dividend_rate, risk_free_rate):
-    bbivols = pd.read_excel(file_path)
+    # bbivols = pd.read_excel(file_path)
     
-    bbivols.columns = bbivols.iloc[1]
-    bbivols = bbivols.drop([0,1])
-    bbivols = bbivols.reset_index(drop=True)
-    bbivols = bbivols.sort_values(by = 'Strike')
-    bbivols = bbivols.dropna()
-    maturities = bbivols.filter(like='DyEx').iloc[0].unique()
-    strikes = bbivols.filter(like='Strike').to_numpy().astype(float).flatten()
+    # bbivols.columns = bbivols.iloc[1]
+    # bbivols = bbivols.drop([0,1])
+    # bbivols = bbivols.reset_index(drop=True)
+    # bbivols = bbivols.sort_values(by = 'Strike')
+    # bbivols = bbivols.dropna()
+    # maturities = bbivols.filter(like='DyEx').iloc[0].unique()
+    # strikes = bbivols.filter(like='Strike').to_numpy().astype(float).flatten()
     
-    bbiv_df = bbivols.filter(like='IVM')
-    bbivs = bbiv_df.to_numpy()/100
-    n_strikes = len(bbivs)
-    n_maturities = int(len(bbivs[0])/2)
-    S = [np.median(strikes)]
-    K = strikes
-    T = maturities
+    # bbiv_df = bbivols.filter(like='IVM')
+    # bbivs = bbiv_df.to_numpy()/100
+    # n_strikes = len(bbivs)
+    # n_maturities = int(len(bbivs[0])/2)
+    # S = [np.median(strikes)]
+    # K = strikes
+    # T = maturities
     
-    ivol_table = np.empty(n_maturities,dtype=object)
+    # ivol_table = np.empty(n_maturities,dtype=object)
     
-    for i in range(n_maturities):
-        ivol_table[i] = []
-        for j in range(n_strikes):
-            ivol_table[i].append((bbivs[j][2*i] + bbivs[j][2*i+1])/2)  
+    # for i in range(n_maturities):
+    #     ivol_table[i] = []
+    #     for j in range(n_strikes):
+    #         ivol_table[i].append((bbivs[j][2*i] + bbivs[j][2*i+1])/2)  
     
-    ivol_table
+    # ivol_table   WRONG!
     
     implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
                     

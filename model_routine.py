@@ -7,8 +7,6 @@ This is the principal file with which the model is estimated
 
 Market parameter settings are to be adjusted in market_settings.py
 
-Bloomberg Bid/Ask IVOLs can be parsed and loaded via bloomberg_ivols.py
-
 """
 
 file_path_name =  "\

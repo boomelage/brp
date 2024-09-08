@@ -5,8 +5,7 @@ Created on Sun Sep  8 12:00:05 2024
 """
 
 import os
-
-def pwd():
+def dirdata():
     pwd = str(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(pwd)
     filenames = os.listdir(pwd)
