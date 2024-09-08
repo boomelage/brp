@@ -10,7 +10,7 @@ os.chdir(script_dir)
 import numpy as np
 from data_generation import data_generation
 from generate_ivols import generate_ivol_table
-from generation_routine import generate_dateset
+
 # =============================================================================
                                                                      # Settings
 risk_free_rate = 0.00
@@ -57,31 +57,57 @@ n_maturities = len(T)
 decay_rate = 1/(10*n_strikes*n_maturities)
 row_decay = decay_rate/10
 
+ivol_table = generate_ivol_table(n_maturities, n_strikes, tl_ivol, 
+                                  decay_rate, row_decay)
+
+multiple_S = np.linspace(90,110,5)
+
+
+dg = data_generation(lower_moneyness=lower_moneyness, upper_moneyness=upper_moneyness,
+                     T=T, n_maturities=n_maturities, n_strikes=n_strikes, tl_ivol=tl_ivol,
+                     risk_free_rate=risk_free_rate, dividend_rate=dividend_rate)
+
+
 def generate_syntetic_data():
-    dg = data_generation(lower_moneyness=lower_moneyness, 
-                         upper_moneyness=upper_moneyness,
-                         T = T,
-                         n_maturities=n_maturities,
-                         n_strikes=n_strikes,
-                         tl_ivol=tl_ivol,
-                         risk_free_rate=risk_free_rate,
-                         dividend_rate=dividend_rate
-                         )
-    
     option_data = dg.generate_data_subset(current_spot)
-    
-    option_data
-    
-    ivol_table = generate_ivol_table(n_maturities, n_strikes, tl_ivol, 
-                                      decay_rate, row_decay)
     
     option_data,flat_ts,dividend_ts,spot,expiration_dates, \
         black_var_surface,strikes,day_count,calculation_date, calendar, \
-            implied_vols_matrix = dg.prepare_calibration(ivol_table, option_data, 
-                                                          dividend_rate, 
-                                                          risk_free_rate)
+            implied_vols_matrix = dg.prepare_calibration(
+                ivol_table, option_data, dividend_rate, risk_free_rate)
     
-    dataset = generate_dateset(ivol_table,lower_moneyness, upper_moneyness,
-        n_strikes, n_maturities, T, tl_ivol, risk_free_rate, dividend_rate,
-            current_spot)
-    return dataset
+    option_prices = dg.generate_dataset(ivol_table, lower_moneyness, 
+                                        upper_moneyness, n_strikes, 
+                                        n_maturities, T, tl_ivol, 
+                                        risk_free_rate, dividend_rate, 
+                                        current_spot)       
+            
+    return option_prices
+
+option_prices = generate_syntetic_data()
+
+
+
+
+
+# def multiple_spot_synthetic_dataset():
+#     multiple_spots = []
+#     for i in range(0, len(multiple_S)):
+#         # spot_counter = i + 1
+#         # of_total = len(multiple_S)
+#         current_spot = multiple_S[i]
+#         option_data = dg.generate_data_subset(current_spot)
+        
+#         option_data, flat_ts, dividend_ts, spot, expiration_dates, \
+#             black_var_surface, strikes, day_count, calculation_date, calendar, \
+#             implied_vols_matrix = dg.prepare_calibration(
+#                 ivol_table, option_data, dividend_rate, risk_free_rate)
+        
+#         prices_parameters = dg.generate_dataset(
+#             ivol_table, lower_moneyness, upper_moneyness, n_strikes, 
+#             n_maturities, T, tl_ivol, risk_free_rate, dividend_rate, 
+#             current_spot)
+        
+#         multiple_spots.append(prices_parameters)
+        
+#     return multiple_spots

@@ -9,6 +9,8 @@ import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
+from calibrate_heston import calibrate_heston
+from pricing import heston_price_vanillas, noisyfier
 
 
 class data_generation():
@@ -87,7 +89,28 @@ class data_generation():
             black_var_surface,strikes,day_count,calculation_date, calendar, \
                 implied_vols_matrix
 
+    def generate_dataset(self, ivol_table, lower_moneyness, upper_moneyness,
+                         n_strikes, n_maturities, T, tl_ivol, risk_free_rate, 
+                         dividend_rate, current_spot):
+        # Create an instance of the data_generation class
+        option_data = self.generate_data_subset(current_spot)
     
-
+        # Perform calibration
+        option_data, flat_ts, dividend_ts, spot, expiration_dates,\
+            black_var_surface, strikes, day_count, calculation_date, calendar,\
+            implied_vols_matrix = self.prepare_calibration(
+                ivol_table, option_data, dividend_rate, risk_free_rate)
+        
+        # Calibrate Heston model
+        heston_params = calibrate_heston(
+            option_data, flat_ts, dividend_ts, spot, expiration_dates, 
+            black_var_surface, strikes, day_count, calculation_date, calendar, 
+            dividend_rate, implied_vols_matrix)
+    
+        # Generate vanilla options and noisy dataset
+        heston_vanillas = heston_price_vanillas(heston_params)
+        dataset = noisyfier(heston_vanillas)
+        
+        return dataset
 
 

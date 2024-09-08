@@ -51,12 +51,7 @@ def generate_from_market_data(dividend_rate, risk_free_rate):
         for j in range(n_maturities):
             implied_vols_matrix[i][j] = ivol_table[j][i]
     
-    print(implied_vols_matrix)
-    
-    
-    
-    
-    
+    print(implied_vols_matrix)    
     
     def generate_features():
         features = pd.DataFrame(
