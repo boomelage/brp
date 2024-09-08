@@ -9,7 +9,7 @@ from matplotlib import cm
 
 def plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
                      black_var_surface, strikes, maturities):
-    plt.rcParams['figure.figsize']=(6,4)
+    plt.rcParams['figure.figsize']=(15,7)
     plt.style.use("dark_background")
     strikes_grid = strikes
     expiry = 0.3643 # years

@@ -20,7 +20,7 @@ for i in range(len(filenames)):
     else:
         pass
 
-file_path =  r'22000 AAPL.xlsx'  
+file_path =  r'17250 AMZN.xlsx'  
 
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
@@ -109,7 +109,8 @@ print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
                             
 from bloomberg_ivols import generate_from_market_data
 dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-    maturities = generate_from_market_data(file_path, dividend_rate, risk_free_rate)
+    maturities = generate_from_market_data(
+        file_path, dividend_rate, risk_free_rate)
 
 
 # from market_settings import generate_syntetic_subset
@@ -156,11 +157,11 @@ print(model_settings)
 
 # =============================================================================
                                                            # Preprocessing Data                                                 
-train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data()
+# train_data, train_X, train_y, \
+#     test_data, test_X, test_y = mlop.split_user_data()
     
     
-preprocessor = mlop.preprocess()
+# preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
 # print(f'Activation function: {activation_function}')
@@ -169,59 +170,63 @@ preprocessor = mlop.preprocess()
 # model_fit, model_runtime = mlop.run_nnet(preprocessor, train_X, 
 #                                           train_y, model_name)
 
-model_name = f"{hidden_layer_sizes} Deep Neural Network "\
-f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
-ml_settings = (
-    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
-    f"\nScaler: {scaler1name}{scaler2name}"
-    f"\nActivation function: {activation_function}"
-    f"\nMaximum iterations: {max_iter}"
-    f"\nHidden Layer Sizes: {hidden_layer_sizes}"
-    f"\nSolver: {solver}"
-    f"\nLearning Rate: {learning_rate}"
-    f"\nAlpha: {alpha}\n")
-print(ml_settings)
-model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
-                                        hidden_layer_sizes, solver, alpha, 
-                                        learning_rate, model_name,
-                                        activation_function,max_iter)
+# model_name = f"{hidden_layer_sizes} Deep Neural Network "\
+# f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
+# ml_settings = (
+#     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
+#     f"\nScaler: {scaler1name}{scaler2name}"
+#     f"\nActivation function: {activation_function}"
+#     f"\nMaximum iterations: {max_iter}"
+#     f"\nHidden Layer Sizes: {hidden_layer_sizes}"
+#     f"\nSolver: {solver}"
+#     f"\nLearning Rate: {learning_rate}"
+#     f"\nAlpha: {alpha}\n")
+# print(ml_settings)
+# model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
+#                                         hidden_layer_sizes, solver, alpha, 
+#                                         learning_rate, model_name,
+#                                         activation_function,max_iter)
 
 # =============================================================================
                                                                 # Model Testing
                                                                 
-model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
-                                                  model_name)
-model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
-                                          security_tag)
-end_time = time.time()
-end_tag = datetime.fromtimestamp(end_time)
-end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
-outputs_path = os.path.join('outputs',end_tag)
-os.makedirs(outputs_path, exist_ok=True)
-total_runtime = int(end_time - start_time)
-model_plot.save(filename = f'{end_tag}.png',
-                path = outputs_path,
-                dpi = 600)
-csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
-dataset.to_csv(csv_path)
-print(f"\n{datetime.fromtimestamp(end_time)}")
-total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
-print(f"{total_model_runtime}\n")
-output = f"""Model estimated using {len(dataset)} options 
-with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
-{n_strikes} strike(s) between {int(lower_moneyness*100)}% and
-{int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
-between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
-(act/365)"""
-wrapped_output = textwrap.fill(output, width=60)
-print(wrapped_output)
-txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
-with open(txt_path, 'w') as file:
-    file.write(total_model_runtime)
-    file.write(" \n")
-    file.write(wrapped_output)
-    file.write(model_settings)
-    file.write(ml_settings)
+# model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
+#                                                   model_name)
+# model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
+#                                           security_tag)
+
+
+
+# end_time = time.time()
+# end_tag = datetime.fromtimestamp(end_time)
+# end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
+# outputs_path = os.path.join('outputs',end_tag)
+# os.makedirs(outputs_path, exist_ok=True)
+# total_runtime = int(end_time - start_time)
+# model_plot.save(filename = f'{end_tag}.png',
+#                 path = outputs_path,
+#                 dpi = 600)
+# csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
+# dataset.to_csv(csv_path)
+# print(f"\n{datetime.fromtimestamp(end_time)}")
+# total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
+# print(f"{total_model_runtime}\n")
+# output = f"""Model estimated using {len(dataset)} options 
+# with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
+# {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
+# {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
+# between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
+# (act/365)"""
+# wrapped_output = textwrap.fill(output, width=60)
+# print(wrapped_output)
+# txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
+# with open(txt_path, 'w') as file:
+#     file.write(total_model_runtime)
+#     file.write(" \n")
+#     file.write(wrapped_output)
+#     file.write(model_settings)
+#     file.write(ml_settings)
+
 
 from surface_plotting import plot_vol_surface
 plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 

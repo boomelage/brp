@@ -7,12 +7,6 @@ Created on Sat Sep  7 13:03:40 2024
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
-filenames = os.listdir(pwd)
-for i in range(len(filenames)):
-    if filenames[i].endswith('.xlsx'):
-        print(f"{i+1} {filenames[i]}")
-    else:
-        pass
 import numpy as np
 from data_generation import data_generation
 from generate_ivols import generate_ivol_table
