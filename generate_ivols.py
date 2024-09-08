@@ -7,7 +7,7 @@ AN APPROXIMATION
 
 """
 
-def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay):
+def generate_ivol_table(n_lists, n_elements, start_value):
     """
     AN APPROXIMATION OF IVOL TABLE
     
@@ -21,6 +21,8 @@ def generate_ivol_table(n_lists, n_elements, start_value, decay_rate, row_decay)
     :param row_decay: Rate at which the starting value decays for each new list
     :return: List of lists of floating point values
     """
+    decay_rate = 1/(10*n_lists*n_elements)
+    row_decay = decay_rate/10
     data = []
     for i in range(n_lists):
         current_list = []

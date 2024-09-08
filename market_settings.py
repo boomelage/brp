@@ -10,6 +10,8 @@ os.chdir(script_dir)
 import numpy as np
 from data_generation import data_generation
 from generate_ivols import generate_ivol_table
+from heston_calibration import calibrate_heston
+from pricing import heston_price_vanillas, noisyfier
 
 # =============================================================================
                                                                      # Settings
@@ -24,9 +26,9 @@ current_spot = 220.00
 tl_strike = 195.00 
 tl_ivol_q = 41.2680358886719
 
-shortest_maturity = 14/365.25
-longest_maturity = 2*52*7/365.25
-maturity_step = 7.52
+shortest_maturity = 14/365
+longest_maturity = 2*52*7/365
+maturity_step = 7/365
 
 # shortest_maturity = 1/12
 # longest_maturity =2.01
@@ -54,42 +56,42 @@ spots = np.linspace(spotmin,spotmax,nspots)
 T = np.arange(shortest_maturity, longest_maturity, maturity_step)
 n_maturities = len(T)
 
-decay_rate = 1/(10*n_strikes*n_maturities)
-row_decay = decay_rate/10
-
-ivol_table = generate_ivol_table(n_maturities, n_strikes, tl_ivol, 
-                                  decay_rate, row_decay)
-
-multiple_S = np.linspace(90,110,5)
-
+ivol_table = generate_ivol_table(n_maturities, n_strikes, tl_ivol)
 
 dg = data_generation(lower_moneyness=lower_moneyness, upper_moneyness=upper_moneyness,
                      T=T, n_maturities=n_maturities, n_strikes=n_strikes, tl_ivol=tl_ivol,
                      risk_free_rate=risk_free_rate, dividend_rate=dividend_rate)
 
-
-def generate_syntetic_data():
+def generate_syntetic_subset():
     option_data = dg.generate_data_subset(current_spot)
     
     option_data,flat_ts,dividend_ts,spot,expiration_dates, \
         black_var_surface,strikes,day_count,calculation_date, calendar, \
             implied_vols_matrix = dg.prepare_calibration(
-                ivol_table, option_data, dividend_rate, risk_free_rate)
-    
-    option_prices = dg.generate_dataset(ivol_table, lower_moneyness, 
-                                        upper_moneyness, n_strikes, 
-                                        n_maturities, T, tl_ivol, 
-                                        risk_free_rate, dividend_rate, 
-                                        current_spot)       
+                ivol_table, option_data, dividend_rate, risk_free_rate)   
             
-    return option_prices
+    heston_params = calibrate_heston(
+        option_data, flat_ts, dividend_ts, spot, expiration_dates, 
+        black_var_surface, strikes, day_count, calculation_date, calendar, 
+        dividend_rate, implied_vols_matrix)
+    
+    heston_params = calibrate_heston(
+        option_data, flat_ts, dividend_ts, spot, expiration_dates, 
+        black_var_surface, strikes, day_count, calculation_date, calendar, 
+        dividend_rate, implied_vols_matrix)
 
-option_prices = generate_syntetic_data()
+    # Generate vanilla options and noisy dataset
+    heston_vanillas = heston_price_vanillas(heston_params)
+    dataset = noisyfier(heston_vanillas)
+
+    return dataset
 
 
 
 
 
+
+# multiple_S = np.linspace(90,110,5)
 # def multiple_spot_synthetic_dataset():
 #     multiple_spots = []
 #     for i in range(0, len(multiple_S)):

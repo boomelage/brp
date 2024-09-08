@@ -26,6 +26,25 @@ from datetime import datetime
 from mlop import mlop
 # =============================================================================
                                                              # General Settings
+                                                             
+target_name = 'observed_price'
+security_tag = 'vanilla options'
+feature_set = [
+    'spot_price',
+    'strike_price',
+    'years_to_maturity',
+    # 'volatility',
+    # 'risk_free_rate',
+    # 'dividend_rate',
+    # 'kappa',
+    # 'theta',
+    # 'sigma',
+    # 'rho',
+    # 'v0'
+    ]
+
+risk_free_rate = 0.00
+dividend_rate = 0.00
 model_scaler = [
                 # RobustScaler(),
                 # QuantileTransformer(),
@@ -39,6 +58,12 @@ model_scaler = [
                 StandardScaler(),
                 ""
                 ]
+
+transformers=[
+    ("transformation_1",model_scaler[0],feature_set),
+    # ("transformation_2", model_scaler[1],feature_set)
+    ]     
+
 random_state = None
 test_size = 0.05
 
@@ -62,25 +87,7 @@ learning_rate = 'adaptive'
                                                        # Random Forest Settings
 rf_n_estimators = 50
 rf_min_samples_leaf = 2000
-                                                               # Model Settings
-target_name = 'observed_price'
-security_tag = 'vanilla options'
-feature_set = [
-    'spot_price',
-    'strike_price',
-    'years_to_maturity',
-    # 'volatility',
-    # 'risk_free_rate',
-    # 'dividend_rate',
-    # 'kappa',
-    # 'theta',
-    # 'sigma',
-    # 'rho',
-    # 'v0'
-    ]
 
-risk_free_rate = 0.00
-dividend_rate = 0.00
 
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
@@ -89,27 +96,26 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 # =============================================================================
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
-
+                                                                  # Data Source
+                                                                  
 from bloomberg_ivols import generate_from_market_data
-dataset = generate_from_market_data(dividend_rate, risk_free_rate)
+dataset, ivol_table, implied_vols_matrix = generate_from_market_data(
+dividend_rate, risk_free_rate)
 
 
-# from market_settings import generate_syntetic_data
-# dataset = generate_syntetic_data()
+# from market_settings import generate_syntetic_subset
+# dataset = generate_syntetic_subset()
 
 
 # =============================================================================
 print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
-# Loading mlop
+
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
+# Loading mlop
 scaler1name = str(f"{str(model_scaler[0])[:-2]} ")
-scaler2name = str(f"{str(model_scaler[1])[:-2]}")
-transformers=[
-    ("transformation_1",model_scaler1,feature_set),
-    # ("transformation_2", model_scaler2,feature_set)
-    ]                                                                 
+scaler2name = str(f"{str(model_scaler[1])[:-2]}")                                                            
 dataset = dataset.dropna()
 activation_function = activation_function[0]
 solver = solver[0]
@@ -138,6 +144,7 @@ model_settings = (
     f"{security_tag}\n"
     )
 print(model_settings)
+
 # =============================================================================
                                                            # Preprocessing Data                                                 
 train_data, train_X, train_y, \
@@ -169,8 +176,10 @@ model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y,
                                         hidden_layer_sizes, solver, alpha, 
                                         learning_rate, model_name,
                                         activation_function,max_iter)
+
 # =============================================================================
                                                                 # Model Testing
+                                                                
 model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
                                                   model_name)
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 

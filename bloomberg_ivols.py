@@ -102,33 +102,28 @@ def generate_from_market_data(dividend_rate, risk_free_rate):
     
     dataset = noisyfier(heston_vanillas)
 
-    return dataset
+    return dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes, maturities
 
+
+# =============================================================================
+# dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
+#     maturities = generate_from_market_data(0.00, 0.00) 
+# 
 # from mpl_toolkits.mplot3d import Axes3D
 # import matplotlib.pyplot as plt
 # plt.rcParams['figure.figsize']=(15,7)
 # plt.style.use("dark_background")
 # from matplotlib import cm
-# fig, ax = plt.subplots()
-# ax.plot(strikes, ivol_table, label="Black Surface")
-# ax.plot(strikes, ivol_table, "o", label="Actual")
-# ax.set_xlabel("Strikes", size=12)
-# ax.set_ylabel("Vols", size=12)
-# legend = ax.legend(loc="upper right")
-# plot_years = np.arange(0, 2, 0.1)
-# plot_strikes = np.arange(535.0, 750.0, 1.0)
+# 
+# maxK = max(strikes)
+# minK = min(strikes)
+# theoretical_strikes = np.linspace(minK,maxK,int((maxK-minK)*3))
+# n_theostrikes = len(theoretical_strikes)
+# theoretical_maturities = np.arange(14/365, 2.01,7/365)
+# n_theomats = len(theoretical_maturities)
+# 
+# from generate_ivols import generate_ivol_table
+# theoretical_ivol_table = generate_ivol_table(n_theomats, n_theostrikes, max(max(ivol_table)))
+# theoretical_ivol_table
+# =============================================================================
 
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# X, Y = np.meshgrid(strikes, maturities)
-
-# Z = np.array([black_var_surface.blackVol(y, x)
-#               for xr, yr in zip(X, Y)
-#                   for x, y in zip(xr,yr) ]
-#               ).reshape(len(X), len(X[0]))
-
-# surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-#                 linewidth=0.1)
-# fig.colorbar(surf, shrink=0.5, aspect=5)
-
-# plt.show()

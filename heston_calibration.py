@@ -68,10 +68,10 @@ def calibrate_heston(option_data, flat_ts,dividend_ts, spot, expiration_dates,
             avg += abs(err)  # accumulate the absolute error
         avg = avg*100.0/len(heston_helpers)
     
-        print(
-            f"{len(strikes)*current_index}/"
-            f"{len(strikes)*len(expiration_dates)} prices computed "
-              )
+        # print(
+        #     f"{len(strikes)*(current_index+1)}/"
+        #     f"{len(strikes)*len(expiration_dates)} prices computed "
+        #       )
         print("-"*70)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
         
