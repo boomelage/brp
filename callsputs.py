@@ -18,6 +18,8 @@ warnings.simplefilter(action='ignore')
 import numpy as np
 from heston_calibration import calibrate_heston
 from surface_plotting import plot_vol_surface
+from itertools import product
+import math
 
 # pd.set_option('display.max_rows', None)  # Display all rows
 # pd.set_option('display.max_columns', None)  # Display all columns
@@ -28,7 +30,19 @@ pd.reset_option('display.max_columns')
 dividend_rate = 0.005
 risk_free_rate = 0.05
 
+# Pricing Settings
 calculation_date = ql.Date.todaysDate()
+day_count = ql.Actual365Fixed()
+day_count = ql.Actual365Fixed()
+calendar = ql.UnitedStates(m=1)
+ql.Settings.instance().evaluationDate = calculation_date
+dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
+dividend_rate = dividend_yield
+flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+    calculation_date, risk_free_rate, day_count))
+dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+    calculation_date, dividend_rate, day_count))
+
 # =============================================================================
                                                                 # fetching data
 data_files = dirdata()                                                            
@@ -63,6 +77,8 @@ expiration_dates = np.empty(len(maturities_days),dtype=object)
 for i in range(len(expiration_dates)):
     expiration_dates[i] = calculation_date + \
         ql.Period(int(maturities_days[i]), ql.Days)
+
+
 ivols = calls.copy().reset_index().drop(columns = ['index','w'])
 ivols
 def group_by_maturity(ivols):
@@ -84,63 +100,70 @@ for i in range(n_maturities):
         implied_vols_matrix[j][i] = ivol_table[i][j][1]
 maxK = int(max(calls['Strike']))
 minK = int(min(calls['Strike']))
-nKs = 7
-S_pos = 3
-K = np.linspace(minK,maxK,nKs)
-T = expiration_dates
-strikes = K
-S = strikes[S_pos]
-spot = S
-maturities = expiration_dates
 
+matrix = ivols[['DyEx','Strike','IVM']]
+matrix['DyEx'] = matrix['DyEx'].astype(int)
+matrix['Strike'] = matrix['Strike'].astype(int)
+ivol_multiindex = matrix.set_index(['DyEx', 'Strike'])
+ivol_multiindex = ivol_multiindex.sort_index()
+
+T = expiration_dates
+S = np.median(matrix['Strike'])
+S = ql.SimpleQuote(S)
+maturities = expiration_dates
+K = np.arange(minK,m)
 # =============================================================================
                                                      # calibrating Heston model
-                                                     
-day_count = ql.Actual365Fixed()
-day_count = ql.Actual365Fixed()
-calendar = ql.UnitedStates(m=1)
-ql.Settings.instance().evaluationDate = calculation_date
-dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
-dividend_rate = dividend_yield
-flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-    calculation_date, risk_free_rate, day_count))
-dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-    calculation_date, dividend_rate, day_count))
 
-features = og_calls.copy()
-features['years_to_maturity'] = features['DyEx']/365
-features['risk_free_rate'] = features['Rate']
-features['volatility'] = features['IVM']
-features['strike_price'] = features['Strike']
+
+og_calls
+
+T_days = calls['DyEx']
+
+
+def generate_features():
+    features = pd.DataFrame(
+        product([S.value()], matrix['Strike'], T_days),
+        columns=[
+            "spot_price", 
+            "strike_price", 
+            "days_to_maturity"
+                  ])
+    return features
+
+features = generate_features()
+features['risk_free_rate'] = risk_free_rate
 features['dividend_rate'] = dividend_rate
-features = features.drop(columns = ['Rate','IVM','DyEx','Strike'])
-option_data = features.copy()
-option_data['spot_price'] = S
+features['w'] = 1
+option_data = features
+
+
+option_data['volatility'] = ivol_multiindex.loc[
+    (option_data['days_to_maturity'],option_data['strike_price']),
+    'IVM'].iloc[0]
 option_data['calculation_date'] = ql.Date.todaysDate()
 option_data['maturity_date'] = option_data.apply(
     lambda row: row['calculation_date'] + ql.Period(
-        int(row['years_to_maturity'] * 365), ql.Days), axis=1)
+        int(row['days_to_maturity']), ql.Days), axis=1)
 
-
-print(option_data.columns)
-print(features.columns)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
-    expiration_dates, K,
+    expiration_dates, ,
     implied_vols_matrix, day_count)
 
-heston_params = calibrate_heston(
-    option_data,flat_ts,dividend_ts, spot, expiration_dates, 
-    black_var_surface,strikes, day_count,calculation_date, calendar, 
-    dividend_rate, implied_vols_matrix)
+
+# heston_params = calibrate_heston(
+#     option_data,flat_ts,dividend_ts, S, expiration_dates, 
+#     black_var_surface,strikes, day_count,calculation_date, calendar, 
+#     dividend_rate, implied_vols_matrix)
 
 
-from pricing import heston_price_vanillas, noisyfier
-heston_vanillas = heston_price_vanillas(heston_params)
-dataset = noisyfier(heston_vanillas)
-dataset
-# =============================================================================
-                                                 # plotting volatility surfance
+# from pricing import heston_price_vanillas, noisyfier
+# heston_vanillas = heston_price_vanillas(heston_params)
+# dataset = noisyfier(heston_vanillas)
+
+# # # =============================================================================
+# #                                                  # plotting volatility surfance
 
 target_maturity = 1
 target_mat_ivols = ivols[ivols['DyEx']==target_maturity]['IVM']

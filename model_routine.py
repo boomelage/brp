@@ -5,8 +5,6 @@ Created on Mon Sep  2 16:39:41 2024
 
 This is the principal file with which the model is estimated
 
-Market parameter settings are to be adjusted in market_settings.py
-
 """
 
 import os
@@ -17,9 +15,6 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-from market_settings import spotmin, spotmax, nspots, \
-    n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-        shortest_maturity, longest_maturity
 import time
 import textwrap
 import os
@@ -44,7 +39,7 @@ feature_set = [
     # 'v0'
     ]
 
-risk_free_rate = 0.00
+risk_free_rate = 0.02
 dividend_rate = 0.00
 model_scaler = [
                 # RobustScaler(),
@@ -95,26 +90,21 @@ start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 
 # =============================================================================
-print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
+# print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
                                                                   # Data Source
-# file_path_name =  "\
-# AMZN          \
-# " 
-# file_path = str(f"{file_path_name[:-10]}.xlsx")
-# from bloomberg_ivols import generate_from_market_data
-# dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-#     maturities = generate_from_market_data(
-#         file_path, dividend_rate, risk_free_rate)
 
 from callsputs import dataset
 
+# from market_settings import spotmin, spotmax, nspots, \
+#     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
+#         shortest_maturity, longest_maturity
 # from market_settings import generate_syntetic_subset
 # dataset = generate_syntetic_subset()
 
 
 # =============================================================================
-print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
+# print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
 
 model_scaler1 = model_scaler[0]

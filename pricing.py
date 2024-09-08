@@ -14,14 +14,14 @@ def black_scholes_price(row):
     S =  row['spot_price']
     K =  row['strike_price']
     r =  row['risk_free_rate']
-    T =  row['years_to_maturity'] 
+    T =  row['days_to_maturity'] 
     sigma =  row['volatility'] 
     w =  row['w']
 
 
-    d1 = (np.log(S/K)+(r+sigma**2/2)*T)/(sigma*np.sqrt(T))
-    d2 = d1-sigma*np.sqrt(T)
-    price = w*(S*norm.cdf(w*d1)-K*np.exp(-r*T)*norm.cdf(w*d2))
+    d1 = (np.log(S/K)+(r+sigma**2/2)*T/365)/(sigma*np.sqrt(T/365))
+    d2 = d1-sigma*np.sqrt(T/365)
+    price = w*(S*norm.cdf(w*d1)-K*np.exp(-r*T/365)*norm.cdf(w*d2))
     return price
 
 def heston_price_vanilla_row(row):

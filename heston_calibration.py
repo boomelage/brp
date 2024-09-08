@@ -11,16 +11,15 @@ os.chdir(script_dir)
 import QuantLib as ql
 import time
 
-def calibrate_heston(option_data, flat_ts,dividend_ts, spot, expiration_dates,
+def calibrate_heston(option_data, flat_ts,dividend_ts, S, expiration_dates,
     black_var_surface, strikes, day_count, calculation_date, calendar,
         dividend_rate, implied_vols_matrix):
     heston_params = option_data.copy()
     # initial guesses
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
     
-    process = ql.HestonProcess(flat_ts, dividend_ts,
-                               ql.QuoteHandle(ql.SimpleQuote(spot)),
-                               v0, kappa, theta, sigma, rho)
+    process = ql.HestonProcess(
+        flat_ts, dividend_ts, ql.QuoteHandle(S), v0, kappa, theta, sigma, rho)
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []
@@ -35,10 +34,11 @@ def calibrate_heston(option_data, flat_ts,dividend_ts, spot, expiration_dates,
            
            helper = ql.HestonModelHelper(
                ql.Period(int(t * 365), ql.Days),
-               calendar, spot, s,
+               calendar, S.value(), s,
                ql.QuoteHandle(ql.SimpleQuote(sigma)),
                flat_ts, dividend_ts
-           )
+               )
+
            helper.setPricingEngine(engine)
            heston_helpers.append(helper)
             
