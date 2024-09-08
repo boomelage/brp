@@ -7,12 +7,14 @@ This is the principal file with which the model is estimated
 
 Market parameter settings are to be adjusted in market_settings.py
 
-Bloomberg Bid/Ask IVOLs can be parsed and loaded via
+Bloomberg Bid/Ask IVOLs can be parsed and loaded via bloomberg_ivols.py
 
 """
 
-file_path =  r'13100 NVO.xlsx'  
-
+file_path_name =  "\
+AMZN          \
+" 
+file_path = str(f"{file_path_name[:-10]}.xlsx")
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
@@ -81,7 +83,7 @@ solver= [
             "sgd",
             # "adam"
         ]
-alpha = 0.0001 #can't be none
+alpha = 0.0001
 learning_rate = 'adaptive'
 
                                                        # Random Forest Settings
