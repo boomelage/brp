@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def plot_vol_surface(dataset, target_maturity_ivols, implied_vols_matrix, 
+def plot_vol_surface(target_maturity_ivols, implied_vols_matrix, 
                      black_var_surface, strikes, maturities, target_maturity):
     plt.rcParams['figure.figsize']=(6,4)
     plt.style.use("dark_background")

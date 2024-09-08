@@ -9,10 +9,10 @@ Market parameter settings are to be adjusted in market_settings.py
 
 """
 
-file_path_name =  "\
-AMZN          \
-" 
-file_path = str(f"{file_path_name[:-10]}.xlsx")
+import os
+pwd = str(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(pwd)
+
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
@@ -22,6 +22,7 @@ from market_settings import spotmin, spotmax, nspots, \
         shortest_maturity, longest_maturity
 import time
 import textwrap
+import os
 from datetime import datetime
 from mlop import mlop
 # =============================================================================
@@ -97,12 +98,16 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
                                                                   # Data Source
-                            
-from bloomberg_ivols import generate_from_market_data
-dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-    maturities = generate_from_market_data(
-        file_path, dividend_rate, risk_free_rate)
+# file_path_name =  "\
+# AMZN          \
+# " 
+# file_path = str(f"{file_path_name[:-10]}.xlsx")
+# from bloomberg_ivols import generate_from_market_data
+# dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
+#     maturities = generate_from_market_data(
+#         file_path, dividend_rate, risk_free_rate)
 
+from callsputs import dataset
 
 # from market_settings import generate_syntetic_subset
 # dataset = generate_syntetic_subset()
@@ -148,11 +153,11 @@ print(model_settings)
 
 # =============================================================================
                                                            # Preprocessing Data                                                 
-# train_data, train_X, train_y, \
-#     test_data, test_X, test_y = mlop.split_user_data()
+train_data, train_X, train_y, \
+    test_data, test_X, test_y = mlop.split_user_data()
     
     
-# preprocessor = mlop.preprocess()
+preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
 # print(f'Activation function: {activation_function}')
@@ -161,47 +166,47 @@ print(model_settings)
 # model_fit, model_runtime = mlop.run_nnet(preprocessor, train_X, 
 #                                           train_y, model_name)
 
-# model_name = f"{hidden_layer_sizes} Deep Neural Network "\
-# f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
-# ml_settings = (
-#     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
-#     f"\nScaler: {scaler1name}{scaler2name}"
-#     f"\nActivation function: {activation_function}"
-#     f"\nMaximum iterations: {max_iter}"
-#     f"\nHidden Layer Sizes: {hidden_layer_sizes}"
-#     f"\nSolver: {solver}"
-#     f"\nLearning Rate: {learning_rate}"
-#     f"\nAlpha: {alpha}\n")
-# print(ml_settings)
-# model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
-#                                         hidden_layer_sizes, solver, alpha, 
-#                                         learning_rate, model_name,
-#                                         activation_function,max_iter)
+model_name = f"{hidden_layer_sizes} Deep Neural Network "\
+f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
+ml_settings = (
+    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
+    f"\nScaler: {scaler1name}{scaler2name}"
+    f"\nActivation function: {activation_function}"
+    f"\nMaximum iterations: {max_iter}"
+    f"\nHidden Layer Sizes: {hidden_layer_sizes}"
+    f"\nSolver: {solver}"
+    f"\nLearning Rate: {learning_rate}"
+    f"\nAlpha: {alpha}\n")
+print(ml_settings)
+model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
+                                        hidden_layer_sizes, solver, alpha, 
+                                        learning_rate, model_name,
+                                        activation_function,max_iter)
 
 # =============================================================================
                                                                 # Model Testing
                                                                 
-# model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
-#                                                   model_name)
-# model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
-#                                           security_tag)
+model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
+                                                  model_name)
+model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
+                                          security_tag)
 
 
 
-# end_time = time.time()
-# end_tag = datetime.fromtimestamp(end_time)
-# end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
-# outputs_path = os.path.join('outputs',end_tag)
-# os.makedirs(outputs_path, exist_ok=True)
-# total_runtime = int(end_time - start_time)
-# model_plot.save(filename = f'{end_tag}.png',
-#                 path = outputs_path,
-#                 dpi = 600)
-# csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
-# dataset.to_csv(csv_path)
-# print(f"\n{datetime.fromtimestamp(end_time)}")
-# total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
-# print(f"{total_model_runtime}\n")
+end_time = time.time()
+end_tag = datetime.fromtimestamp(end_time)
+end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
+outputs_path = os.path.join('outputs',end_tag)
+os.makedirs(outputs_path, exist_ok=True)
+total_runtime = int(end_time - start_time)
+model_plot.save(filename = f'{end_tag}.png',
+                path = outputs_path,
+                dpi = 600)
+csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
+dataset.to_csv(csv_path)
+print(f"\n{datetime.fromtimestamp(end_time)}")
+total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
+print(f"{total_model_runtime}\n")
 # output = f"""Model estimated using {len(dataset)} options 
 # with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 # {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
@@ -219,6 +224,6 @@ print(model_settings)
 #     file.write(ml_settings)
 
 
-from surface_plotting import plot_vol_surface
-plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
-                     black_var_surface, strikes, maturities)
+# from surface_plotting import plot_vol_surface
+# plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
+#                      black_var_surface, strikes, maturities)
