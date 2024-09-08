@@ -9,7 +9,7 @@ from matplotlib import cm
 
 def plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
                      black_var_surface, strikes, maturities):
-    plt.rcParams['figure.figsize']=(15,7)
+    plt.rcParams['figure.figsize']=(6,4)
     plt.style.use("dark_background")
     strikes_grid = strikes
     expiry = 0.3643 # years
@@ -19,9 +19,9 @@ def plot_vol_surface(dataset, ivol_table, implied_vols_matrix,
     fig, ax = plt.subplots()
     ax.plot(strikes_grid, implied_vols, label="Black Surface")
     ax.plot(strikes, actual_data, "o", label="Actual")
-    ax.set_xlabel("Strikes", size=12)
-    ax.set_ylabel("Vols", size=12)
-    # legend = ax.legend(loc="upper right")
+    ax.set_xlabel("Strikes", size=9)
+    ax.set_ylabel("Vols", size=9)
+    legend = ax.legend(loc="upper right")
     fig.show()
     
     plottmin = (min(maturities)+0.05)/365
@@ -36,11 +36,11 @@ def plot_vol_surface(dataset, ivol_table, implied_vols_matrix,
     ax = fig.add_subplot(projection='3d')
     
     surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    fig.colorbar(surf, shrink=0.35, aspect=6)
     
-    ax.set_xlabel("Strikes", size=12)
-    ax.set_ylabel("Maturities (Years)", size=12)
-    ax.set_zlabel("Volatility", size=12)
+    ax.set_xlabel("Strikes", size=9)
+    ax.set_ylabel("Maturities (Years)", size=9)
+    ax.set_zlabel("Volatility", size=9)
     
     plt.show()
     plt.cla()

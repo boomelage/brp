@@ -10,17 +10,8 @@ Market parameter settings are to be adjusted in market_settings.py
 Bloomberg Bid/Ask IVOLs can be parsed and loaded via
 
 """
-import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
-filenames = os.listdir(pwd)
-for i in range(len(filenames)):
-    if filenames[i].endswith('.xlsx'):
-        print(f"{i+1} {filenames[i]}")
-    else:
-        pass
 
-file_path =  r'17250 AMZN.xlsx'  
+file_path =  r'13100 NVO.xlsx'  
 
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
@@ -35,7 +26,7 @@ from datetime import datetime
 from mlop import mlop
 # =============================================================================
                                                              # General Settings
-                                                             
+                                                          
 target_name = 'observed_price'
 security_tag = 'vanilla options'
 feature_set = [
