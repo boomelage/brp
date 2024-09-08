@@ -11,8 +11,8 @@ os.chdir(script_dir)
 import QuantLib as ql
 import time
 
-def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
-    black_var_surface,strikes,day_count,calculation_date, calendar,
+def calibrate_heston(option_data, flat_ts,dividend_ts, spot, expiration_dates,
+    black_var_surface, strikes, day_count, calculation_date, calendar,
         dividend_rate, implied_vols_matrix):
     heston_params = option_data.copy()
     # initial guesses
@@ -51,6 +51,7 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
             "\ntheta = %f, kappa = %f, "
             "sigma = %f, rho = %f, v0 = %f" % (theta, kappa, 
                                                sigma, rho, v0))
+
         avg = 0.0
         
         time.sleep(0.005)
@@ -62,13 +63,15 @@ def calibrate_heston(option_data,flat_ts,dividend_ts,spot,expiration_dates,
         for i in range(min(len(heston_helpers), len(strikes))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
-        
             print(f"{strikes[i]:15.2f} {opt.marketValue():14.5f} "
                   f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
-            
             avg += abs(err)  # accumulate the absolute error
-        
         avg = avg*100.0/len(heston_helpers)
+    
+        print(
+            f"{len(strikes)*current_index}/"
+            f"{len(strikes)*len(expiration_dates)} prices computed "
+              )
         print("-"*70)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
         

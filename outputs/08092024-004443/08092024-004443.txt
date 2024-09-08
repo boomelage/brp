@@ -1,0 +1,29 @@
+Total model runtime: 5 seconds 
+Model estimated using 408 options  with 1 spot price(s)
+between 199 and 242 (mid-point if one), 8 strike(s) between
+50% and 150% moneyness, and 51 maturity/maturities between
+0.04 and 1.99 years (act/365)
+2024-09-08 00:44:43.415024
+
+Selected Parameters:
+
+Features:
+spot_price
+strike_price
+years_to_maturity
+
+Target: observed_price
+
+Security: vanilla options
+
+2024-09-08 00:44:43.415024
+
+Selected Parameters:
+
+Scaler: Normalizer StandardScaler
+Activation function: tanh
+Maximum iterations: 1000
+Hidden Layer Sizes: (10, 10, 10)
+Solver: sgd
+Learning Rate: adaptive
+Alpha: 0.0001

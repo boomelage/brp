@@ -7,6 +7,8 @@ This is the principal file with which the model is estimated
 
 Market parameter settings are to be adjusted in market_settings.py
 
+Bloomberg Bid/Ask IVOLs can be parsed and loaded via
+
 """
 import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +19,7 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
             QuantileTransformer
 from market_settings import spotmin, spotmax, nspots, \
     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-        shortest_maturity, longest_maturity, ticker
+        shortest_maturity, longest_maturity
 import time
 import textwrap
 from datetime import datetime
@@ -29,7 +31,7 @@ model_scaler = [
                 # QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
-                Normalizer(),
+                # Normalizer(),
                 # PowerTransformer(),
                 # SplineTransformer(),
                 # PolynomialFeatures(),
@@ -76,6 +78,10 @@ feature_set = [
     # 'rho',
     # 'v0'
     ]
+
+risk_free_rate = 0.00
+dividend_rate = 0.00
+
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
@@ -84,9 +90,12 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
 
+from bloomberg_ivols import generate_from_market_data
+dataset = generate_from_market_data(dividend_rate, risk_free_rate)
 
-# from bloomberg_ivols import dataset
-from market_settings import dataset
+
+# from market_settings import generate_syntetic_data
+# dataset = generate_syntetic_data()
 
 
 # =============================================================================
@@ -99,7 +108,7 @@ scaler1name = str(f"{str(model_scaler[0])[:-2]} ")
 scaler2name = str(f"{str(model_scaler[1])[:-2]}")
 transformers=[
     ("transformation_1",model_scaler1,feature_set),
-    ("transformation_2", model_scaler2,feature_set)
+    # ("transformation_2", model_scaler2,feature_set)
     ]                                                                 
 dataset = dataset.dropna()
 activation_function = activation_function[0]
@@ -180,7 +189,7 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
-output = f"""Model estimated using {len(dataset)} {ticker} options
+output = f"""Model estimated using {len(dataset)} options 
 with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
 {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
 {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
