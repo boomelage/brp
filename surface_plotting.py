@@ -17,23 +17,47 @@ plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
 
+dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
+    maturities = generate_from_market_data(0.00, 0.00)
 
 
 
-# dataset, ivol_table, implied_vols_matrix, black_var_surface, strikes,\
-#     maturities = generate_from_market_data(0.00, 0.00)
+strikes_grid = strikes
+expiry = 0.3643 # years
+implied_vols = [black_var_surface.blackVol(expiry, s)
+                for s in strikes_grid] # can interpolate here
+actual_data = ivol_table[4]
+fig, ax = plt.subplots()
+ax.plot(strikes_grid, implied_vols, label="Black Surface")
+ax.plot(strikes, actual_data, "o", label="Actual")
+ax.set_xlabel("Strikes", size=12)
+ax.set_ylabel("Vols", size=12)
+legend = ax.legend(loc="upper right")
 
-maxK = max(strikes)
-minK = min(strikes)
-theoretical_strikes = np.linspace(minK,maxK,int((maxK-minK)*3))
-n_theostrikes = len(theoretical_strikes)
-theoretical_maturities = np.arange(14/365, 2.01,7/365)
-n_theomats = len(theoretical_maturities)
-
-from generate_ivols import generate_ivol_table
-theoretical_ivol_table = generate_ivol_table(
-    n_theomats, n_theostrikes, max(max(ivol_table)))
+plottmin = (min(maturities)+1)/365
+plottmax = (max(maturities)-1)/365
 
 
+plot_maturities = np.linspace(plottmin, plottmax, len(maturities))
+
+print(f"printing plot maturities: {plot_maturities}")
+# Generate the mesh grid
+X, Y = np.meshgrid(strikes, plot_maturities)
+
+# Query the implied volatilities for each (strike, maturity) pair
+Z = np.array([[black_var_surface.blackVol(y, x) for x in strikes] for y in maturities])
+
+# Plot the 3D surface
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+
+ax.set_xlabel("Strikes", size=12)
+ax.set_ylabel("Maturities (Years)", size=12)
+ax.set_zlabel("Volatility", size=12)
+
+plt.show()
 
 
