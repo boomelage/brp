@@ -38,7 +38,7 @@ def generate_from_market_data(file_path,dividend_rate, risk_free_rate):
     #     for j in range(n_strikes):
     #         ivol_table[i].append((bbivs[j][2*i] + bbivs[j][2*i+1])/2)  
     
-    # ivol_table   WRONG!
+    # ivol_table   idiot!
     
     implied_vols_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
                     
