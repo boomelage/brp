@@ -91,7 +91,6 @@ dfcalls = clean_data(dirdata()[0])
 dfcalls = dfcalls.reset_index(drop=True)
 
 
-
 # =============================================================================
                                                 # market data matrix generation
                                                
@@ -108,7 +107,6 @@ black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, strikes,
     implied_vol_matrix, day_count)
-
 
 # =============================================================================
                                                            # heston calibration
@@ -154,10 +152,8 @@ plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
 
-
 expiry = 10/365
 target_maturity_ivols = ivol_table[0]
-
 
 implied_vols = [black_var_surface.blackVol(expiry, k)
                 for k in strikes]
@@ -169,7 +165,6 @@ ax.set_xlabel("Strikes", size=9)
 ax.set_ylabel("Vols", size=9)
 legend = ax.legend(loc="upper right")
 fig.show()
-
 
 plot_maturities = np.array(maturities/365.25).astype(float)
 plot_strikes = np.array(strikes).astype(float)
@@ -192,4 +187,3 @@ ax.set_zlabel("Volatility", size=9)
 plt.show()
 plt.cla()
 plt.clf()
-

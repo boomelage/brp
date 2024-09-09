@@ -108,6 +108,11 @@ def heston_price_one_vanilla(w,calculation_date,strike_price,maturity_date,
     h_price_vanilla = european_option.NPV()
     return h_price_vanilla
 
+
+# Binary
+# Barrier
+# Asian arith/geo 
+
 def noisyfier(prices):
     price = prices.columns[-1]
     
@@ -117,6 +122,7 @@ def noisyfier(prices):
                             .apply(lambda x: max(x, 0))
     
     return prices
+
 
 # =============================================================================
 # Independent pricing functions                   Independent pricing functions
