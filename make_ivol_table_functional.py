@@ -82,8 +82,5 @@ def make_ivol_vector(dfcalls):
             
     return maturities, strikes, S, n_maturities, n_strikes, ivol_table
 
-dfcalls = concat_data(data_files)
 
-len(dfcalls['Strike'].unique())
-# maturities, strikes, S, n_maturities, n_strikes, ivol_table = \
-#     make_ivol_vector(dfcalls)
+

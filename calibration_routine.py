@@ -19,7 +19,7 @@ from data_query import dirdata
 dividend_rate = 0.005
 risk_free_rate = 0.05
 
-# calculation_date = ql.Date.todaysDate()
+calculation_date = ql.Date.todaysDate()
 day_count = ql.Actual365Fixed()
 day_count = ql.Actual365Fixed()
 calendar = ql.UnitedStates(m=1)
@@ -32,6 +32,10 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
     calculation_date, dividend_rate, day_count))
 
 
+# =============================================================================
+                                                               # simple example
+                                                               
+
 expiration_dates = [ql.Date(9,12,2021), ql.Date(9,1,2022), ql.Date(9,2,2022),
                     ql.Date(9,3,2022), ql.Date(9,4,2022), ql.Date(9,5,2022),
                     ql.Date(9,6,2022), ql.Date(9,7,2022), ql.Date(9,8,2022),
@@ -40,17 +44,11 @@ expiration_dates = [ql.Date(9,12,2021), ql.Date(9,1,2022), ql.Date(9,2,2022),
                     ql.Date(9,3,2023), ql.Date(9,4,2023), ql.Date(9,5,2023),
                     ql.Date(9,6,2023), ql.Date(9,7,2023), ql.Date(9,8,2023),
                     ql.Date(9,9,2023), ql.Date(9,10,2023), ql.Date(9,11,2023)]
+calculation_date = expiration_dates[11] - ql.Period(365,ql.Days)
 
-
-chosen_maturity = expiration_dates[1.00]
-
-
-n_maturities = len(expiration_dates)
-maturities = np.empty(n_maturities)
-for i in range(n_maturities):
-    maturities[i] = expiration_dates[i] - ql.Period()
-
-
+maturities = np.empty(len(expiration_dates))
+for i in range(len(expiration_dates)):
+    maturities[i] = expiration_dates[i]-calculation_date
 
 
 strikes = [527.50, 560.46, 593.43, 626.40, 659.37, 692.34, 725.31, 758.28]
@@ -81,14 +79,26 @@ ivol_table = [
 [0.34891, 0.34154, 0.33539, 0.3297, 0.33742, 0.33337, 0.32881, 0.32492]]
 
 
-S = np.median(strikes)
+implied_vol_matrix = ql.Matrix(len(strikes),len(ivol_table))
 
-from make_ivol_matrix import make_ivol_matrix
+for i in range(len(ivol_table)):
+    for j in range(len(strikes)):
+        implied_vol_matrix[j][i] = ivol_table[i][j]
+    
+from make_ivol_table_functional import clean_data
 
-expiration_dates, implied_vol_matrix = make_ivol_matrix(
-    strikes, expiration_dates, ivol_table, calculation_date, len(strikes), len(ivol_table))
+dfcalls = clean_data(dirdata()[0])
+dfcalls = dfcalls.reset_index(drop=True)
 
 
+
+# =============================================================================
+                                                # market data matrix generation
+                                               
+# from make_ivol_matrix import make_ivol_matrix
+# expiration_dates, implied_vol_matrix = make_ivol_matrix(
+#     strikes, expiration_dates, ivol_table, calculation_date, n_strikes,
+#     n_maturities)
 
 
 # =============================================================================
@@ -99,12 +109,32 @@ black_var_surface = ql.BlackVarianceSurface(
     expiration_dates, strikes,
     implied_vol_matrix, day_count)
 
+
 # =============================================================================
-                                                            # heston calibration 
+                                                           # heston calibration
+S = np.median(strikes)                                                         
+option_data = pd.DataFrame()
+option_data_spot_column = np.ones(len(dfcalls))*S
+option_data['spot_price'] = option_data_spot_column
+option_data['strike_price'] = dfcalls['Strike']
+option_data['volatility'] = dfcalls['IVM']
+option_data['risk_free_rate'] = dfcalls['Rate']
+option_data['dividend_rate'] = dividend_rate
+option_data['w'] = 1
+option_data['days_to_maturity'] = dfcalls['DyEx']
+option_data['calculation_date'] = calculation_date
+
+def calculate_maturity_date(row, calc_date):
+    return calc_date + ql.Period(int(row['days_to_maturity']), ql.Days)
+
+option_data['maturity_date'] = option_data.apply(calculate_maturity_date, 
+                                                 calc_date=calculation_date, 
+                                                 axis=1)
+                                                           
 
 from heston_calibration import calibrate_heston
 heston_params = calibrate_heston(
-    flat_ts,dividend_ts, S, expiration_dates, 
+    option_data, flat_ts,dividend_ts, S, expiration_dates, 
     black_var_surface, strikes, day_count,calculation_date, calendar, 
     dividend_rate, implied_vol_matrix)
 
@@ -117,14 +147,13 @@ heston_vanillas = heston_price_vanillas(heston_params)
 dataset = noisyfier(heston_vanillas)
 
 # =============================================================================
-                                                  # plotting volatility surfance
+                                                 # plotting volatility surfance
 
 import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize']=(15,7)
+plt.style.use("dark_background")
 from matplotlib import cm
 
-
-plt.rcParams['figure.figsize']=(6,4)
-plt.style.use("dark_background")
 
 expiry = 10/365
 target_maturity_ivols = ivol_table[0]
@@ -152,9 +181,9 @@ Z = np.array([[
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 
-surf = ax.plot_surface(
-    X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
-fig.colorbar(surf, shrink=0.35, aspect=6)
+surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+                linewidth=0.1)
+fig.colorbar(surf, shrink=0.5, aspect=5)
 
 ax.set_xlabel("Strikes", size=9)
 ax.set_ylabel("Maturities (Years)", size=9)
