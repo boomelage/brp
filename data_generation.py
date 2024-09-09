@@ -10,6 +10,8 @@ from itertools import product
 import QuantLib as ql
 import math
 
+
+
 def generate_dataset(
         S, lower_moneyness, upper_moneyness, nKs, risk_free_rate, data_T, 
         dividend_rate):

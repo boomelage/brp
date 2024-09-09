@@ -8,14 +8,13 @@ creating the ivol matrix
 
 import QuantLib as ql
 import numpy as np
-def make_ivol_matrix(strikes,maturities,ivols,calculation_date):
-    
-    
-    n_maturities = len(maturities)
-    n_strikes = len(strikes)
-    S = np.median(strikes)
-    
 
+calculation_date = ql.Date.todaysDate()
+
+def make_ivol_matrix(
+        strikes,maturities,ivol_table,calculation_date,n_strikes,n_maturities): 
+    
+    
     expiration_dates = np.empty(len(maturities),dtype=object)
     for i in range(len(expiration_dates)):
         expiration_dates[i] = calculation_date + \
@@ -23,9 +22,15 @@ def make_ivol_matrix(strikes,maturities,ivols,calculation_date):
 
 
     implied_vol_matrix = ql.Matrix(n_strikes,n_maturities,float(0))
-    for i in range(n_strikes):
-        for j in range(n_maturities):
-            implied_vol_matrix[i][j] = ivols.iloc[i,j]
+    for i in range(n_maturities):
+        for j in range(n_strikes):
+            implied_vol_matrix[j][i] = ivol_table[i][j]
           
 
-    return n_maturities, n_strikes, S, expiration_dates, implied_vol_matrix
+    return expiration_dates, implied_vol_matrix
+
+from make_ivol_table import strikes,maturities,ivol_table,n_strikes,n_maturities
+expiration_dates, implied_vol_matrix = make_ivol_matrix(
+        strikes,maturities,ivol_table,calculation_date,n_strikes,n_maturities)
+
+print(implied_vol_matrix)
