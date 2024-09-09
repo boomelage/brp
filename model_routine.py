@@ -20,6 +20,7 @@ import textwrap
 import os
 from datetime import datetime
 from mlop import mlop
+from data_query import dirdata
 # =============================================================================
                                                              # General Settings
                                                           
@@ -92,9 +93,10 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 # =============================================================================
 # print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
-                                                                  # Data Source
+                                                                   # Data Source
 
-from callsputs import dataset
+from collect_market_data import concat_data
+dataset = concat_data(dirdata())
 
 # from market_settings import spotmin, spotmax, nspots, \
 #     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
