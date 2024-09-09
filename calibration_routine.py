@@ -41,8 +41,13 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
 data_files = dirdata()
 
 
-f
+from bloomberg_fetcher import fetch_bbdata
+from make_ivol_matrix import make_ivol_matrix
+
+
 calls, strikes, maturities, ivols = fetch_bbdata(data_files, calculation_date)
+
+
 n_maturities, n_strikes, S, expiration_dates, implied_vol_matrix = \
     make_ivol_matrix(strikes,maturities,ivols,calculation_date)
 
