@@ -8,7 +8,6 @@ Created on Mon Sep  9 11:28:35 2024
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
-from data_query import dirdata
 import pandas as pd
 import numpy as np
 
@@ -18,7 +17,7 @@ pd.set_option('display.max_columns', None)  # To display all columns
 
 # =============================================================================
                                                            # obtaining filename
-data_files = dirdata()
+
 
 # =============================================================================
                                                                      # cleaning 
@@ -36,6 +35,7 @@ def clean_data(file):
     dfcalls_subset.loc[:,'Strike'] = dfcalls_subset.loc[:,'Strike'].astype(int)
     dfcalls_subset.loc[:,'DyEx'] = dfcalls_subset.loc[:,'DyEx'].astype(int)
     dfcalls_subset.loc[:,'IVM'] = dfcalls_subset.loc[:,'IVM']/100
+
     
     return dfcalls_subset
 
@@ -46,8 +46,14 @@ def concat_data(data_files):
     dfcalls = pd.DataFrame()  
     for file in data_files:
         dfcalls_subset = clean_data(file)
-        dfcalls = pd.concat([dfcalls, dfcalls_subset], ignore_index=True)  
-    return dfcalls
+        dfcalls = pd.concat([dfcalls, dfcalls_subset], ignore_index=True)
+        
+        
+        strikes = np.array(dfcalls.loc[:,'Strike'].astype(int).unique())
+        maturities = np.array(dfcalls.loc[:,'DyEx'].astype(int).unique())
+        
+        
+    return dfcalls, strikes, maturities
 
 
 # =============================================================================
@@ -82,8 +88,16 @@ def make_ivol_vector(dfcalls):
             
     return maturities, strikes, S, n_maturities, n_strikes, ivol_table
 
-dfcalls = concat_data(data_files)
 
-len(dfcalls['Strike'].unique())
-# maturities, strikes, S, n_maturities, n_strikes, ivol_table = \
-#     make_ivol_vector(dfcalls)
+
+
+
+from data_query import dirdata
+data_files = dirdata()
+file = data_files[0]
+
+dfcalls, strikes, maturities = concat_data(data_files)
+
+strikes
+
+
