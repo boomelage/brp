@@ -15,7 +15,20 @@ import QuantLib as ql
 from pricing import heston_price_vanillas, noisyfier
 from data_query import dirdata
 
+dividend_rate = 0.00
+risk_free_rate = 0.00
 
+calculation_date = ql.Date.todaysDate()
+day_count = ql.Actual365Fixed()
+day_count = ql.Actual365Fixed()
+calendar = ql.UnitedStates(m=1)
+ql.Settings.instance().evaluationDate = calculation_date
+dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
+dividend_rate = dividend_yield
+flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+    calculation_date, risk_free_rate, day_count))
+dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+    calculation_date, dividend_rate, day_count))
 
 def clean_data(file):
     df = pd.read_excel(file)
@@ -40,6 +53,10 @@ def clean_data(file):
     dfcalls_subset['maturity_date'] = dfcalls_subset.apply(
         calculate_maturity_date,calc_date=ql.Date.todaysDate(),axis=1)
     dfcalls_subset['years_to_maturity'] = dfcalls_subset['days_to_maturity']/365
+    
+    
+    
+    
 
     return dfcalls_subset
 
@@ -57,4 +74,4 @@ def concat_data(data_files):
 
 dataset = concat_data(dirdata())
 
-dataset.loc[0]
+dataset
