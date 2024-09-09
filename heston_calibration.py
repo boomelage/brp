@@ -17,9 +17,9 @@ def calibrate_heston(option_data, flat_ts,dividend_ts, S, expiration_dates,
     heston_params = option_data.copy()
     # initial guesses
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
-    
+    S = ql.QuoteHandle(ql.SimpleQuote(S))
     process = ql.HestonProcess(
-        flat_ts, dividend_ts, ql.QuoteHandle(S), v0, kappa, theta, sigma, rho)
+        flat_ts, dividend_ts, S, v0, kappa, theta, sigma, rho)
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []
