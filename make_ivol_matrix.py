@@ -28,9 +28,3 @@ def make_ivol_matrix(
           
 
     return expiration_dates, implied_vol_matrix
-
-from make_ivol_table import strikes,maturities,ivol_table,n_strikes,n_maturities
-expiration_dates, implied_vol_matrix = make_ivol_matrix(
-        strikes,maturities,ivol_table,calculation_date,n_strikes,n_maturities)
-
-print(implied_vol_matrix)
