@@ -31,7 +31,9 @@ def calibrate_heston(option_data, flat_ts,dividend_ts, S, expiration_dates,
         for j, s in enumerate(strikes):
            t = day_count.yearFraction(calculation_date, date)
            sigma = black_var_surface.blackVol(t, s)  
-           
+           if sigma != sigma:  # NaN check since NaN != NaN in Python
+               print(f"Skipping strike {s}: no IVOL.")
+               continue
            helper = ql.HestonModelHelper(
                ql.Period(int(t * 365), ql.Days),
                calendar, S.value(), s,
@@ -41,6 +43,9 @@ def calibrate_heston(option_data, flat_ts,dividend_ts, S, expiration_dates,
 
            helper.setPricingEngine(engine)
            heston_helpers.append(helper)
+        if len(heston_helpers) == 0:
+           print(f"No valid strikes for maturity {date}, skipping calibration.")
+           continue  # Skip calibration if no valid helpers exist
             
         lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
         model.calibrate(heston_helpers, lm,

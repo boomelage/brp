@@ -11,12 +11,6 @@ from data_query import dirdata
 import pandas as pd
 import numpy as np
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-
-# pd.reset_option('display.max_rows')
-# pd.reset_option('display.max_columns')
-
 class new_market_data_collection():
     def __init__(self):
         self.data_files = dirdata()
