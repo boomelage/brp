@@ -98,6 +98,18 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 from collect_market_data import concat_data
 dataset = concat_data(dirdata())
 
+
+# =============================================================================
+                                                            # generating prices
+
+from calibration_routine import heston_params
+
+from pricing import heston_price_vanillas, noisyfier
+heston_vanillas = heston_price_vanillas(heston_params)
+heston_vanillas
+dataset = noisyfier(heston_vanillas)
+
+
 # from market_settings import spotmin, spotmax, nspots, \
 #     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
 #         shortest_maturity, longest_maturity

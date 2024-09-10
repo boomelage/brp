@@ -14,10 +14,13 @@ def clear_all():
 clear_all()
 
 import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 import QuantLib as ql
 import warnings
 import numpy as np
 import pandas as pd
+from data_query import dirdata
 pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
 warnings.simplefilter(action='ignore')
@@ -92,46 +95,23 @@ for i in range(len(ivol_table)):
     for j in range(len(strikes)):
         implied_vol_matrix[j][i] = ivol_table[i][j]
 """  
-# =============================================================================
-                                                       # collecting market data
-lower_bound_strike = 5460
-upper_bound_strike = 5675
-# lower_bound_maturity = 1
-# upper_bound_maturity = 370
 
-from new_collect_market_data import new_market_data_collection
-nmdc = new_market_data_collection()
-market_data = nmdc.new_concat_market_data()
-market_data = market_data.reset_index()
-
-market_data = market_data[market_data['Strike'] >= lower_bound_strike]
-market_data = market_data[market_data['Strike'] <= upper_bound_strike]
-
-# market_data = market_data[market_data['DyEx'] >= lower_bound_maturity]
-# market_data = market_data[market_data['DyEx'] <= upper_bound_maturity]
-
-maturities = market_data['DyEx'].unique().tolist()
-strikes = market_data['Strike'].unique().tolist()
 
 # =============================================================================
                                             # market data vol matrix generation
-                                            
-ivol_table = nmdc.new_make_ivol_table(market_data)
+from ivolmat_from_market import extract_ivol_matrix_from_market
+
+implied_vol_matrix, strikes, maturities, ivoldf = extract_ivol_matrix_from_market(r'SPXts.xlsx')      
 
 expiration_dates = np.empty(len(maturities), dtype=object)
 for i, maturity in enumerate(maturities):
-    expiration_dates[i] = calculation_date + ql.Period(int(maturity), ql.Days)
- 
-                                               
-from make_ivol_matrix import make_ivol_matrix
-implied_vol_matrix = make_ivol_matrix(
-    strikes, expiration_dates, ivol_table, calculation_date, len(strikes),
-    len(maturities))
+    expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
 
-print(implied_vol_matrix)
 
 # =============================================================================
                                           # generating black volatility surface
+
+S  = 5400
 
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
@@ -140,23 +120,11 @@ black_var_surface = ql.BlackVarianceSurface(
 
 # =============================================================================
                                                            # heston calibration
-S = np.median(strikes)                                                         
-option_data = pd.DataFrame()
-option_data_spot_column = np.ones(len(market_data))*S
-option_data['spot_price'] = option_data_spot_column
-option_data['strike_price'] = market_data['Strike']
-option_data['volatility'] = market_data['IVM']
-option_data['risk_free_rate'] = market_data['Rate']
-option_data['dividend_rate'] = dividend_rate
-option_data['w'] = 1
-option_data['days_to_maturity'] = market_data['DyEx']
-option_data['calculation_date'] = calculation_date
-def compute_maturity_date(row):
-    return row['calculation_date'] + ql.Period(int(row['days_to_maturity']), ql.Days)
-option_data = option_data.dropna()
-option_data['maturity_date'] = option_data.apply(compute_maturity_date, axis=1)
+from new_collect_market_data import option_data_from_market
 
-
+data_files = dirdata(r'SPXts.xlsx')
+odfm = option_data_from_market(data_files=data_files)
+option_data = odfm.concat_option_data()
 
 from heston_calibration import calibrate_heston
 heston_params = calibrate_heston(
@@ -165,7 +133,7 @@ heston_params = calibrate_heston(
     dividend_rate)
 
 
-# heston_params.to_csv(r'option_data_spx_heston_params_test.csv')
+heston_params.to_csv(r'option_data_spx_heston_params_test.csv')
 
 
 # =============================================================================
@@ -200,32 +168,17 @@ heston_params = heston_params.apply(
     lambda row: convert_to_ql_quote(row, 'dividend_rate'), axis=1)
 """
 
-# =============================================================================
-                                                            # generating prices
-
-from pricing import heston_price_vanilla_row
-
-
-hprice = heston_price_vanilla_row(heston_params.loc[0])
-
-
-
-
-# from pricing import heston_price_vanillas, noisyfier
-# heston_vanillas = heston_price_vanillas(heston_params)
-# heston_vanillas
-# dataset = noisyfier(heston_vanillas)
 
 # =============================================================================
-                                                 # plotting volatility surfance
+                                                  # plotting volatility surface
 
 import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
 
-expiry = 0.043806
-target_maturity_ivols = ivol_table[0]
+expiry = 2/365
+target_maturity_ivols = ivoldf[1]
 
 implied_vols = [black_var_surface.blackVol(expiry, k)
                 for k in strikes]
@@ -259,3 +212,4 @@ ax.set_zlabel("Volatility", size=9)
 plt.show()
 plt.cla()
 plt.clf()
+

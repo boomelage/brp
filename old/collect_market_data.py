@@ -53,11 +53,6 @@ def clean_data(file):
     dfcalls_subset['maturity_date'] = dfcalls_subset.apply(
         calculate_maturity_date,calc_date=ql.Date.todaysDate(),axis=1)
     dfcalls_subset['years_to_maturity'] = dfcalls_subset['days_to_maturity']/365
-    
-    
-    
-    
-
     return dfcalls_subset
 
 
@@ -72,7 +67,6 @@ def concat_data(data_files):
 
     return dataset
 
+
+
 dataset = concat_data(dirdata())
-
-dataset
-
