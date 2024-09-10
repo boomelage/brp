@@ -16,23 +16,14 @@ def extract_ivol_matrix_from_market(file):
     df = pd.read_excel(file)
     
     df.columns = df.loc[1]
-    
     df = df.iloc[2:,:].reset_index(drop=True).dropna()
     df = df.set_index('Strike')
-    
-    
     strikes = df.index.tolist()
-    
     maturities = df['DyEx'].loc[strikes[0]].unique().tolist()
     
-    
-    # Extract every other pair of columns (two columns at a time)
     calls = pd.concat([df.iloc[:, i:i+2] for i in range(0, df.shape[1], 4)], axis=1)
-    
     callvols = calls['IVM']
-    
     callvols.columns = maturities
-    
     
     
     implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),float(0))

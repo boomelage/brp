@@ -98,13 +98,13 @@ class option_data_from_market():
             market_data = market_data.reset_index(drop=True)
         return market_data
 
-# from data_query import dirdata
-# data_files = dirdata(r'SPXts.xlsx')
-# file = data_files[0]
+from data_query import dirdata
+data_files = dirdata(r'SPXts.xlsx')
+file = data_files[0]
 
-# nmdc = option_data_from_market(data_files=data_files)
+nmdc = option_data_from_market(data_files=data_files)
 
-# market_data = nmdc.concat_option_data()
+market_data = nmdc.concat_option_data()
 
 
 

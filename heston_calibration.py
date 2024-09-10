@@ -12,7 +12,7 @@ import QuantLib as ql
 import time
 import pandas as pd
 
-def calibrate_heston(option_data, flat_ts, dividend_ts, S, expiration_dates,
+def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
     black_var_surface, strikes, day_count, calculation_date, calendar,
         dividend_rate):
     # initial guesses
@@ -79,15 +79,15 @@ def calibrate_heston(option_data, flat_ts, dividend_ts, S, expiration_dates,
         #       )
         print("-"*70)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
-    
-    option_data['dividend_rate'] = dividend_rate
-    option_data['v0'] = v0
-    option_data['kappa'] = kappa
-    option_data['theta'] = theta
-    option_data['sigma'] = sigma
-    option_data['rho'] = rho
-    
-    option_data
-    return option_data
+        
+        heston_params = {
+            'theta':theta, 
+            'kappa':kappa, 
+            'sigma':sigma, 
+            'rho':rho, 
+            'v0':v0
+            }
+        print(f'\nHeston parameters:\n{heston_params}')
+        return heston_params
 
     
