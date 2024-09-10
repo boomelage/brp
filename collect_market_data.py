@@ -68,10 +68,11 @@ def concat_data(data_files):
             dfcalls_subset = clean_data(file)
             dataset = pd.concat([dataset, dfcalls_subset], ignore_index=True)
         except Exception as e:
-            print(f'problem with {file}: {e}')
+            print(f'problem with {file}: missing {e}')
 
     return dataset
 
 dataset = concat_data(dirdata())
 
 dataset
+
