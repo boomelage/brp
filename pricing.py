@@ -65,6 +65,8 @@ def heston_price_vanilla_row(row):
     h_price_vanilla = european_option.NPV()
     return h_price_vanilla
 
+
+
 def heston_price_one_vanilla(w,calculation_date,strike_price,maturity_date,
                              spot_price,risk_free_rate,dividend_rate,v0,kappa,
                              theta,sigma,rho):
@@ -155,4 +157,6 @@ def heston_price_vanillas(features):
 
 # Independent pricing functions                   Independent pricing functions
 # =============================================================================
+
+
 

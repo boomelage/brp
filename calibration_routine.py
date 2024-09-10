@@ -118,9 +118,6 @@ strikes = market_data['Strike'].unique().tolist()
                                             
 ivol_table = nmdc.new_make_ivol_table(market_data)
 
-
-
-
 expiration_dates = np.empty(len(maturities), dtype=object)
 for i, maturity in enumerate(maturities):
     expiration_dates[i] = calculation_date + ql.Period(int(maturity), ql.Days)
@@ -132,7 +129,6 @@ implied_vol_matrix = make_ivol_matrix(
     len(maturities))
 
 print(implied_vol_matrix)
-
 
 # =============================================================================
                                           # generating black volatility surface
@@ -166,10 +162,10 @@ from heston_calibration import calibrate_heston
 heston_params = calibrate_heston(
     option_data, flat_ts,dividend_ts, S, expiration_dates, 
     black_var_surface, strikes, day_count,calculation_date, calendar, 
-    dividend_rate, implied_vol_matrix)
+    dividend_rate)
 
 
-heston_params.to_csv(r'option_data_spx_heston_params_test.csv')
+# heston_params.to_csv(r'option_data_spx_heston_params_test.csv')
 
 
 # =============================================================================

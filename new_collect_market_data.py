@@ -71,9 +71,16 @@ class new_market_data_collection():
                 if isinstance(ivm_value, pd.Series):
                     ivm_value = ivm_value.iloc[0]
                 ivol_vector_for_maturity[j] = ivm_value
+    
 
             ivol_table[i] = ivol_vector_for_maturity
             
         
         return ivol_table
     
+from new_collect_market_data import new_market_data_collection
+
+
+data_files = dirdata()
+nmdc = new_market_data_collection()
+market_data = nmdc.new_concat_market_data()

@@ -12,9 +12,9 @@ import QuantLib as ql
 import time
 import pandas as pd
 
-def calibrate_heston(option_data, flat_ts,dividend_ts, S, expiration_dates,
+def calibrate_heston(option_data, flat_ts, dividend_ts, S, expiration_dates,
     black_var_surface, strikes, day_count, calculation_date, calendar,
-        dividend_rate, implied_vols_matrix):
+        dividend_rate):
     # initial guesses
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
     S = ql.QuoteHandle(ql.SimpleQuote(S))
