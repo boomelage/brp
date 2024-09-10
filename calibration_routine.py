@@ -135,7 +135,7 @@ heston_params = calibrate_heston(
     black_var_surface, strikes, day_count,calculation_date, calendar, 
     dividend_rate)
 
-
+heston_params
 # =============================================================================
                                                   # plotting volatility surface
 

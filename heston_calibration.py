@@ -3,11 +3,7 @@
 """
 Created on Thu Sep  5 11:54:40 2024
 
-@author: doomd
 """
-import os
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
 import QuantLib as ql
 import time
 

@@ -5,22 +5,16 @@ Created on Wed Sep  4 17:22:26 2024
 
 """
 import pandas as pd
-import numpy as np
 from itertools import product
 import QuantLib as ql
 import math
 
-
-
 def generate_dataset(
-        S, lower_moneyness, upper_moneyness, nKs, risk_free_rate, data_T, 
+        S, K, lower_moneyness, upper_moneyness, nKs, risk_free_rate, data_T, 
         dividend_rate):
-    subset_spot = np.ones(1) * S
-    K = np.linspace(S * lower_moneyness, S * upper_moneyness, 
-                    nKs)
     def generate_features():
         features = pd.DataFrame(
-            product(subset_spot, K, data_T),
+            product(S, K, data_T),
             columns=[
                 "spot_price", 
                 "strike_price", 

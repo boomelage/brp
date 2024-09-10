@@ -16,46 +16,52 @@ dividend_rate = 0.00
 
 pricing_range = 0.1
 
-ticker = 'AAPL'
-bb_table_path = r'22000 AAPL.xlsx'
 S = 5410
-tl_strike = 195.00 
-tl_ivol_q = 41.2680358886719
 
-shortest_maturity = 14/365
-longest_maturity = 2*52*7/365
-maturity_step = 7/365
+# shortest_maturity = 14/365
+# longest_maturity = 2*52*7/365
+# maturity_step = 7/365
 
-# shortest_maturity = 1/12
-# longest_maturity =2.01
-# maturity_step = 1/12
+shortest_maturity = 1/12
+longest_maturity =2.01
+maturity_step = 1/12
 
-spots_subdivision = 5
-strikes_subdivision = 7
+spots_subdivision = 1
+strikes_subdivision = 1
 
-spotmin = int(S/(1+pricing_range))
-spotmax = int(S*(1+pricing_range))
-nspots = int(spots_subdivision*(spotmax-spotmin))
+lower_moneyness = 0.5
+upper_moneyness = 1.5
+n_strikes = 2
 
-# nspots = 1
-# lower_moneyness = 0.5
-# upper_moneyness = 1.5
-# n_strikes = 7
+n_strikes = int((strikes_subdivision)*(S*upper_moneyness-S*lower_moneyness))
 
-lower_moneyness = tl_strike/S
-upper_moneyness = S/tl_strike
-n_strikes = int((strikes_subdivision)*(S*upper_moneyness-\
-                                        S*lower_moneyness))
-
-spots = np.linspace(spotmin,spotmax,nspots)
 T = np.arange(shortest_maturity, longest_maturity, maturity_step)
 n_maturities = len(T)
 
+
+
 from data_generation import generate_dataset
 
-dataset = generate_dataset(S, lower_moneyness, upper_moneyness, n_strikes, risk_free_rate, T, dividend_rate) 
+contract_details = generate_dataset(
+    S, lower_moneyness, upper_moneyness, n_strikes, risk_free_rate, T, \
+        dividend_rate) 
+
+from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
+
+contract_details['volatility'] = 0.2
+
+from calibration_routine import heston_params
+contract_details['v0'] = heston_params['v0']
+contract_details['kappa'] = heston_params['kappa']
+contract_details['sigma'] = heston_params['sigma']
+contract_details['rho'] = heston_params['rho']
+contract_details['theta'] = heston_params['theta']
 
 
+bs_vanillas = BS_price_vanillas(contract_details)
+heston_bs_vanillas = heston_price_vanillas(bs_vanillas)
+dataset = noisyfier(heston_bs_vanillas)
+dataset
 # =============================================================================
 # # """
 # # MISGUIDED
