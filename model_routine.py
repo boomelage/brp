@@ -20,24 +20,19 @@ import textwrap
 import os
 from datetime import datetime
 from mlop import mlop
-from data_query import dirdata
 # =============================================================================
                                                              # General Settings
                                                           
 target_name = 'observed_price'
 security_tag = 'vanilla options'
 feature_set = [
-    'spot_price',
-    'strike_price',
-    'years_to_maturity',
-    # 'volatility',
+    
+    'spot_price', 
+    'dividend_rate', 
     # 'risk_free_rate',
-    # 'dividend_rate',
-    # 'kappa',
-    # 'theta',
-    # 'sigma',
-    # 'rho',
-    # 'v0'
+    'days_to_maturity', 
+    'strike_price'
+    
     ]
 
 risk_free_rate = 0.02
@@ -93,28 +88,22 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 # =============================================================================
 # print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
 # =============================================================================
-                                                                   # Data Source
 
-from collect_market_data import concat_data
-dataset = concat_data(dirdata())
+
 
 
 # =============================================================================
                                                             # generating prices
 
-from calibration_routine import heston_params
-
-from pricing import heston_price_vanillas, noisyfier
-heston_vanillas = heston_price_vanillas(heston_params)
-heston_vanillas
-dataset = noisyfier(heston_vanillas)
+# from new_collect_market_data import dataset
 
 
-# from market_settings import spotmin, spotmax, nspots, \
-#     n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-#         shortest_maturity, longest_maturity
-# from market_settings import generate_syntetic_subset
-# dataset = generate_syntetic_subset()
+from market_settings import spotmin, spotmax, nspots, \
+    n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
+        shortest_maturity, longest_maturity
+        
+from market_settings import generate_syntetic_subset
+dataset = generate_syntetic_subset()
 
 
 # =============================================================================

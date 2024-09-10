@@ -10,7 +10,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 import QuantLib as ql
 import time
-import pandas as pd
 
 def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
     black_var_surface, strikes, day_count, calculation_date, calendar,
@@ -87,7 +86,9 @@ def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
             'rho':rho, 
             'v0':v0
             }
-        print(f'\nHeston parameters:\n{heston_params}')
+        print('\nHeston model parameters:')
+        for key, value in heston_params.items():
+            print(f'{key}: {value}')
         return heston_params
 
     

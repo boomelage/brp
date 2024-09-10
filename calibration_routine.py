@@ -139,44 +139,44 @@ heston_params = calibrate_heston(
 # =============================================================================
                                                   # plotting volatility surface
 
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize']=(15,7)
-plt.style.use("dark_background")
-from matplotlib import cm
+# import matplotlib.pyplot as plt
+# plt.rcParams['figure.figsize']=(15,7)
+# plt.style.use("dark_background")
+# from matplotlib import cm
 
-expiry = 2/365
-target_maturity_ivols = ivoldf[1]
+# expiry = 2/365
+# target_maturity_ivols = ivoldf[1]
 
-implied_vols = [black_var_surface.blackVol(expiry, k)
-                for k in strikes]
+# implied_vols = [black_var_surface.blackVol(expiry, k)
+#                 for k in strikes]
 
-fig, ax = plt.subplots()
-ax.plot(strikes, target_maturity_ivols, label="Black Surface")
-ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
-ax.set_xlabel("Strikes", size=9)
-ax.set_ylabel("Vols", size=9)
-legend = ax.legend(loc="upper right")
-fig.show()
+# fig, ax = plt.subplots()
+# ax.plot(strikes, target_maturity_ivols, label="Black Surface")
+# ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
+# ax.set_xlabel("Strikes", size=9)
+# ax.set_ylabel("Vols", size=9)
+# legend = ax.legend(loc="upper right")
+# fig.show()
 
-plot_maturities = pd.Series(maturities) / 365.25
-plot_strikes = pd.Series(strikes)
-X, Y = np.meshgrid(plot_strikes, plot_maturities)
-Z = np.array([[
-    black_var_surface.blackVol(y, x) for x in plot_strikes] 
-    for y in plot_maturities])
+# plot_maturities = pd.Series(maturities) / 365.25
+# plot_strikes = pd.Series(strikes)
+# X, Y = np.meshgrid(plot_strikes, plot_maturities)
+# Z = np.array([[
+#     black_var_surface.blackVol(y, x) for x in plot_strikes] 
+#     for y in plot_maturities])
 
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
+# fig = plt.figure()
+# ax = fig.add_subplot(projection='3d')
 
-surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                linewidth=0.1)
-fig.colorbar(surf, shrink=0.5, aspect=5)
+# surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+#                 linewidth=0.1)
+# fig.colorbar(surf, shrink=0.5, aspect=5)
 
-ax.set_xlabel("Strikes", size=9)
-ax.set_ylabel("Maturities (Years)", size=9)
-ax.set_zlabel("Volatility", size=9)
+# ax.set_xlabel("Strikes", size=9)
+# ax.set_ylabel("Maturities (Years)", size=9)
+# ax.set_zlabel("Volatility", size=9)
 
-plt.show()
-plt.cla()
-plt.clf()
+# plt.show()
+# plt.cla()
+# plt.clf()
 
