@@ -9,12 +9,10 @@ from itertools import product
 import QuantLib as ql
 import math
 
-def generate_dataset(
-        S, K, lower_moneyness, upper_moneyness, nKs, risk_free_rate, data_T, 
-        dividend_rate):
+def generate_dataset(S, K, T, risk_free_rate, dividend_rate):
     def generate_features():
         features = pd.DataFrame(
-            product(S, K, data_T),
+            product(S, K, T),
             columns=[
                 "spot_price", 
                 "strike_price", 

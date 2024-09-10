@@ -21,10 +21,10 @@ def extract_ivol_matrix_from_market(file):
     strikes = df.index.tolist()
     maturities = df['DyEx'].loc[strikes[0]].unique().tolist()
     
-    calls = pd.concat([df.iloc[:, i:i+2] for i in range(0, df.shape[1], 4)], axis=1)
+    calls = pd.concat([df.iloc[:, i:i+2] for i in range(
+        0, df.shape[1], 4)], axis=1)
     callvols = calls['IVM']
     callvols.columns = maturities
-    
     
     implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),float(0))
     

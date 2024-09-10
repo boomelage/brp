@@ -11,40 +11,26 @@ import numpy as np
 
 # =============================================================================
                                                                      # Settings
-risk_free_rate = 0.00
+risk_free_rate = 0.05
 dividend_rate = 0.00
 
 pricing_range = 0.1
 
 S = 5410
 
-# shortest_maturity = 14/365
-# longest_maturity = 2*52*7/365
-# maturity_step = 7/365
+from ivolmat_from_market import extract_ivol_matrix_from_market
+implied_vols_matrix, strikes, maturities, callvols = \
+    extract_ivol_matrix_from_market(r'SPXts.xlsx')
 
-shortest_maturity = 1/12
-longest_maturity =2.01
-maturity_step = 1/12
+S = [S]
+K = strikes
+T = np.array(maturities,dtype=float)/365
 
-spots_subdivision = 1
-strikes_subdivision = 1
-
-lower_moneyness = 0.5
-upper_moneyness = 1.5
-n_strikes = 2
-
-n_strikes = int((strikes_subdivision)*(S*upper_moneyness-S*lower_moneyness))
-
-T = np.arange(shortest_maturity, longest_maturity, maturity_step)
-n_maturities = len(T)
-
-
+K = np.linspace(min(K), max(K), 10000)
+T = np.linspace(min(T), max(T),150)
 
 from data_generation import generate_dataset
-
-contract_details = generate_dataset(
-    S, lower_moneyness, upper_moneyness, n_strikes, risk_free_rate, T, \
-        dividend_rate) 
+contract_details = generate_dataset(S, K, T, risk_free_rate, dividend_rate) 
 
 from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
 
@@ -59,12 +45,32 @@ contract_details['theta'] = heston_params['theta']
 
 
 bs_vanillas = BS_price_vanillas(contract_details)
+
 heston_bs_vanillas = heston_price_vanillas(bs_vanillas)
 dataset = noisyfier(heston_bs_vanillas)
 dataset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # =============================================================================
 # # """
-# # MISGUIDED
+# # MISGUIDED BY MISUNDERSTANDING
 # # """
 # # """
 # # def generate_syntetic_subset():
