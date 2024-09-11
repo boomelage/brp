@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 from mlop import mlop
 import matplotlib.pyplot as plt
-plt.rcdefaults()
+
 # =============================================================================
                                                              # General Settings
                                                           
@@ -82,20 +82,26 @@ rf_min_samples_leaf = 2000
 
 # =============================================================================
                                                                  # loading data
-# from routine_collection import collect_market_data_and_price
-# excluded_file = r'SPXts.xlsx'
-# dataset = collect_market_data_and_price(excluded_file)
-# n_prices = f"estimated with {str(len(dataset))} "\
-#            f"option prices collected from the market"
 
-from routine_generation import dataset
-n_prices = f"estimated with {len(dataset)} synthesized option prices"
-print(f"\n{str(n_prices)}")
+from routine_collection import collect_market_data_and_price
+excluded_file = r'SPXts.xlsx'
+excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
+print(excluded_file)
+dataset = collect_market_data_and_price(excluded_file)
+n_prices = f"\nestimated with {str(len(dataset))} "\
+    f"option prices collected from the market"
+print(n_prices)
+
+# from routine_generation import dataset
+# n_prices = f"estimated with {len(dataset)} synthesized option prices"
+# print(f"\n{str(n_prices)}")
 
 # =============================================================================
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
+start_tag_format = f"\n{str(start_tag.strftime('%c'))}"
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
+print(start_tag_format)
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
 scaler1name = str(f"{str(model_scaler[0])[:-2]}")
@@ -124,9 +130,8 @@ mlop = mlop(
 
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
-    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:"
-    f"\n\nFeatures:\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity: "
-    f"{security_tag}\n"
+    f"\nSelected Parameters:\nFeatures:\n{feature_str_list}\n\nTarget: "
+    f"{target_name}\n\nSecurity: {security_tag}\n"
     )
 print(model_settings)
 
@@ -139,9 +144,11 @@ train_data, train_X, train_y, \
 preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
-print(f'Activation function: {activation_function}')
-print(f'Maximum iterations: {max_iter}')      
-model_name = f"Single Layer Network ({scaler1name}{scaler2name})"                           
+activation_function_tag = f'\nActivation function: {activation_function}'
+print(activation_function_tag)
+max_iter_tag = f'\nMaximum iterations: {max_iter}'
+print(max_iter_tag)      
+model_name = f"\nSingle Layer Network ({scaler1name}{scaler2name})"                           
 model_fit, model_runtime = mlop.run_nnet(
     preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
     activation_function, max_iter, random_state)
@@ -168,11 +175,12 @@ model_fit, model_runtime = mlop.run_nnet(
 
 model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
                                                   model_name)
+plt.rcdefaults()
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
                                           security_tag)
 end_time = time.time()
-end_tag = datetime.fromtimestamp(end_time)
-end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
+end_tag_datetime = datetime.fromtimestamp(end_time)
+end_tag = str(end_tag_datetime.strftime('%d%m%Y-%H%M%S'))
 outputs_path = os.path.join('outputs',end_tag)
 os.makedirs(outputs_path, exist_ok=True)
 total_runtime = int(end_time - start_time)
@@ -181,26 +189,21 @@ model_plot.save(filename = f'{end_tag}.png',
                 dpi = 600)
 csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
 dataset.to_csv(csv_path)
-print(f"\n{datetime.fromtimestamp(end_time)}")
-total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
-print(f"{total_model_runtime}\n")
-output_details = f"""
 
-{end_tag}
-{n_prices}
+end_tag_format = str(end_tag_datetime.strftime('%c'))
+end_time_format = f"\n{end_tag_format}"
+print(end_time_format)
+total_model_runtime = f"\nTotal model runtime: {str(total_runtime)} seconds"
+print(total_model_runtime)
 
-Selected Parameters:
-Features: {feature_str_list}
-{model_name}
-Target: {target_name}
-Security: {security_tag}
-Activation function: {activation_function}
-Maximum iterations: {max_iter}
-
-{start_tag}
-{total_model_runtime}
-   
-"""
-
-print(output_details)
-
+txt_path = os.path.join(outputs_path, f"{end_tag}.txt")
+with open(txt_path, 'w') as file:
+    file.write(str(n_prices))
+    file.write(str(excluded_file_format))
+    file.write(str(start_tag_format))
+    file.write(str(model_settings))
+    file.write(str(activation_function_tag))
+    file.write(str(max_iter_tag))
+    file.write(str(model_name))
+    file.write(str(end_time_format))
+    file.write(str(total_model_runtime))

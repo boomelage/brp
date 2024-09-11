@@ -1,0 +1,19 @@
+estimated with 448 option prices collected from the market
+2024-09-11 10:57:49.129706
+
+Selected Parameters:
+
+Features:
+spot_price
+dividend_rate
+risk_free_rate
+days_to_maturity
+strike_price
+
+Target: observed_price
+
+Security: vanilla options
+
+Activation function: relu
+Maximum iterations: 10000
+Single Layer Network (QuantileTransformerStandardScaler)

@@ -45,12 +45,10 @@ def run_heston_calibration():
     for i, maturity in enumerate(maturities):
         expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
 
-
     black_var_surface = ql.BlackVarianceSurface(
         calculation_date, calendar,
         expiration_dates, strikes,
         implied_vol_matrix, day_count)
-
 
     from heston_calibration_review import calibrate_heston
     heston_params = calibrate_heston(
