@@ -1,1 +1,1 @@
-Files for option price benchmarking via machine learning
+training sklearn models to price options with calibrated parameters or market data and experimenting with a combination of the two for computational efficiency
