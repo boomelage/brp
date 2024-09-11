@@ -4,27 +4,23 @@ Created on Mon Sep  9 00:17:45 2024
 
 """
 def clear_all():
-    globals_ = globals().copy()  # Make a copy to avoid modifying during iteration
-    for name in globals_:
+    globals_ = globals().copy()  # Make a copy to avoid 
+    for name in globals_:        # modifying during iteration
         if not name.startswith('_') and name not in ['clear_all']:
             del globals()[name]
 clear_all()
 import os
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
 import QuantLib as ql
 import warnings
 import numpy as np
-import pandas as pd
-from data_query import dirdata
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
 warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
+
+                                            # QuantLib pricing settings/objects
 dividend_rate = 0.005
 risk_free_rate = 0.05
-
+S  = 5400
 calculation_date = ql.Date.todaysDate()
 day_count = ql.Actual365Fixed()
 day_count = ql.Actual365Fixed()
@@ -38,6 +34,34 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
     calculation_date, dividend_rate, day_count))
 
 
+def run_heston_calibration():
+    from ivolmat_from_market import extract_ivol_matrix_from_market
+    
+    implied_vol_matrix, strikes, maturities, ivoldf = \
+        extract_ivol_matrix_from_market(r'SPXts.xlsx')      
+    
+    expiration_dates = np.empty(len(maturities), dtype=object)
+    for i, maturity in enumerate(maturities):
+        expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
+
+
+
+    black_var_surface = ql.BlackVarianceSurface(
+        calculation_date, calendar,
+        expiration_dates, strikes,
+        implied_vol_matrix, day_count)
+
+
+    from heston_calibration import calibrate_heston
+    heston_params = calibrate_heston(
+        flat_ts,dividend_ts, S, expiration_dates, 
+        black_var_surface, strikes, day_count,calculation_date, calendar, 
+        dividend_rate)
+    
+    return heston_params
+
+
+heston_params = run_heston_calibration()
 # =============================================================================
                                                                # simple example
                                                                
@@ -95,38 +119,8 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
 # =============================================================================
 
 
-# =============================================================================
-                                            # market data vol matrix generation
-from ivolmat_from_market import extract_ivol_matrix_from_market
-
-implied_vol_matrix, strikes, maturities, ivoldf = \
-    extract_ivol_matrix_from_market(r'SPXts.xlsx')      
-
-expiration_dates = np.empty(len(maturities), dtype=object)
-for i, maturity in enumerate(maturities):
-    expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
 
 
-# =============================================================================
-                                          # generating black volatility surface
-
-S  = 5400
-
-black_var_surface = ql.BlackVarianceSurface(
-    calculation_date, calendar,
-    expiration_dates, strikes,
-    implied_vol_matrix, day_count)
-
-# =============================================================================
-                                                           # heston calibration
-
-from heston_calibration import calibrate_heston
-heston_params = calibrate_heston(
-    flat_ts,dividend_ts, S, expiration_dates, 
-    black_var_surface, strikes, day_count,calculation_date, calendar, 
-    dividend_rate)
-
-heston_params
 
 # =============================================================================
                                                   # plotting volatility surface
@@ -172,5 +166,3 @@ heston_params
 # plt.cla()
 # plt.clf()
 
-pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')

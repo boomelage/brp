@@ -9,34 +9,24 @@ pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 import numpy as np
 import pandas as pd
-import pprint
 import QuantLib as ql
 from itertools import product
-from routine_calibration import heston_params
-pprint.pprint(heston_params)
+from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
+from routine_collection import market_data
 pd.set_option('display.max_columns', None)
 
 
 calculation_date = ql.Date.todaysDate()
 
-# from ivolmat_from_market import extract_ivol_matrix_from_market
-# implied_vols_matrix, strikes, maturities, callvols = \
-#     extract_ivol_matrix_from_market(r'SPXts.xlsx')
-# K = strikes
-# T = np.array(maturities,dtype=float)/365
-# K = np.linspace(min(K), max(K), 1000)
-# T = np.linspace(min(T), max(T),100)
-# n_prices = len(K)*len(T)
 
-from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
-from routine_collection import market_data
+
 v = market_data['volatility'].unique().tolist()
 s = market_data['spot_price'].unique().tolist()
 k = market_data['strike_price'].unique().tolist()
 t = market_data['days_to_maturity'].unique().tolist()
 g = market_data['dividend_rate'].unique().tolist()
 r = market_data['risk_free_rate'].unique().tolist()
-# v = np.linspace(min(v),max(v),20)
+v = np.linspace(min(v),max(v),20)
 contract_details = pd.DataFrame(
     product(
         s,
@@ -54,7 +44,7 @@ contract_details = pd.DataFrame(
         # "dividend_rate",
         # "risk_free_rate",
              ])
-
+from routine_calibration import heston_params
 contract_details['risk_free_rate'] = np.average(r) #temporarily just an average
 contract_details['dividend_rate'] = np.average(g) #temporarily just an average
 contract_details['v0'] = heston_params['v0']
@@ -70,7 +60,7 @@ def compute_maturity_date(row):
 contract_details = contract_details.apply(compute_maturity_date, axis=1)
 
 option_prices = BS_price_vanillas(contract_details)
-option_prices = heston_price_vanillas(option_prices)
+# option_prices = heston_price_vanillas(option_prices)
 dataset = noisyfier(option_prices)
 dataset = dataset.dropna()
 dataset

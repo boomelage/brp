@@ -3,7 +3,7 @@
 """
 Created on Tue Sep 10 12:40:38 2024
 
-This class collects market data exported from the 'calls' tab in OMON
+This class collects market data exported from the 'calls/puts' tab in OMON
 
 """
 import os
@@ -12,6 +12,9 @@ os.chdir(pwd)
 import pandas as pd
 import numpy as np
 import QuantLib as ql
+from data_query import dirdata
+from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
+pd.set_option('display.max_columns', None)
 
 class option_data_from_market():
     def __init__(self,data_files):
@@ -19,21 +22,13 @@ class option_data_from_market():
         self.market_data = pd.DataFrame()
         
     def collect_call_data(self, file):
-        
         df = pd.read_excel(file)
-
         df = df.dropna().reset_index(drop=True)
-
         df.columns = df.loc[0]
-
         df = df.iloc[1:,:]
-
         df = df.astype(float)
-
         splitter = int(len(df.columns)/2)
-
         calls = df.iloc[:,:splitter]
-
         calls = calls[~(calls['DyEx'] < 1)]
     
         
@@ -47,48 +42,12 @@ class option_data_from_market():
         calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
 
         print(f"\nfile: {file}")
-        print(calls.columns)
         print(calls['days_to_maturity'].unique())
-        print(f"count: {len(calls['days_to_maturity'].unique())}")
+        print(f"maturities count: {len(calls['days_to_maturity'].unique())}")
         print(calls['strike_price'].unique())
-        print(f"count: {len(calls['strike_price'].unique())}")
+        print(f"strikes count: {len(calls['strike_price'].unique())}")
 
         return calls
-# =============================================================================
-# """
-#     def collect_put_data(self, file):
-#         
-#         df = pd.read_excel(file)
-# 
-#         df = df.dropna().reset_index(drop=True)
-# 
-#         df.columns = df.loc[0]
-# 
-#         df = df.iloc[1:,:]
-# 
-#         df = df.astype(float)
-# 
-#         splitter = int(len(df.columns)/2)
-# 
-#         puts = df.iloc[:,splitter:]
-# 
-#         puts = puts[~(puts['DyEx'] < 1)]
-#         
-#         puts['DyEx'] = puts['DyEx'].astype(int)
-#         puts['IVM'] = puts['IVM'] / 100
-#         puts['DvYd'] = puts['DvYd'] / 100
-#         puts['Rate'] = puts['Rate'] / 100
-# 
-#         print(f"\nfile: {file}")
-#         print(puts.columns)
-#         print(puts['DyEx'].unique())
-#         print(f"count: {len(puts['DyEx'].unique())}")
-#         print(puts['Strike'].unique())
-#         print(f"count: {len(puts['Strike'].unique())}")
-# 
-#         return puts
-# """
-# =============================================================================
     
     def concat_option_data(self):
         market_data = pd.DataFrame()
@@ -99,38 +58,53 @@ class option_data_from_market():
             market_data = market_data.reset_index(drop=True)
         return market_data
 
+def collect_market_data_and_price(excluded_file):
+    data_files = dirdata(excluded_file)
+    nmdc = option_data_from_market(data_files=data_files)
+    market_data = nmdc.concat_option_data()
+    
+    calculation_date = ql.Date.todaysDate()
+    from routine_calibration import heston_params
+    market_data['v0'] = heston_params['v0']
+    market_data['kappa'] = heston_params['kappa']
+    market_data['theta'] = heston_params['theta']
+    market_data['sigma'] = heston_params['sigma']
+    market_data['rho'] = heston_params['rho']
+    
+    market_data['calculation_date'] = calculation_date
+    
+    def compute_maturity_date(row):
+        row['maturity_date'] = calculation_date + ql.Period(
+            int(row['days_to_maturity']),ql.Days)
+        return row
+    
+    market_data = market_data.apply(compute_maturity_date, axis=1)
+    
+    option_prices = BS_price_vanillas(market_data)
+    # option_prices = heston_price_vanillas(option_prices)
+    option_prices = noisyfier(option_prices)
+    priced_market_data = option_prices.dropna()
+    print(priced_market_data)
+    return priced_market_data
 
+def collect_market_data(excluded_file):
+    data_files = dirdata(excluded_file)
+    nmdc = option_data_from_market(data_files=data_files)
+    market_data = nmdc.concat_option_data()
+    
+    calculation_date = ql.Date.todaysDate()
+    
+    market_data['calculation_date'] = calculation_date
+    
+    def compute_maturity_date(row):
+        row['maturity_date'] = calculation_date + ql.Period(
+            int(row['days_to_maturity']),ql.Days)
+        return row
+    
+    market_data = market_data.apply(compute_maturity_date, axis=1)
+    print(market_data)
+    return market_data
 
-
-from data_query import dirdata
-data_files = dirdata(r'SPXts.xlsx')
-file = data_files[0]
-
-nmdc = option_data_from_market(data_files=data_files)
-
-market_data = nmdc.concat_option_data()
-
-from routine_calibration import heston_params
-calculation_date = ql.Date.todaysDate()
-
-market_data['v0'] = heston_params['v0']
-market_data['kappa'] = heston_params['kappa']
-market_data['theta'] = heston_params['theta']
-market_data['sigma'] = heston_params['sigma']
-market_data['rho'] = heston_params['rho']
-
-market_data['calculation_date'] = calculation_date
-
-def compute_maturity_date(row):
-    row['maturity_date'] = calculation_date + ql.Period(int(row['days_to_maturity']),ql.Days)
-    return row
-
-market_data = market_data.apply(compute_maturity_date, axis=1)
-
-from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
-bs_vanillas = BS_price_vanillas(market_data)
-heston_bs_vanillas = heston_price_vanillas(bs_vanillas)
-dataset = noisyfier(heston_bs_vanillas)
-dataset = dataset.dropna()
-dataset
-
+excluded_file =  r'SPXts.xlsx'
+market_data = collect_market_data(excluded_file)
+priced_market_data = collect_market_data_and_price(excluded_file)

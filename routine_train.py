@@ -14,12 +14,19 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-from routine_generation import dataset
 import time
 import textwrap
 import os
 from datetime import datetime
 from mlop import mlop
+
+# from routine_collection import collect_market_data, collect_market_data_and_price
+# excluded_file = r'SPXts.xlsx'
+# dataset = collect_market_data_and_price(excluded_file)
+
+from routine_generation import dataset
+
+
 # =============================================================================
                                                              # General Settings
                                                           
@@ -93,7 +100,7 @@ start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
 # Loading mlop
-scaler1name = str(f"{str(model_scaler[0])[:-2]} ")
+scaler1name = str(f"{str(model_scaler[0])[:-2]}")
 scaler2name = str(f"{str(model_scaler[1])[:-2]}")                                                            
 dataset = dataset.dropna()
 activation_function = activation_function[0]
