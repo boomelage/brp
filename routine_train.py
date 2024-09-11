@@ -183,10 +183,23 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
-print(f"""
+output_details = f"""
+
+{end_tag}
 {n_prices}
-\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:
-\n\nFeatures:\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity:
-{security_tag}\n
-      """)
+
+Selected Parameters:
+Features: {feature_str_list}
+{model_name}
+Target: {target_name}
+Security: {security_tag}
+Activation function: {activation_function}
+Maximum iterations: {max_iter}
+
+{start_tag}
+{total_model_runtime}
+   
+"""
+
+print(output_details)
 
