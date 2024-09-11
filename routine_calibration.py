@@ -58,7 +58,6 @@ model = ql.HestonModel(process)
 engine = ql.AnalyticHestonEngine(model)
 heston_helpers = []
 # loop through all maturities and perform calibration for each one
-
 for current_index, date in enumerate(expiration_dates):
     print(f"\nCurrently calibrating for maturity: {date}")
     black_var_surface.setInterpolation("bicubic")
@@ -107,36 +106,6 @@ for current_index, date in enumerate(expiration_dates):
     print('\nHeston model parameters:')
     for key, value in heston_params.items():
         print(f'{key}: {value}')
-
-"""
-using heston_calibration_review.py
-
-# def run_heston_calibration():
-#     rom heston_calibration_review import calibrate_heston
-#     from ivolmat_from_market import extract_ivol_matrix_from_market
-    
-#     implied_vol_matrix, strikes, maturities, ivoldf = \
-#         extract_ivol_matrix_from_market(r'SPXts.xlsx')      
-    
-#     expiration_dates = np.empty(len(maturities), dtype=object)
-#     for i, maturity in enumerate(maturities):
-#         expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
-
-#     black_var_surface = ql.BlackVarianceSurface(
-#         calculation_date, calendar,
-#         expiration_dates, strikes,
-#         implied_vol_matrix, day_count)
-
-#     heston_params = calibrate_heston(
-#         flat_ts, dividend_ts, S, expiration_dates, 
-#         black_var_surface, strikes, day_count, calculation_date, calendar, 
-#         dividend_rate)
-    
-#     return heston_params, ivoldf, black_var_surface, strikes, maturities
-
-# heston_params, ivoldf, black_var_surface, strikes, maturities \
-#     = run_heston_calibration()
-"""
 
 
 # =============================================================================
