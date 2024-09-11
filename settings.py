@@ -9,11 +9,11 @@ import numpy as np
 
 class model_settings():
     
-    def __init__(self):
-        self.dividend_rate = dividend_rate = 0.005
-        self.risk_free_rate = risk_free_rate = 0.05
+    def __init__(self, dividend_rate=0.00, risk_free_rate=0.00):
+        self.dividend_rate = dividend_rate
+        self.risk_free_rate = risk_free_rate
         self.calculation_date = calculation_date = ql.Date.todaysDate()
-        self.dday_count = day_count = ql.Actual365Fixed()
+        self.day_count = day_count = ql.Actual365Fixed()
         self.calendar = ql.UnitedStates(m=1)
 
         self.flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
@@ -24,6 +24,17 @@ class model_settings():
         
         ql.Settings.instance().evaluationDate = calculation_date
     
+    
+    
+    def import_model_settings(self):
+        dividend_rate = self.dividend_rate
+        risk_free_rate = self.risk_free_rate
+        calculation_date = self.calculation_date
+        day_count = self.day_count
+        calendar = self.calendar
+        return dividend_rate, risk_free_rate, calculation_date, day_count,\
+            calendar,
+            
     def make_ql_array(size,nparr):
         qlarr = ql.Array(size,1)
         for i in range(size):
@@ -37,4 +48,3 @@ class model_settings():
         for i, maturity in enumerate(maturities):
             expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
         return expiration_dates
-
