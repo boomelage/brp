@@ -18,6 +18,7 @@ warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
+# =============================================================================
                                             # QuantLib pricing settings/objects
 dividend_rate = 0.005
 risk_free_rate = 0.05
@@ -35,6 +36,11 @@ dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
     calculation_date, dividend_rate, day_count))
 
 
+
+
+# =============================================================================
+                                       # creating th implied volatility surface
+
 from ivolmat_from_market import extract_ivol_matrix_from_market
 
 implied_vol_matrix, strikes, maturities, ivoldf = \
@@ -49,7 +55,11 @@ black_var_surface = ql.BlackVarianceSurface(
     expiration_dates, strikes,
     implied_vol_matrix, day_count)
 import time
-# initial guesses
+
+
+# =============================================================================
+                                 # Heston model settings and initial parameters
+
 v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
 S = ql.QuoteHandle(ql.SimpleQuote(S))
 process = ql.HestonProcess(
@@ -57,7 +67,10 @@ process = ql.HestonProcess(
 model = ql.HestonModel(process)
 engine = ql.AnalyticHestonEngine(model)
 heston_helpers = []
-# loop through all maturities and perform calibration for each one
+
+# =============================================================================
+                                                          # calibration routine
+
 for current_index, date in enumerate(expiration_dates):
     print(f"\nCurrently calibrating for maturity: {date}")
     black_var_surface.setInterpolation("bicubic")
@@ -107,51 +120,9 @@ for current_index, date in enumerate(expiration_dates):
     for key, value in heston_params.items():
         print(f'{key}: {value}')
 
-
 # =============================================================================
-                                                  # plotting volatility surface
-
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize']=(15,7)
-plt.style.use("dark_background")
-from matplotlib import cm
-import re
-
-
-expiry = 2/365
-target_maturity_ivols = ivoldf[1]
-
-def plot_volatility_surface(outputs_path, ticker):
-    fig, ax = plt.subplots()
-    ax.plot(strikes, target_maturity_ivols, label="Black Surface")
-    ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
-    ax.set_xlabel("Strikes", size=9)
-    ax.set_ylabel("Vols", size=9)
-    # legend = ax.legend(loc="upper right")
-    fig.show()
-    
-    plot_maturities = pd.Series(maturities) / 365.25
-    plot_strikes = pd.Series(strikes)
-    X, Y = np.meshgrid(plot_strikes, plot_maturities)
-    Z = np.array([[
-        black_var_surface.blackVol(y, x) for x in plot_strikes] 
-        for y in plot_maturities])
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    
-    surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                    linewidth=0.1)
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-    
-    ax.set_xlabel("Strikes", size=9)
-    ax.set_ylabel("Maturities (Years)", size=9)
-    ax.set_zlabel("Volatility", size=9)
-    
-
-    timestamp = re.search(r'[^ ]+$', outputs_path).group(0)
-    plot_path = os.path.join(outputs_path, f"{ticker} ts {timestamp}.png")
-    plt.savefig(plot_path,dpi=600)
-    plt.show()
-    plt.cla()
-    plt.clf()
+                                                                     # plotting
+outputs_path = None
+ticker = None
+from plot_volatility_surface import plot_volatility_surface
+plot_volatility_surface(outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
