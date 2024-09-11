@@ -52,7 +52,7 @@ def run_heston_calibration():
         implied_vol_matrix, day_count)
 
 
-    from heston_calibration import calibrate_heston
+    from heston_calibration_review import calibrate_heston
     heston_params = calibrate_heston(
         flat_ts, dividend_ts, S, expiration_dates, 
         black_var_surface, strikes, day_count, calculation_date, calendar, 
@@ -77,8 +77,6 @@ expiry = 2/365
 target_maturity_ivols = ivoldf[1]
 
 def plot_volatility_surface():
-    # implied_vols = [black_var_surface.blackVol(expiry, k)
-    #                 for k in strikes]
     
     fig, ax = plt.subplots()
     ax.plot(strikes, target_maturity_ivols, label="Black Surface")

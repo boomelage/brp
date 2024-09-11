@@ -19,7 +19,8 @@ import textwrap
 import os
 from datetime import datetime
 from mlop import mlop
-
+import matplotlib.pyplot as plt
+plt.rcdefaults()
 # =============================================================================
                                                              # General Settings
                                                           
@@ -81,15 +82,15 @@ rf_min_samples_leaf = 2000
 
 # =============================================================================
                                                                  # loading data
-from routine_collection import collect_market_data_and_price
-excluded_file = r'SPXts.xlsx'
-dataset = collect_market_data_and_price(excluded_file)
-n_prices = f"estimated with {str(len(dataset))} "\
-           f"option prices collected from the market"
+# from routine_collection import collect_market_data_and_price
+# excluded_file = r'SPXts.xlsx'
+# dataset = collect_market_data_and_price(excluded_file)
+# n_prices = f"estimated with {str(len(dataset))} "\
+#            f"option prices collected from the market"
 
-# from routine_generation import dataset
-# n_prices = f"estimated with {len(dataset)} synthesized option prices"
-# print(f"\n{str(n_prices)}")
+from routine_generation import dataset
+n_prices = f"estimated with {len(dataset)} synthesized option prices"
+print(f"\n{str(n_prices)}")
 
 # =============================================================================
 start_time = time.time()
