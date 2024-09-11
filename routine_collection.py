@@ -30,8 +30,7 @@ class option_data_from_market():
         splitter = int(len(df.columns)/2)
         calls = df.iloc[:,:splitter]
         calls = calls[~(calls['DyEx'] < 1)]
-    
-        
+
         calls['spot_price'] = np.median(calls['Strike'])
         calls['volatility'] = calls['IVM'] / 100
         calls['dividend_rate'] = calls['DvYd'] / 100
@@ -48,7 +47,7 @@ class option_data_from_market():
         print(f"strikes count: {len(calls['strike_price'].unique())}")
 
         return calls
-    
+
     def concat_option_data(self):
         market_data = pd.DataFrame()
         for file in self.data_files:

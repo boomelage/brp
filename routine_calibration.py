@@ -29,19 +29,22 @@ dividend_ts = settings['dividend_ts']
 # =============================================================================
                                        # creating th implied volatility surface
 
-implied_vol_matrix, strikes, maturities, ivoldf = \
-    ms.extract_ivol_matrix_from_market()      
 
-S = np.median(strikes)
 
-expiration_dates = np.empty(len(maturities), dtype=object)
-for i, maturity in enumerate(maturities):
-    expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
+from ivol_testing import term_structure_from_market, implied_vols_matrix,\
+    strikes, maturities
+
+strikes = np.array(strikes,dtype=float)
+
+
+S = np.median(term_structure_from_market.index)
+
+expiration_dates = ms.compute_ql_maturity_dates(maturities)
 
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, strikes,
-    implied_vol_matrix, day_count)
+    implied_vols_matrix, day_count)
 import time
 
 
