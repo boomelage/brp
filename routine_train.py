@@ -221,12 +221,15 @@ implied_vols_matrix, strikes, maturities, callvols = extract_ivol_matrix_from_ma
 
 
 import QuantLib as ql
-from qlfuncs import compute_ql_maturity_dates
-calculation_date = ql.Date.todaysDate()
-calendar = ql.UnitedStates(ql.UnitedStates.Market.NYSE)
-day_count
+from settings import model_settings
 
-expiration_dates = compute_ql_maturity_dates(maturities)
+model_settings = model_settings.import_model_settings()
+
+
+
+
+
+expiration_dates = model_settings.compute_ql_maturity_dates(maturities)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, strikes,
