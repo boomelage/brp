@@ -92,30 +92,30 @@ class mlop:
 # =============================================================================
                                                              # Model Estimation
 
-# =============================================================================
-#     def run_nnet(self, preprocessor, train_X, train_y, model_name):
-#         print(model_name)
-#         nnet_start = time()
-#         nnet_model = MLPRegressor(
-#             hidden_layer_sizes=10,
-#             activation=self.activation_function, 
-#             solver="lbfgs", 
-#             max_iter=self.max_iter,
-#             random_state=self.random_state
-#             )
-#         
-#         nnet_pipeline = Pipeline([
-#             ("preprocessor", preprocessor),
-#             ("regressor", nnet_model)
-#             ])
-#         
-#         model_fit = nnet_pipeline.fit(train_X, train_y)
-#         nnet_end = time()
-#         nnet_runtime = int(nnet_end - nnet_start)
-#         print(f"Single Layer Network estimated in {str(nnet_runtime)} "
-#               "seconds!")
-#         return model_fit, nnet_runtime
-# =============================================================================
+    def run_nnet(
+            self, preprocessor, train_X, train_y, model_name, solver, 
+            hidden_layer_sizes, activation_function, max_iter, random_state):
+        print(model_name)
+        nnet_start = time()
+        nnet_model = MLPRegressor(
+            hidden_layer_sizes=hidden_layer_sizes[0],
+            activation=activation_function, 
+            solver=solver, 
+            max_iter=max_iter,
+            random_state=random_state
+            )
+        
+        nnet_pipeline = Pipeline([
+            ("preprocessor", preprocessor),
+            ("regressor", nnet_model)
+            ])
+        
+        model_fit = nnet_pipeline.fit(train_X, train_y)
+        nnet_end = time()
+        nnet_runtime = int(nnet_end - nnet_start)
+        print(f"Single Layer Network estimated in {str(nnet_runtime)} "
+              "seconds!")
+        return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor, train_X, train_y, hidden_layer_sizes,
                 solver, alpha, learning_rate, model_name, activation_function, 
@@ -160,7 +160,8 @@ class mlop:
           .assign(
             moneyness=lambda x: x["spot_price"]*100/x["strike_price"],
             pricing_error=lambda x: 
-                np.abs(abs(x["Predicted"] - x[self.target_name])*100/x[self.target_name])
+                np.abs(abs(x["Predicted"] - \
+                           x[self.target_name])*100/x[self.target_name])
           )
         )
         predictive_performance = predictive_performance.iloc[:,1:]

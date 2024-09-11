@@ -104,7 +104,3 @@ def collect_market_data(excluded_file):
     market_data = market_data.apply(compute_maturity_date, axis=1)
     print(market_data)
     return market_data
-
-excluded_file =  r'SPXts.xlsx'
-market_data = collect_market_data(excluded_file)
-priced_market_data = collect_market_data_and_price(excluded_file)

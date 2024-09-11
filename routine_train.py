@@ -20,13 +20,6 @@ import os
 from datetime import datetime
 from mlop import mlop
 
-# from routine_collection import collect_market_data, collect_market_data_and_price
-# excluded_file = r'SPXts.xlsx'
-# dataset = collect_market_data_and_price(excluded_file)
-
-from routine_generation import dataset
-
-
 # =============================================================================
                                                              # General Settings
                                                           
@@ -45,7 +38,7 @@ feature_set = [
 
 model_scaler = [
                 # RobustScaler(),
-                # QuantileTransformer(),
+                QuantileTransformer(),
                 # MaxAbsScaler(),
                 # MinMaxScaler(),
                 # Normalizer(),
@@ -59,7 +52,7 @@ model_scaler = [
 
 transformers=[
     ("transformation_1",model_scaler[0],feature_set),
-    # ("transformation_2", model_scaler[1],feature_set)
+    ("transformation_2", model_scaler[1],feature_set)
     ]     
 
 random_state = None
@@ -68,7 +61,7 @@ test_size = 0.05
                                                       # Neural Network Settings
 max_iter = 1000
 activation_function = [        
-    # 'identity', 
+    # 'identity', da
     # 'logistic',
     # 'tanh',
     'relu',
@@ -86,20 +79,23 @@ learning_rate = 'adaptive'
 rf_n_estimators = 50
 rf_min_samples_leaf = 2000
 
+# =============================================================================
+                                                                 # loading data
+from routine_collection import collect_market_data_and_price
+excluded_file = r'SPXts.xlsx'
+dataset = collect_market_data_and_price(excluded_file)
+print(
+f"\nestimated with {len(dataset)} option prices collected from the market")
 
+# from routine_generation import dataset
+# print(f"\nestimated with {len(dataset)} synthesized option prices")
+
+# =============================================================================
 start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-
-
-
-
-
-# =============================================================================
-
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
-# Loading mlop
 scaler1name = str(f"{str(model_scaler[0])[:-2]}")
 scaler2name = str(f"{str(model_scaler[1])[:-2]}")                                                            
 dataset = dataset.dropna()
@@ -140,37 +136,37 @@ train_data, train_X, train_y, \
 preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
-# print(f'Activation function: {activation_function}')
-# print(f'Maximum iterations: {max_iter}')      
-# model_name = f"Single Layer Network ({model_scaler_str})"                           
-# model_fit, model_runtime = mlop.run_nnet(preprocessor, train_X, 
-#                                           train_y, model_name)
+print(f'Activation function: {activation_function}')
+print(f'Maximum iterations: {max_iter}')      
+model_name = f"Single Layer Network ({scaler1name}{scaler2name})"                           
+model_fit, model_runtime = mlop.run_nnet(
+    preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
+    activation_function, max_iter, random_state)
 
-model_name = f"{hidden_layer_sizes} Deep Neural Network "\
-f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
-ml_settings = (
-    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
-    f"\nScaler: {scaler1name}{scaler2name}"
-    f"\nActivation function: {activation_function}"
-    f"\nMaximum iterations: {max_iter}"
-    f"\nHidden Layer Sizes: {hidden_layer_sizes}"
-    f"\nSolver: {solver}"
-    f"\nLearning Rate: {learning_rate}"
-    f"\nAlpha: {alpha}\n")
-print(ml_settings)
-model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
-                                        hidden_layer_sizes, solver, alpha, 
-                                        learning_rate, model_name,
-                                        activation_function,max_iter)
+# model_name = f"{hidden_layer_sizes} Deep Neural Network "\
+# f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
+# ml_settings = (
+#     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
+#     f"\nScaler: {scaler1name}{scaler2name}"
+#     f"\nActivation function: {activation_function}"
+#     f"\nMaximum iterations: {max_iter}"
+#     f"\nHidden Layer Sizes: {hidden_layer_sizes}"
+#     f"\nSolver: {solver}"
+#     f"\nLearning Rate: {learning_rate}"
+#     f"\nAlpha: {alpha}\n")
+# print(ml_settings)
+# model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
+#                                         hidden_layer_sizes, solver, alpha, 
+#                                         learning_rate, model_name,
+#                                         activation_function,max_iter)
 
 # =============================================================================
                                                                 # Model Testing
-                                                                
+
 model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
                                                   model_name)
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
                                           security_tag)
-
 end_time = time.time()
 end_tag = datetime.fromtimestamp(end_time)
 end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
