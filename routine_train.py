@@ -15,7 +15,6 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
 import time
-import textwrap
 import os
 from datetime import datetime
 from mlop import mlop
@@ -81,10 +80,19 @@ rf_n_estimators = 50
 rf_min_samples_leaf = 2000
 
 # =============================================================================
+
+start_time = time.time()
+start_tag = datetime.fromtimestamp(time.time())
+start_tag_format = f"\n{str(start_tag.strftime('%c'))}"
+start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
+print(start_tag_format)
+
+# =============================================================================
                                                                  # loading data
 
 from routine_collection import collect_market_data_and_price
 excluded_file = r'SPXts.xlsx'
+ticker = excluded_file[:excluded_file.find('ts')]
 excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
 print(excluded_file)
 dataset = collect_market_data_and_price(excluded_file)
@@ -93,15 +101,13 @@ n_prices = f"\nestimated with {str(len(dataset))} "\
 print(n_prices)
 
 # from routine_generation import dataset
+# excluded_file = r'SPXts.xlsx'
+# ticker = excluded_file[:excluded_file.find('ts')]
+# excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
 # n_prices = f"estimated with {len(dataset)} synthesized option prices"
 # print(f"\n{str(n_prices)}")
 
 # =============================================================================
-start_time = time.time()
-start_tag = datetime.fromtimestamp(time.time())
-start_tag_format = f"\n{str(start_tag.strftime('%c'))}"
-start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
-print(start_tag_format)
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
 scaler1name = str(f"{str(model_scaler[0])[:-2]}")
@@ -130,7 +136,7 @@ mlop = mlop(
 
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
-    f"\nSelected Parameters:\nFeatures:\n{feature_str_list}\n\nTarget: "
+    f"\nSelected Parameters:\n\nFeatures:\n{feature_str_list}\n\nTarget: "
     f"{target_name}\n\nSecurity: {security_tag}\n"
     )
 print(model_settings)
@@ -142,8 +148,10 @@ train_data, train_X, train_y, \
     
     
 preprocessor = mlop.preprocess()
+
 # =============================================================================
                                                               # Model Selection
+
 activation_function_tag = f'\nActivation function: {activation_function}'
 print(activation_function_tag)
 max_iter_tag = f'\nMaximum iterations: {max_iter}'
@@ -181,7 +189,8 @@ model_plot = mlop.plot_model_performance(model_stats, model_runtime,
 end_time = time.time()
 end_tag_datetime = datetime.fromtimestamp(end_time)
 end_tag = str(end_tag_datetime.strftime('%d%m%Y-%H%M%S'))
-outputs_path = os.path.join('outputs',end_tag)
+output_path_tag = str(f"{ticker} {end_tag}")
+outputs_path = os.path.join('outputs',output_path_tag)
 os.makedirs(outputs_path, exist_ok=True)
 total_runtime = int(end_time - start_time)
 model_plot.save(filename = f'{end_tag}.png',
@@ -189,13 +198,11 @@ model_plot.save(filename = f'{end_tag}.png',
                 dpi = 600)
 csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
 dataset.to_csv(csv_path)
-
 end_tag_format = str(end_tag_datetime.strftime('%c'))
 end_time_format = f"\n{end_tag_format}"
 print(end_time_format)
 total_model_runtime = f"\nTotal model runtime: {str(total_runtime)} seconds"
 print(total_model_runtime)
-
 txt_path = os.path.join(outputs_path, f"{end_tag}.txt")
 with open(txt_path, 'w') as file:
     file.write(str(n_prices))
