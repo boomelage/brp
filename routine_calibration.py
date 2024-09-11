@@ -25,7 +25,6 @@ risk_free_rate = 0.05
 S  = 5400
 calculation_date = ql.Date.todaysDate()
 day_count = ql.Actual365Fixed()
-day_count = ql.Actual365Fixed()
 calendar = ql.UnitedStates(m=1)
 ql.Settings.instance().evaluationDate = calculation_date
 dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))

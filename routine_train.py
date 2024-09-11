@@ -216,8 +216,23 @@ with open(txt_path, 'w') as file:
     file.write(str(end_time_format))
     file.write(str(total_model_runtime))
     
-from routine_calibration import strikes, maturities, ivoldf, black_var_surface
-from plot_volatility_surface import plot_volatility_surface
+from ivolmat_from_market import extract_ivol_matrix_from_market
+implied_vols_matrix, strikes, maturities, callvols = extract_ivol_matrix_from_market(r'SPXts.xlsx')
+
+
+import QuantLib as ql
+from qlfuncs import compute_ql_maturity_dates
+calculation_date = ql.Date.todaysDate()
+calendar = ql.UnitedStates(ql.UnitedStates.Market.NYSE)
+day_count
+
+expiration_dates = compute_ql_maturity_dates(maturities)
+black_var_surface = ql.BlackVarianceSurface(
+    calculation_date, calendar,
+    expiration_dates, strikes,
+    implied_vol_matrix, day_count)
+
+
 import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
@@ -227,21 +242,22 @@ import pandas as pd
 import numpy as np
 import os
 
-target_maturity_ivols = ivoldf[1]
-fig, ax = plt.subplots()
-ax.plot(strikes, target_maturity_ivols, label="Black Surface")
-ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
-ax.set_xlabel("Strikes", size=9)
-ax.set_ylabel("Vols", size=9)
-ax.legend(loc="upper right")
-fig.show()
+# target_maturity_ivols = ivoldf[1]
+# fig, ax = plt.subplots()
+# ax.plot(strikes, target_maturity_ivols, label="Black Surface")
+# ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
+# ax.set_xlabel("Strikes", size=9)
+# ax.set_ylabel("Vols", size=9)
+# ax.legend(loc="upper right")
+# fig.show()
+
 
 plot_maturities = pd.Series(maturities) / 365.25
-plot_strikes = pd.Series(strikes)
-X, Y = np.meshgrid(plot_maturities, plot_strikes)
+moneyness = pd.Series(strikes)/np.median(strikes)
+X, Y = np.meshgrid(plot_maturities, moneyness)
 Z = np.array([[
     black_var_surface.blackVol(x, y) for x in plot_maturities] 
-    for y in plot_strikes])
+    for y in moneyness])
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
@@ -253,6 +269,7 @@ fig.colorbar(surf, shrink=0.5, aspect=5)
 ax.set_xlabel("Maturities", size=9)
 ax.set_ylabel("Strikes", size=9)
 ax.set_zlabel("Implied Volatility", size=9)
+ax.view_init(elev=30, azim=-45)
 
 plt.show()
 plt.cla()
