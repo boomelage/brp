@@ -46,14 +46,14 @@ model_scaler = [
     # SplineTransformer(),
     # PolynomialFeatures(),
     # KernelCenterer(),
-    StandardScaler(),
+    # StandardScaler(),
     
     ""
     ]
 
 transformers=[
     ("transformation_1",model_scaler[0],feature_set),
-    ("transformation_2", model_scaler[1],feature_set)
+    # ("transformation_2", model_scaler[1],feature_set)
     ]     
 
 random_state = 42
@@ -216,12 +216,20 @@ with open(txt_path, 'w') as file:
     file.write(str(end_time_format))
     file.write(str(total_model_runtime))
     
-from ivolmat_from_market import extract_ivol_matrix_from_market
-implied_vol_matrix, strikes, maturities, callvols = extract_ivol_matrix_from_market(r'SPXts.xlsx')
+
+
+
+
+# =============================================================================
+                                  # plotting implied volatility for current day
+# =============================================================================
+
 
 from settings import model_settings
 model_settings = model_settings()
 settings = model_settings.import_model_settings()
+
+
 
 dividend_rate = settings['dividend_rate']
 risk_free_rate = settings['risk_free_rate']
@@ -232,6 +240,7 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
 import QuantLib as ql
+from routine_calibration import implied_vol_matrix, strikes, maturities
 expiration_dates = model_settings.compute_ql_maturity_dates(maturities)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,

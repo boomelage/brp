@@ -13,34 +13,26 @@ import os
 import QuantLib as ql
 import warnings
 import numpy as np
-import pandas as pd
 warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
-# =============================================================================
-                                            # QuantLib pricing settings/objects
-dividend_rate = 0.005
-risk_free_rate = 0.05
-S  = 5400
-calculation_date = ql.Date.todaysDate()
-day_count = ql.Actual365Fixed()
-calendar = ql.UnitedStates(m=1)
-ql.Settings.instance().evaluationDate = calculation_date
-dividend_yield = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
-dividend_rate = dividend_yield
-flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-    calculation_date, risk_free_rate, day_count))
-dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-    calculation_date, dividend_rate, day_count))
+from settings import model_settings
+ms = model_settings(file=r'SPXts.xlsx')
+settings = ms.import_model_settings()
+calculation_date = settings['calculation_date']
+calendar = settings['calendar']
+day_count = settings['day_count']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
 
 # =============================================================================
                                        # creating th implied volatility surface
 
-from ivolmat_from_market import extract_ivol_matrix_from_market
-
 implied_vol_matrix, strikes, maturities, ivoldf = \
-    extract_ivol_matrix_from_market(r'SPXts.xlsx')      
+    ms.extract_ivol_matrix_from_market()      
+
+S = np.median(strikes)
 
 expiration_dates = np.empty(len(maturities), dtype=object)
 for i, maturity in enumerate(maturities):
@@ -57,11 +49,25 @@ import time
                                  # Heston model settings and initial parameters
 
 v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
-S = ql.QuoteHandle(ql.SimpleQuote(S))
+
+
+S_handle = ql.QuoteHandle(ql.SimpleQuote(S))  
+
 process = ql.HestonProcess(
-    flat_ts, dividend_ts, S, v0, kappa, theta, sigma, rho)
+    flat_ts,                
+    dividend_ts,            
+    S_handle,               
+    v0,                     # Initial volatility
+    kappa,                  # Mean reversion speed
+    theta,                  # Long-run variance (volatility squared)
+    sigma,                  # Volatility of the volatility
+    rho                     # Correlation between asset and volatility
+)
+
 model = ql.HestonModel(process)
 engine = ql.AnalyticHestonEngine(model)
+
+print(process)
 heston_helpers = []
 
 # =============================================================================
@@ -75,7 +81,7 @@ for current_index, date in enumerate(expiration_dates):
        sigma = black_var_surface.blackVol(t, s)  
        helper = ql.HestonModelHelper(
            ql.Period(int(t * 365), ql.Days),
-           calendar, S.value(), s,
+           calendar, S, s,
            ql.QuoteHandle(ql.SimpleQuote(sigma)),
            flat_ts, dividend_ts
            )
@@ -114,11 +120,4 @@ for current_index, date in enumerate(expiration_dates):
         }
     print('\nHeston model parameters:')
     for key, value in heston_params.items():
-        print(f'{key}: {value}')
-
-# =============================================================================
-                                                                     # plotting
-# outputs_path = None
-# ticker = None
-# from plot_volatility_surface import plot_volatility_surface
-# plot_volatility_surface(outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
+        print(f'{key}: {value}')                                                                    
