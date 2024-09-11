@@ -35,7 +35,6 @@ feature_set = [
     
     ]
 
-
 model_scaler = [
     
     # RobustScaler(),
