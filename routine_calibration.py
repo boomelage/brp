@@ -46,7 +46,6 @@ def run_heston_calibration():
         expiration_dates[i] = calculation_date + ql.Period(maturity, ql.Days)
 
 
-
     black_var_surface = ql.BlackVarianceSurface(
         calculation_date, calendar,
         expiration_dates, strikes,
@@ -110,5 +109,3 @@ def plot_volatility_surface():
     plt.show()
     plt.cla()
     plt.clf()
-
-plot_volatility_surface()
