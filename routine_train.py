@@ -62,7 +62,7 @@ test_size = 0.01
                                                       # Neural Network Settings
 max_iter = 10000
 activation_function = [        
-    # 'identity', da
+    # 'identity',
     # 'logistic',
     # 'tanh',
     'relu',
