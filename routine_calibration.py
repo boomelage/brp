@@ -54,14 +54,15 @@ def run_heston_calibration():
 
     from heston_calibration import calibrate_heston
     heston_params = calibrate_heston(
-        flat_ts,dividend_ts, S, expiration_dates, 
-        black_var_surface, strikes, day_count,calculation_date, calendar, 
+        flat_ts, dividend_ts, S, expiration_dates, 
+        black_var_surface, strikes, day_count, calculation_date, calendar, 
         dividend_rate)
     
     return heston_params
 
 
 heston_params = run_heston_calibration()
+
 # =============================================================================
                                                                # simple example
                                                                

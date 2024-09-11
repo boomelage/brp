@@ -55,11 +55,11 @@ transformers=[
     ("transformation_2", model_scaler[1],feature_set)
     ]     
 
-random_state = None
-test_size = 0.05
+random_state = 42
+test_size = 0.01
 
                                                       # Neural Network Settings
-max_iter = 1000
+max_iter = 10000
 activation_function = [        
     # 'identity', da
     # 'logistic',
@@ -84,11 +84,12 @@ rf_min_samples_leaf = 2000
 from routine_collection import collect_market_data_and_price
 excluded_file = r'SPXts.xlsx'
 dataset = collect_market_data_and_price(excluded_file)
-print(
-f"\nestimated with {len(dataset)} option prices collected from the market")
+n_prices = f"estimated with {str(len(dataset))} "\
+           f"option prices collected from the market"
 
 # from routine_generation import dataset
-# print(f"\nestimated with {len(dataset)} synthesized option prices")
+# n_prices = f"estimated with {len(dataset)} synthesized option prices"
+# print(f"\n{str(n_prices)}")
 
 # =============================================================================
 start_time = time.time()
@@ -119,6 +120,7 @@ mlop = mlop(
     model_scaler1 = model_scaler1,
     model_scaler2 = model_scaler2
 )
+
 feature_str_list = '\n'.join(feature_set)
 model_settings = (
     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:"
@@ -181,4 +183,10 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
+print(f"""
+{n_prices}
+\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:
+\n\nFeatures:\n{feature_str_list}\n\nTarget: {target_name}\n\nSecurity:
+{security_tag}\n
+      """)
 
