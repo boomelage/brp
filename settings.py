@@ -62,23 +62,6 @@ class model_settings():
             expiration_dates[i] = self.calculation_date + ql.Period(int(maturity), ql.Days)
         return expiration_dates
 
-    def extract_ivol_matrix_from_market(
-            self,
-            term_structure_from_market, 
-            maturities, 
-            strikes):
-        implied_vols_matrix = ql.Matrix(
-            len(strikes),
-            len(maturities),
-            float(0)
-            )
-        term_structure_from_market = term_structure_from_market.groupby('Strike')
-        for i, maturity in enumerate(maturities):
-            for j, strike in enumerate(strikes):
-                try:
-                    implied_vols_matrix[j][i] = term_structure_from_market.get_group(strike).loc[strike,maturity].iloc[0]
-                    print(f'implied_vols_matrix[{j}][{i}] mapped')
-                except Exception:
-                    pass
-                continue
-        return implied_vols_matrix
+    
+    
+    

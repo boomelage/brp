@@ -22,9 +22,8 @@ for file in data_files:
     try:
         df = pd.read_excel(file)
         df.columns = df.loc[1]
-        df = df.iloc[2:,:].reset_index(drop=True).dropna()
-        df['Strike'] = df['Strike'].astype(int)
-        df['DyEx'] = df['DyEx'].astype(int)
+        df = df.iloc[2:,:].reset_index(drop=True)
+        df = df.dropna()
         df = df.set_index('Strike')
         df_strikes = df.index.tolist()
         df_maturities = df['DyEx'].loc[df_strikes[0]].unique().tolist()
@@ -39,15 +38,11 @@ for file in data_files:
     except Exception as e:
         print(f"\n{file}: {e}")
     continue
+
+
 strikes = np.sort(term_structure_from_market.index.unique())
 maturities = np.sort(term_structure_from_market.columns.unique())
 maturities = maturities[maturities>0]
-# term_structure_from_market.fillna(0,inplace=True)
 
-term_structure_from_market
 
-from settings import model_settings
 
-mc = model_settings()
-
-implied_vols_matrix = mc.extract_ivol_matrix_from_market(term_structure_from_market, maturities, strikes)
