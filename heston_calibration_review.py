@@ -6,9 +6,6 @@ Created on Thu Sep  5 11:54:40 2024
 """
 import QuantLib as ql
 import time
-
-# Something may be wrong here
-
 def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
     black_var_surface, strikes, day_count, calculation_date, calendar,
         dividend_rate):
@@ -20,7 +17,6 @@ def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []
-    
     # loop through all maturities and perform calibration for each one
     for current_index, date in enumerate(expiration_dates):
         print(f"\nCurrently calibrating for maturity: {date}")
@@ -28,22 +24,14 @@ def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
         for j, s in enumerate(strikes):
            t = day_count.yearFraction(calculation_date, date)
            sigma = black_var_surface.blackVol(t, s)  
-           if sigma != sigma:  # NaN check since NaN != NaN in Python
-               print(f"Skipping strike {s}: no IVOL.")
-               continue
            helper = ql.HestonModelHelper(
                ql.Period(int(t * 365), ql.Days),
                calendar, S.value(), s,
                ql.QuoteHandle(ql.SimpleQuote(sigma)),
                flat_ts, dividend_ts
                )
-
            helper.setPricingEngine(engine)
            heston_helpers.append(helper)
-        if len(heston_helpers) == 0:
-           print(f"No valid strikes for maturity {date}, skipping calibration.")
-           continue  # Skip calibration if no valid helpers exist
-            
         lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
         model.calibrate(heston_helpers, lm,
                          ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
@@ -53,15 +41,12 @@ def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
             "\ntheta = %f, kappa = %f, "
             "sigma = %f, rho = %f, v0 = %f" % (theta, kappa, 
                                                sigma, rho, v0))
-
         avg = 0.0
-        
         time.sleep(0.005)
         print ("%15s %15s %15s %20s" % (
             "Strikes", "Market Value",
               "Model Value", "Relative Error (%)"))
         print ("="*70)
-            
         for i in range(min(len(heston_helpers), len(strikes))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
@@ -69,14 +54,8 @@ def calibrate_heston(flat_ts, dividend_ts, S, expiration_dates,
                   f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
             avg += abs(err)  # accumulate the absolute error
         avg = avg*100.0/len(heston_helpers)
-    
-        # print(
-        #     f"{len(strikes)*(current_index+1)}/"
-        #     f"{len(strikes)*len(expiration_dates)} prices computed "
-        #       )
         print("-"*70)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
-        
         heston_params = {
             'theta':theta, 
             'kappa':kappa, 
