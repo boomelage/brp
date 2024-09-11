@@ -37,18 +37,20 @@ feature_set = [
 
 
 model_scaler = [
-                # RobustScaler(),
-                QuantileTransformer(),
-                # MaxAbsScaler(),
-                # MinMaxScaler(),
-                # Normalizer(),
-                # PowerTransformer(),
-                # SplineTransformer(),
-                # PolynomialFeatures(),
-                # KernelCenterer(),
-                StandardScaler(),
-                ""
-                ]
+    
+    # RobustScaler(),
+    QuantileTransformer(),
+    # MaxAbsScaler(),
+    # MinMaxScaler(),
+    # Normalizer(),
+    # PowerTransformer(),
+    # SplineTransformer(),
+    # PolynomialFeatures(),
+    # KernelCenterer(),
+    StandardScaler(),
+    
+    ""
+    ]
 
 transformers=[
     ("transformation_1",model_scaler[0],feature_set),
@@ -156,7 +158,7 @@ activation_function_tag = f'\nActivation function: {activation_function}'
 print(activation_function_tag)
 max_iter_tag = f'\nMaximum iterations: {max_iter}'
 print(max_iter_tag)      
-model_name = f"\nSingle Layer Network ({scaler1name}{scaler2name})"                           
+model_name = f"Single Layer Network ({scaler1name}{scaler2name})"                           
 model_fit, model_runtime = mlop.run_nnet(
     preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
     activation_function, max_iter, random_state)
@@ -181,9 +183,9 @@ model_fit, model_runtime = mlop.run_nnet(
 # =============================================================================
                                                                 # Model Testing
 
+plt.rcdefaults()
 model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit, 
                                                   model_name)
-plt.rcdefaults()
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
                                           security_tag)
 end_time = time.time()
@@ -193,17 +195,17 @@ output_path_tag = str(f"{ticker} {end_tag}")
 outputs_path = os.path.join('outputs',output_path_tag)
 os.makedirs(outputs_path, exist_ok=True)
 total_runtime = int(end_time - start_time)
-model_plot.save(filename = f'{end_tag}.png',
+model_plot.save(filename = f'{ticker} prediction {end_tag}.png',
                 path = outputs_path,
                 dpi = 600)
-csv_path = os.path.join(outputs_path,f"{end_tag}.csv")
+csv_path = os.path.join(outputs_path,f"{ticker} {end_tag}.csv")
 dataset.to_csv(csv_path)
 end_tag_format = str(end_tag_datetime.strftime('%c'))
 end_time_format = f"\n{end_tag_format}"
 print(end_time_format)
 total_model_runtime = f"\nTotal model runtime: {str(total_runtime)} seconds"
 print(total_model_runtime)
-txt_path = os.path.join(outputs_path, f"{end_tag}.txt")
+txt_path = os.path.join(outputs_path, f"{ticker} {end_tag}.txt")
 with open(txt_path, 'w') as file:
     file.write(str(n_prices))
     file.write(str(excluded_file_format))
@@ -214,3 +216,8 @@ with open(txt_path, 'w') as file:
     file.write(str(model_name))
     file.write(str(end_time_format))
     file.write(str(total_model_runtime))
+    
+ 
+from routine_calibration import plot_volatility_surface
+plot_volatility_surface(outputs_path,ticker)
+plt.rcdefaults()

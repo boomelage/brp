@@ -70,11 +70,13 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
+import re
+
 
 expiry = 2/365
 target_maturity_ivols = ivoldf[1]
 
-def plot_volatility_surface():
+def plot_volatility_surface(outputs_path, ticker):
     fig, ax = plt.subplots()
     ax.plot(strikes, target_maturity_ivols, label="Black Surface")
     ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
@@ -101,6 +103,10 @@ def plot_volatility_surface():
     ax.set_ylabel("Maturities (Years)", size=9)
     ax.set_zlabel("Volatility", size=9)
     
+
+    timestamp = re.search(r'[^ ]+$', outputs_path).group(0)
+    plot_path = os.path.join(outputs_path, f"{ticker} ts {timestamp}.png")
+    plt.savefig(plot_path,dpi=600)
     plt.show()
     plt.cla()
     plt.clf()
