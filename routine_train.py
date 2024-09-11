@@ -10,11 +10,12 @@ This is the principal file with which the model is estimated
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
-
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
+from routine_calibration import heston_params
+from routine_generation import dataset
 import time
 import textwrap
 import os
@@ -29,14 +30,13 @@ feature_set = [
     
     'spot_price', 
     'dividend_rate', 
-    # 'risk_free_rate',
+    'risk_free_rate',
     'days_to_maturity', 
     'strike_price'
     
     ]
 
-risk_free_rate = 0.02
-dividend_rate = 0.00
+
 model_scaler = [
                 # RobustScaler(),
                 # QuantileTransformer(),
@@ -85,29 +85,10 @@ start_time = time.time()
 start_tag = datetime.fromtimestamp(time.time())
 start_tag = start_tag.strftime('%d%m%Y-%H%M%S')
 
-# =============================================================================
-# print(f'\nGenerating {nspots*n_strikes*n_maturities} option prices')
-# =============================================================================
 
 
 
 
-# =============================================================================
-                                                            # generating prices
-
-# from new_collect_market_data import dataset
-
-
-from market_settings import spotmin, spotmax, nspots, \
-    n_maturities, n_strikes, lower_moneyness, upper_moneyness, \
-        shortest_maturity, longest_maturity
-        
-from market_settings import generate_syntetic_subset
-dataset = generate_syntetic_subset()
-
-
-# =============================================================================
-# print(f'\nNumber of option price/parameter sets generated: {len(dataset)}')
 # =============================================================================
 
 model_scaler1 = model_scaler[0]
@@ -184,8 +165,6 @@ model_stats = mlop.compute_predictive_performance(test_data, test_X, model_fit,
 model_plot = mlop.plot_model_performance(model_stats, model_runtime, 
                                           security_tag)
 
-
-
 end_time = time.time()
 end_tag = datetime.fromtimestamp(end_time)
 end_tag = str(end_tag.strftime('%d%m%Y-%H%M%S'))
@@ -200,23 +179,4 @@ dataset.to_csv(csv_path)
 print(f"\n{datetime.fromtimestamp(end_time)}")
 total_model_runtime = f"Total model runtime: {str(total_runtime)} seconds"
 print(f"{total_model_runtime}\n")
-# output = f"""Model estimated using {len(dataset)} options 
-# with {nspots} spot price(s) between {spotmin} and {spotmax} (mid-point if one),
-# {n_strikes} strike(s) between {int(lower_moneyness*100)}% and
-# {int(upper_moneyness*100)}% moneyness, and {n_maturities} maturity/maturities
-# between {round(shortest_maturity,2)} and {round(longest_maturity,2)} years
-# (act/365)"""
-# wrapped_output = textwrap.fill(output, width=60)
-# print(wrapped_output)
-# txt_path = os.path.join(outputs_path,f"{end_tag}.txt")
-# with open(txt_path, 'w') as file:
-#     file.write(total_model_runtime)
-#     file.write(" \n")
-#     file.write(wrapped_output)
-#     file.write(model_settings)
-#     file.write(ml_settings)
 
-
-# from surface_plotting import plot_vol_surface
-# plot_vol_surface(dataset, ivol_table, implied_vols_matrix, 
-#                      black_var_surface, strikes, maturities)
