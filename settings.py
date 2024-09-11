@@ -39,14 +39,13 @@ class model_settings():
         dividend_ts = self.dividend_ts
         flat_ts = self.flat_ts
         return {
-            "dividend_rate": [dividend_rate], 
-            "risk_free_rate":[risk_free_rate], 
-            "calculation_date": [calculation_date], 
-            "day_count": [day_count], 
-            "calendar": [calendar],
-            "flat_ts": [flat_ts],
-            "dividend_ts": [dividend_ts]
-            
+            "dividend_rate": dividend_rate, 
+            "risk_free_rate": risk_free_rate, 
+            "calculation_date": calculation_date, 
+            "day_count": day_count, 
+            "calendar": calendar,
+            "flat_ts": flat_ts,
+            "dividend_ts": dividend_ts
             }
             
     def make_ql_array(self,size,nparr):

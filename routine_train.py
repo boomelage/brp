@@ -217,18 +217,21 @@ with open(txt_path, 'w') as file:
     file.write(str(total_model_runtime))
     
 from ivolmat_from_market import extract_ivol_matrix_from_market
-implied_vols_matrix, strikes, maturities, callvols = extract_ivol_matrix_from_market(r'SPXts.xlsx')
+implied_vol_matrix, strikes, maturities, callvols = extract_ivol_matrix_from_market(r'SPXts.xlsx')
 
+from settings import model_settings
+model_settings = model_settings()
+settings = model_settings.import_model_settings()
+
+dividend_rate = settings['dividend_rate']
+risk_free_rate = settings['risk_free_rate']
+calculation_date = settings['calculation_date']
+day_count = settings['day_count']
+calendar = settings['calendar']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
 
 import QuantLib as ql
-from settings import model_settings
-
-model_settings = model_settings.import_model_settings()
-
-
-
-
-
 expiration_dates = model_settings.compute_ql_maturity_dates(maturities)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
@@ -240,8 +243,6 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
-import re
-import pandas as pd
 import numpy as np
 import os
 
@@ -254,32 +255,26 @@ import os
 # ax.legend(loc="upper right")
 # fig.show()
 
-
-plot_maturities = pd.Series(maturities) / 365.25
-moneyness = pd.Series(strikes)/np.median(strikes)
+plot_maturities = np.array(maturities,dtype=float)/365.25
+moneyness = np.array(strikes,dtype=float)
 X, Y = np.meshgrid(plot_maturities, moneyness)
-Z = np.array([[
-    black_var_surface.blackVol(x, y) for x in plot_maturities] 
-    for y in moneyness])
-
+Z = np.array([black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())])
+Z = Z.reshape(X.shape)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
-
-surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                linewidth=0.1)
+surf = ax.plot_surface(
+    X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
 fig.colorbar(surf, shrink=0.5, aspect=5)
-
 ax.set_xlabel("Maturities", size=9)
 ax.set_ylabel("Strikes", size=9)
 ax.set_zlabel("Implied Volatility", size=9)
-ax.view_init(elev=30, azim=-45)
-
+ax.view_init(elev=30, azim=-35)
 plt.show()
 plt.cla()
 plt.clf()
 
-
-
 # plot_volatility_surface(
 #     outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
 # plt.rcdefaults()
+
+
