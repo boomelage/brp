@@ -62,15 +62,15 @@ test_size = 0.01
                                                       # Neural Network Settings
 max_iter = 10000
 activation_function = [        
-    # 'identity',
+    'identity',
     # 'logistic',
     # 'tanh',
-    'relu',
+    # 'relu',
     ]
 hidden_layer_sizes=(100, 100, 100)
 solver= [
-            # "lbfgs",
-            "sgd",
+            "lbfgs",
+            # "sgd",
             # "adam"
         ]
 alpha = 0.0001
@@ -216,7 +216,50 @@ with open(txt_path, 'w') as file:
     file.write(str(end_time_format))
     file.write(str(total_model_runtime))
     
- 
-from routine_calibration import plot_volatility_surface
-plot_volatility_surface(outputs_path,ticker)
-plt.rcdefaults()
+from routine_calibration import strikes, maturities, ivoldf, black_var_surface
+from plot_volatility_surface import plot_volatility_surface
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize']=(15,7)
+plt.style.use("dark_background")
+from matplotlib import cm
+import re
+import pandas as pd
+import numpy as np
+import os
+
+target_maturity_ivols = ivoldf[1]
+fig, ax = plt.subplots()
+ax.plot(strikes, target_maturity_ivols, label="Black Surface")
+ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
+ax.set_xlabel("Strikes", size=9)
+ax.set_ylabel("Vols", size=9)
+ax.legend(loc="upper right")
+fig.show()
+
+plot_maturities = pd.Series(maturities) / 365.25
+plot_strikes = pd.Series(strikes)
+X, Y = np.meshgrid(plot_maturities, plot_strikes)
+Z = np.array([[
+    black_var_surface.blackVol(x, y) for x in plot_maturities] 
+    for y in plot_strikes])
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+                linewidth=0.1)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+
+ax.set_xlabel("Maturities", size=9)
+ax.set_ylabel("Strikes", size=9)
+ax.set_zlabel("Implied Volatility", size=9)
+
+plt.show()
+plt.cla()
+plt.clf()
+
+
+
+# plot_volatility_surface(
+#     outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
+# plt.rcdefaults()

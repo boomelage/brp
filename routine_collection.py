@@ -81,7 +81,7 @@ def collect_market_data_and_price(excluded_file):
     market_data = market_data.apply(compute_maturity_date, axis=1)
     
     option_prices = BS_price_vanillas(market_data)
-    # option_prices = heston_price_vanillas(option_prices)
+    option_prices = heston_price_vanillas(option_prices)
     option_prices = noisyfier(option_prices)
     priced_market_data = option_prices.dropna()
     print(priced_market_data)

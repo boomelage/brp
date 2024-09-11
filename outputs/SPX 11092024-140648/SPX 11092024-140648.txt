@@ -1,0 +1,21 @@
+
+estimated with 448 option prices collected from the market
+Term sturcutre: SPXts.xlsx
+Wed Sep 11 14:06:47 2024
+Selected Parameters:
+
+Features:
+spot_price
+dividend_rate
+risk_free_rate
+days_to_maturity
+strike_price
+
+Target: observed_price
+
+Security: vanilla options
+
+Activation function: identity
+Maximum iterations: 10000Single Layer Network (QuantileTransformerStandardScaler)
+Wed Sep 11 14:06:48 2024
+Total model runtime: 0 seconds

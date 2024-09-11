@@ -30,10 +30,10 @@ def plot_volatility_surface(
     
     plot_maturities = pd.Series(maturities) / 365.25
     plot_strikes = pd.Series(strikes)
-    X, Y = np.meshgrid(plot_strikes, plot_maturities)
+    X, Y = np.meshgrid(plot_maturities, plot_strikes)
     Z = np.array([[
-        black_var_surface.blackVol(y, x) for x in plot_strikes] 
-        for y in plot_maturities])
+        black_var_surface.blackVol(y, x) for x in plot_maturities] 
+        for y in plot_strikes])
     
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')

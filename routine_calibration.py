@@ -35,9 +35,6 @@ flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
 dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
     calculation_date, dividend_rate, day_count))
 
-
-
-
 # =============================================================================
                                        # creating th implied volatility surface
 
@@ -122,7 +119,7 @@ for current_index, date in enumerate(expiration_dates):
 
 # =============================================================================
                                                                      # plotting
-outputs_path = None
-ticker = None
-from plot_volatility_surface import plot_volatility_surface
-plot_volatility_surface(outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
+# outputs_path = None
+# ticker = None
+# from plot_volatility_surface import plot_volatility_surface
+# plot_volatility_surface(outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
