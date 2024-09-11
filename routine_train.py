@@ -14,7 +14,6 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
             QuantileTransformer
-from routine_calibration import heston_params
 from routine_generation import dataset
 import time
 import textwrap
@@ -64,10 +63,10 @@ max_iter = 1000
 activation_function = [        
     # 'identity', 
     # 'logistic',
-    'tanh',
-    # 'relu',
+    # 'tanh',
+    'relu',
     ]
-hidden_layer_sizes=(10, 10, 10)
+hidden_layer_sizes=(100, 100, 100)
 solver= [
             # "lbfgs",
             "sgd",
