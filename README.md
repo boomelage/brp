@@ -1,1 +1,1 @@
-training sklearn models to price options with calibrated parameters or market data and experimenting with a combination of the two for computational efficiency
+training sklearn models to price options with synthetically generateed option prices obtained via cartesian product and priced by a calibrated heston model and experimenting with various approximations for computational efficiency. 
