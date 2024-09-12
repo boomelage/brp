@@ -24,7 +24,8 @@ ts.index = ts.index.astype(int)
 
 ts = ts.loc[
     
-    5540:5640
+    5540:5640,
+    7:15
     
     ]
 ts = ts.loc[:, (ts != 0).any(axis=0)]
