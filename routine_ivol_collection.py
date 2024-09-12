@@ -108,34 +108,39 @@ file_tag = file_datetime.strftime("%Y-%m-%d %H-%M-%S")
 filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
 # implied_vols_df.to_csv(filename)
 
-print(maturities)
 print(strikes)
+print(maturities)
+
 
 implied_vols_df = implied_vols_df.loc[
+    
 # strike filter
-    5450:5500, 
+5450:5500, 
 # maturity filter
-    7:37       
+:
 
     ]
 
-implied_vols_df = implied_vols_df.replace(0.0, np.nan)
-implied_vols_df = implied_vols_df.interpolate(axis=0)
-implied_vols_df = implied_vols_df.dropna(axis=1)
+# implied_vols_df = implied_vols_df.replace(0.0, np.nan)
+# implied_vols_df = implied_vols_df.interpolate(axis=0)
 
 
 
-strikes = implied_vols_df.index
-maturities = implied_vols_df.columns
 
+
+implied_vols = implied_vols_df.dropna(axis=1)
+Ks = implied_vols.index
+Ts = implied_vols.columns
 
 import QuantLib as ql
-implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),0)
-for i, maturity in enumerate(maturities):
-    for j, strike in enumerate(strikes):
-        implied_vols_matrix[j][i] = implied_vols_df.loc[strike,maturity]
-            
-            
+implied_vols_matrix = ql.Matrix(len(Ks),len(Ts),0)
+for i, strike in enumerate(Ks):
+    for j, maturity in enumerate(Ts):
+        implied_vols_matrix[i][j] = implied_vols.loc[strike,maturity]
+
+# print(implied_vols_matrix)
+        
+        
 from settings import model_settings
 ms = model_settings()
 settings, ezprint = ms.import_model_settings()
@@ -147,11 +152,11 @@ calendar = settings['calendar']
 flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
-expiration_dates = ms.compute_ql_maturity_dates(maturities)
-S = np.median(strikes)
+expiration_dates = ms.compute_ql_maturity_dates(Ts)
+S = np.median(Ks)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
-    expiration_dates, strikes,
+    expiration_dates, Ks,
     implied_vols_matrix, day_count)
 
 import matplotlib.pyplot as plt
@@ -161,19 +166,22 @@ from matplotlib import cm
 import numpy as np
 import os
 
-# target_maturity_ivols = ivoldf[1]
-# fig, ax = plt.subplots()
-# ax.plot(strikes, target_maturity_ivols, label="Black Surface")
-# ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
-# ax.set_xlabel("Strikes", size=9)
-# ax.set_ylabel("Vols", size=9)
-# ax.legend(loc="upper right")
-# fig.show()
+target_maturity_ivols = implied_vols_df.loc[:,]
+fig, ax = plt.subplots()
+ax.plot(Ks, target_maturity_ivols, label="Black Surface")
+ax.plot(Ks, target_maturity_ivols, "o", label="Actual")
+ax.set_xlabel("Strikes", size=9)
+ax.set_ylabel("Vols", size=9)
+ax.legend(loc="upper right")
+fig.show()
 
-plot_maturities = np.array(maturities,dtype=float)/365.25
-moneyness = np.array(strikes,dtype=float)
+plot_maturities = np.array(Ts,dtype=float)/365.25
+moneyness = np.array(Ks,dtype=float)
 X, Y = np.meshgrid(plot_maturities, moneyness)
-Z = np.array([black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())])
+Z = np.array(
+    [
+    black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())
+      ])
 Z = Z.reshape(X.shape)
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
@@ -184,16 +192,12 @@ ax.set_xlabel("Maturities", size=9)
 ax.set_ylabel("Strikes", size=9)
 ax.set_zlabel("Implied Volatility", size=9)
 ax.view_init(elev=30, azim=-35)
-plt.show()
+plt.show() 
 plt.cla()
 plt.clf()
 
-# plot_volatility_surface(
-#     outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
-# plt.rcdefaults()
 
-
-
+implied_vols.loc[5475,492]
 
 
 

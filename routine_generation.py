@@ -19,7 +19,7 @@ market_data = collect_market_data(r'SPXts.xlsx')
 pd.set_option('display.max_columns', None)
 calculation_date = ql.Date.todaysDate()
 
-v = market_data['volatility'].unique().tolist()
+# v = market_data['volatility'].unique().tolist()
 s = market_data['spot_price'].unique().tolist()
 k = market_data['strike_price'].unique().tolist()
 t = market_data['days_to_maturity'].unique().tolist()
@@ -31,7 +31,7 @@ contract_details = pd.DataFrame(
     product(
         s,
         k,
-        v,
+        # v,
         t,
         # g,
         # r,
@@ -39,7 +39,7 @@ contract_details = pd.DataFrame(
     columns=[
         "spot_price", 
         "strike_price",
-        "volatility",
+        # "volatility",
         "days_to_maturity",
         # "dividend_rate",
         # "risk_free_rate",
