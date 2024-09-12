@@ -16,3 +16,16 @@ def dirdata(exclude_file=None):
             data_files.append(name)
     
     return data_files
+
+
+def dirdatacsv(exclude_file=None):
+    pwd = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(pwd)
+    filenames = os.listdir(pwd)
+    data_files = []
+    
+    for name in filenames:
+        if name.endswith('.csv') and name != exclude_file:  # Exclude the specified file
+            data_files.append(name)
+    
+    return data_files

@@ -115,7 +115,7 @@ print(maturities)
 implied_vols_df = implied_vols_df.loc[
     
 # strike filter
-5450:5500, 
+5540:5640, 
 # maturity filter
 :
 
@@ -138,7 +138,7 @@ for i, strike in enumerate(Ks):
     for j, maturity in enumerate(Ts):
         implied_vols_matrix[i][j] = implied_vols.loc[strike,maturity]
 
-# print(implied_vols_matrix)
+print(implied_vols_matrix)
         
         
 from settings import model_settings
@@ -197,7 +197,7 @@ plt.cla()
 plt.clf()
 
 
-implied_vols.loc[5475,492]
+# implied_vols.loc[5475,492]
 
 
 
