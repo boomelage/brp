@@ -50,16 +50,13 @@ maturities = np.sort(term_structure_from_market.columns.unique())
 maturities = maturities[maturities>0]
 
 
-# Create an empty DataFrame with strikes as the index and maturities as the columns
 implied_vols_df = pd.DataFrame(index=strikes, columns=maturities)
 
-# Loop through maturities and strikes
 for i, maturity in enumerate(maturities):
     for j, strike in enumerate(strikes):
         try:
             value = term_structure_from_market.loc[strike, maturity]
             
-            # Check if the value is numeric and not NaN
             if isinstance(value, (int, float)) and not np.isnan(value):
                 implied_vols_df.loc[strike, maturity] = value
             else:
