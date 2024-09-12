@@ -17,30 +17,25 @@ warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
-from settings import model_settings
-ms = model_settings(file=r'SPXts.xlsx')
-settings = ms.import_model_settings()
-calculation_date = settings['calculation_date']
-calendar = settings['calendar']
-day_count = settings['day_count']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
 
 # =============================================================================
                                        # creating th implied volatility surface
 
+from routine_ivol_collection import implied_vols_matrix, ivdf,maturities,strikes
+from settings import model_settings
+ms = model_settings()
+settings = ms.import_model_settings()
 
-
-from ivol_testing import term_structure_from_market, implied_vols_matrix,\
-    strikes, maturities
-
-strikes = np.array(strikes,dtype=float)
-
-
-S = np.median(term_structure_from_market.index)
+dividend_rate = settings['dividend_rate']
+risk_free_rate = settings['risk_free_rate']
+calculation_date = settings['calculation_date']
+day_count = settings['day_count']
+calendar = settings['calendar']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
 
 expiration_dates = ms.compute_ql_maturity_dates(maturities)
-
+S = np.median(ivdf.index)
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, strikes,

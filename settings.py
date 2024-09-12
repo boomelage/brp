@@ -26,7 +26,6 @@ class model_settings():
         self.file = file
         self.calculation_date = calculation_date
         ql.Settings.instance().evaluationDate = calculation_date
-        
         self.flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
             self.calculation_date, self.risk_free_rate, self.day_count))
         self.dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
@@ -40,6 +39,17 @@ class model_settings():
         calendar = self.calendar
         dividend_ts = self.dividend_ts
         flat_ts = self.flat_ts
+        ezimport = [
+            "dividend_rate = settings['dividend_rate']",
+            "risk_free_rate = settings['risk_free_rate']",
+            "calculation_date = settings['calculation_date']",
+            "day_count = settings['day_count']",
+            "calendar = settings['calendar']",
+            "flat_ts = settings['flat_ts']",
+            "dividend_ts = settings['dividend_ts']"]
+        print("\n")
+        for ez in ezimport:
+            print(ez)
         return {
             "dividend_rate": dividend_rate, 
             "risk_free_rate": risk_free_rate, 
