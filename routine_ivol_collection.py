@@ -10,9 +10,11 @@ os.chdir(pwd)
 from data_query import dirdata
 import pandas as pd
 import numpy as np
-pd.set_option('display.max_rows',None)
+import time
+from datetime import datetime
+# pd.set_option('display.max_rows',None)
 pd.set_option('display.max_columns',None)
-# pd.reset_option('display.max_rows')
+pd.reset_option('display.max_rows')
 # pd.reset_option('display.max_columns')
 
 
@@ -23,60 +25,136 @@ for file in data_files:
         df = pd.read_excel(file)
         df.columns = df.loc[1]
         df = df.iloc[2:,:].reset_index(drop=True)
-        df = df.dropna()
-        df = df.set_index('Strike')
+        
+        
+    #     df = df.dropna()
+        callvols = df.set_index('Strike')
         df_strikes = df.index.tolist()
         df_maturities = df['DyEx'].loc[df_strikes[0]].unique().tolist()
-        calls = pd.concat([df.iloc[:, i:i+2] for i in range(
+        callvols = pd.concat([df.iloc[:, i:i+2] for i in range(
             0, df.shape[1], 4)], axis=1)
-        callvols = calls['IVM']
-        callvols.columns = df_maturities
+        # callvols = calls['IVM']
+        # callvols.columns = df_maturities
         term_structure_from_market = pd.concat([term_structure_from_market,callvols])
-        print(f"\n{file}:")
-        print(f"{df_maturities}")
-        print(f"center_strike: {np.median(df_strikes)}")
-        print(f"count: {len(df_strikes)}")
+    #     print(f"\n{file}:")
+    #     print(f"{df_maturities}")
+    #     print(f"center_strike: {np.median(df_strikes)}")
+    #     print(f"count: {len(df_strikes)}")
     except Exception as e:
         print(f"\n{file}: {e}")
-    except Exception:
-        pass
-    continue
-
-
+term_structure_from_market = term_structure_from_market.set_index('Strike')
 strikes = np.sort(term_structure_from_market.index.unique())
-maturities = np.sort(term_structure_from_market.columns.unique())
-maturities = maturities[maturities>0]
+maturities = np.array(term_structure_from_market['DyEx'].astype(float))
+maturities = maturities[~np.isnan(maturities)].astype(int)
+maturities = np.unique(maturities[maturities > 0])
+
+term_structure_from_market = term_structure_from_market.reset_index()
+term_structure_from_market
 
 
-# Create an empty DataFrame with strikes as the index and maturities as the columns
-implied_vols_df = pd.DataFrame(index=strikes, columns=maturities)
 
-# Loop through maturities and strikes
+ts_columns = []
+ivm_count = 1
+dyex_count = 1
+
+for col in term_structure_from_market.columns:
+    if col == 'IVM':
+        ts_columns.append(f'IVM_{ivm_count}')
+        ivm_count += 1
+    elif col == 'DyEx':
+        ts_columns.append(f'DyEx_{dyex_count}')
+        dyex_count += 1
+    else:
+        ts_columns.append(col)
+
+term_structure_from_market.columns = ts_columns
+
+df = term_structure_from_market
+
+# Step 1: Reshape the DataFrame using pd.melt
+df_melted = pd.melt(df, 
+                    id_vars=['Strike'], 
+                    value_vars=['IVM_1', 'IVM_2', 'IVM_3', 'IVM_4'],
+                    var_name='IVM_label', 
+                    value_name='IVM')
+
+df_melted_dyex = pd.melt(df, 
+                         id_vars=['Strike'], 
+                         value_vars=['DyEx_1', 'DyEx_2', 'DyEx_3', 'DyEx_4'],
+                         var_name='DyEx_label', 
+                         value_name='DyEx')
+
+# Combine the melted dataframes (assuming the same order)
+df_combined = pd.concat([df_melted[['Strike', 'IVM']], df_melted_dyex['DyEx']], axis=1)
+
+# Step 2: Drop rows where DyEx or IVM is NaN
+df_combined = df_combined.dropna()
+
+# Step 3: Set Strike and DyEx as the MultiIndex
+df_indexed = df_combined.set_index(['Strike', 'DyEx'])
+
+df_indexed = df_indexed.sort_index()
+
+
+import QuantLib as ql
+
+implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),0)
 for i, maturity in enumerate(maturities):
     for j, strike in enumerate(strikes):
         try:
-            value = term_structure_from_market.loc[strike, maturity]
+            implied_vols_matrix[j][i] = float(df_indexed.xs((strike, maturity))['IVM'].iloc[0])
+        except Exception:
+            implied_vols_matrix[j][i] = 0
             
-            # Check if the value is numeric and not NaN
-            if isinstance(value, (int, float)) and not np.isnan(value):
-                implied_vols_df.loc[strike, maturity] = value
-            else:
-                print(f"\nInvalid value at Strike {strike}, Maturity {maturity}: {value}")
-        except Exception as e:
-            print(f"\nError at Strike {strike}, Maturity {maturity}: {e}")
-        continue
-ivdf = implied_vols_df.dropna(how='all')
-ivdf = ivdf.dropna(how='all',axis=1)
-maturities = ivdf.columns
-strikes =  ivdf.index
+implied_vols_np = np.zeros((len(strikes), len(maturities)), dtype=float)
+for i, maturity in enumerate(maturities):
+    for j, strike in enumerate(strikes):
+        implied_vols_np[j][i] = implied_vols_matrix[j][i]
 
-print(f"\n{ivdf}")
+implied_vols_df = pd.DataFrame(implied_vols_np)
+implied_vols_df.index = strikes
+implied_vols_df.columns = maturities
 
-import QuantLib as ql
-implied_vols_matrix = ql.Matrix(len(ivdf.index),len(ivdf.columns))
+maxmat = int(max(maturities))
+minmat = int(min(maturities))
+strikes =  implied_vols_df.index
+mink = int(min(strikes))
+maxk = int(max(strikes))
+S = int(np.median(strikes))
+print(f"\n{implied_vols_df}\n")
+file_time = time.time()
+file_datetime = datetime.fromtimestamp(file_time)
+file_tag = file_datetime.strftime("%Y-%m-%d %H-%M-%S")
+filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
+implied_vols_df.to_csv(filename)
 
-for i, maturity in enumerate(strikes):
-    for j, strike in enumerate(maturities):
-        implied_vols_matrix[i][j] = ivdf.iloc[i,j] 
-    
-print(f"\n{implied_vols_matrix}")
+
+
+
+# from settings import model_settings
+# ms = model_settings()
+# settings, ezprint = ms.import_model_settings()
+# dividend_rate = settings['dividend_rate']
+# risk_free_rate = settings['risk_free_rate']
+# calculation_date = settings['calculation_date']
+# day_count = settings['day_count']
+# calendar = settings['calendar']
+# flat_ts = settings['flat_ts']
+# dividend_ts = settings['dividend_ts']
+
+# expiration_dates = ms.compute_ql_maturity_dates(maturities)
+# S = np.median(strikes)
+# black_var_surface = ql.BlackVarianceSurface(
+#     calculation_date, calendar,
+#     expiration_dates, strikes,
+#     implied_vols_matrix, day_count)
+
+
+
+
+
+
+
+
+
+

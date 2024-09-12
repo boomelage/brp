@@ -25,6 +25,7 @@ k = market_data['strike_price'].unique().tolist()
 t = market_data['days_to_maturity'].unique().tolist()
 g = market_data['dividend_rate'].unique().tolist()
 r = market_data['risk_free_rate'].unique().tolist()
+k = np.linspace(min(k),max(k),5)
 # v = np.linspace(min(v),max(v),20)
 contract_details = pd.DataFrame(
     product(

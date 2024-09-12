@@ -40,6 +40,7 @@ class model_settings():
         dividend_ts = self.dividend_ts
         flat_ts = self.flat_ts
         ezimport = [
+            "",
             "dividend_rate = settings['dividend_rate']",
             "risk_free_rate = settings['risk_free_rate']",
             "calculation_date = settings['calculation_date']",
@@ -47,9 +48,9 @@ class model_settings():
             "calendar = settings['calendar']",
             "flat_ts = settings['flat_ts']",
             "dividend_ts = settings['dividend_ts']"]
-        print("\n")
-        for ez in ezimport:
-            print(ez)
+        def ezprint():
+            for ez in ezimport:
+                print(ez)
         return {
             "dividend_rate": dividend_rate, 
             "risk_free_rate": risk_free_rate, 
@@ -58,7 +59,7 @@ class model_settings():
             "calendar": calendar,
             "flat_ts": flat_ts,
             "dividend_ts": dividend_ts
-            }
+            }, ezprint
             
     def make_ql_array(self,size,nparr):
         qlarr = ql.Array(size,1)

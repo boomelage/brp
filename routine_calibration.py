@@ -13,19 +13,14 @@ import os
 import QuantLib as ql
 import warnings
 import numpy as np
+import time
 warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
-
-# =============================================================================
-                                       # creating th implied volatility surface
-
-from routine_ivol_collection import implied_vols_matrix, ivdf,maturities,strikes
 from settings import model_settings
 ms = model_settings()
-settings = ms.import_model_settings()
-
+settings, ezprint = ms.import_model_settings()
 dividend_rate = settings['dividend_rate']
 risk_free_rate = settings['risk_free_rate']
 calculation_date = settings['calculation_date']
@@ -34,23 +29,25 @@ calendar = settings['calendar']
 flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
-expiration_dates = ms.compute_ql_maturity_dates(maturities)
-S = np.median(ivdf.index)
-black_var_surface = ql.BlackVarianceSurface(
-    calculation_date, calendar,
-    expiration_dates, strikes,
-    implied_vols_matrix, day_count)
-import time
-
 
 # =============================================================================
-                                 # Heston model settings and initial parameters
+                                                                # ivol and data
+
+# filter out sections of incomplete term structure data and iterate 
+# the routine through a list of maturities,strikes, black_var_surface for each
+# individual ivoldf
+from routine_ivol_collection import expiration_dates, strikes, S, black_var_surface, implied_vols_matrix
+
+
+S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
+
+print("\n implied_vols_matrix:")
+print(f"\n{implied_vols_matrix}")
+
+# =============================================================================
+                                                          # calibration routine
 
 v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
-
-
-S_handle = ql.QuoteHandle(ql.SimpleQuote(S))  
-
 process = ql.HestonProcess(
     flat_ts,                
     dividend_ts,            
@@ -67,9 +64,6 @@ engine = ql.AnalyticHestonEngine(model)
 
 print(process)
 heston_helpers = []
-
-# =============================================================================
-                                                          # calibration routine
 
 for current_index, date in enumerate(expiration_dates):
     print(f"\nCurrently calibrating for maturity: {date}")
@@ -118,4 +112,10 @@ for current_index, date in enumerate(expiration_dates):
         }
     print('\nHeston model parameters:')
     for key, value in heston_params.items():
-        print(f'{key}: {value}')                                                                    
+        print(f'{key}: {value}')        
+
+
+
+
+
+                                                            

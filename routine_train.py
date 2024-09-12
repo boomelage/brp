@@ -91,22 +91,25 @@ print(start_tag_format)
 # =============================================================================
                                                                  # loading data
 
-from routine_collection import collect_market_data_and_price
-excluded_file = r'SPXts.xlsx'
-ticker = excluded_file[:excluded_file.find('ts')]
-excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
-print(excluded_file)
-dataset = collect_market_data_and_price(excluded_file)
-n_prices = f"\nestimated with {str(len(dataset))} "\
-    f"option prices collected from the market"
-print(n_prices)
-
-# from routine_generation import dataset
+# from routine_collection import collect_market_data_and_price
 # excluded_file = r'SPXts.xlsx'
 # ticker = excluded_file[:excluded_file.find('ts')]
 # excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
-# n_prices = f"estimated with {len(dataset)} synthesized option prices"
-# print(f"\n{str(n_prices)}")
+# print(excluded_file)
+# dataset = collect_market_data_and_price(excluded_file)
+# n_prices = f"\nestimated with {str(len(dataset))} "\
+#     f"option prices collected from the market"
+# print(n_prices)
+
+from routine_generation import dataset
+excluded_file = r'SPXts.xlsx'
+ticker = excluded_file[:excluded_file.find('ts')]
+excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
+n_prices = f"estimated with {len(dataset)} synthesized option prices"
+print(f"\n{str(n_prices)}")
+
+# import pandas as pd
+# dataset = pd.read_csv(r"E:\git\brp\07092024-072748.csv")
 
 # =============================================================================
 model_scaler1 = model_scaler[0]
