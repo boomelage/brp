@@ -58,10 +58,6 @@ term_structure_from_market.columns = ts_columns
 
 df = term_structure_from_market
 
-
-
-
-
 # Step 1: Reshape the DataFrame using pd.melt
 df_melted = pd.melt(df, 
                     id_vars=['Strike'], 
@@ -86,10 +82,6 @@ df_combined = df_combined.dropna()
 df_indexed = df_combined.set_index(['Strike', 'DyEx'])
 
 df_indexed = df_indexed.sort_index()
-
-
-
-
 
 
 implied_vols_np = np.zeros((len(strikes), len(maturities)), dtype=float)
@@ -119,7 +111,13 @@ filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
 print(maturities)
 print(strikes)
 
-implied_vols_df = implied_vols_df.loc[5450:5500,7:31]
+implied_vols_df = implied_vols_df.loc[
+# strike filter
+    5450:5500, 
+# maturity filter
+    7:37       
+
+    ]
 
 implied_vols_df = implied_vols_df.replace(0.0, np.nan)
 implied_vols_df = implied_vols_df.interpolate(axis=0)

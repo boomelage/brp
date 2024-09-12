@@ -12,7 +12,6 @@ clear_all()
 import os
 import QuantLib as ql
 import warnings
-import numpy as np
 import time
 warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
@@ -31,14 +30,10 @@ dividend_ts = settings['dividend_ts']
 
 
 # =============================================================================
-                                                                # ivol and data
+                                                         # implied volatilities
 
-# filter out sections of incomplete term structure data and iterate 
-# the routine through a list of maturities,strikes, black_var_surface for each
-# individual ivoldf
-from routine_ivol_collection import expiration_dates, strikes, S, black_var_surface
-
-
+from routine_ivol_collection import expiration_dates, strikes, S, \
+    black_var_surface
 S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
 
 # =============================================================================
