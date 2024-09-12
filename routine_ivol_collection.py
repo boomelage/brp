@@ -29,7 +29,8 @@ for file in data_files:
     df_maturities = df['DyEx'].loc[df_strikes[0]].unique().tolist()
     callvols = pd.concat([df.iloc[:, i:i+2] for i in range(
         0, df.shape[1], 4)], axis=1)
-    term_structure_from_market = pd.concat([term_structure_from_market,callvols])
+    term_structure_from_market = pd.concat(
+        [term_structure_from_market,callvols])
 term_structure_from_market = term_structure_from_market.set_index('Strike')
 strikes = np.sort(term_structure_from_market.index.unique())
 maturities = np.array(term_structure_from_market['DyEx'].astype(float))
@@ -75,7 +76,8 @@ df_melted_dyex = pd.melt(df,
                          value_name='DyEx')
 
 # Combine the melted dataframes (assuming the same order)
-df_combined = pd.concat([df_melted[['Strike', 'IVM']], df_melted_dyex['DyEx']], axis=1)
+df_combined = pd.concat(
+    [df_melted[['Strike', 'IVM']], df_melted_dyex['DyEx']], axis=1)
 
 # Step 2: Drop rows where DyEx or IVM is NaN
 df_combined = df_combined.dropna()
@@ -90,21 +92,12 @@ df_indexed = df_indexed.sort_index()
 
 
 
-import QuantLib as ql
-
-implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),0)
-for i, maturity in enumerate(maturities):
-    for j, strike in enumerate(strikes):
-        try:
-            implied_vols_matrix[j][i] = float(df_indexed.xs((strike, maturity))['IVM'].iloc[0])
-        except Exception:
-            implied_vols_matrix[j][i] = 0
-            
 implied_vols_np = np.zeros((len(strikes), len(maturities)), dtype=float)
 for i, maturity in enumerate(maturities):
     for j, strike in enumerate(strikes):
         try:
-            implied_vols_np[j][i] = float(df_indexed.xs((strike, maturity))['IVM'].iloc[0])
+            implied_vols_np[j][i] = float(
+                df_indexed.xs((strike, maturity))['IVM'].iloc[0])
         except Exception:
             implied_vols_np[j][i] = 0
 implied_vols_df = pd.DataFrame(implied_vols_np)
@@ -123,7 +116,28 @@ file_tag = file_datetime.strftime("%Y-%m-%d %H-%M-%S")
 filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
 # implied_vols_df.to_csv(filename)
 
+print(maturities)
+print(strikes)
 
+implied_vols_df = implied_vols_df.loc[5450:5500,7:31]
+
+implied_vols_df = implied_vols_df.replace(0.0, np.nan)
+implied_vols_df = implied_vols_df.interpolate(axis=0)
+implied_vols_df = implied_vols_df.dropna(axis=1)
+
+
+
+strikes = implied_vols_df.index
+maturities = implied_vols_df.columns
+
+
+import QuantLib as ql
+implied_vols_matrix = ql.Matrix(len(strikes),len(maturities),0)
+for i, maturity in enumerate(maturities):
+    for j, strike in enumerate(strikes):
+        implied_vols_matrix[j][i] = implied_vols_df.loc[strike,maturity]
+            
+            
 from settings import model_settings
 ms = model_settings()
 settings, ezprint = ms.import_model_settings()
@@ -142,7 +156,43 @@ black_var_surface = ql.BlackVarianceSurface(
     expiration_dates, strikes,
     implied_vols_matrix, day_count)
 
+import matplotlib.pyplot as plt
+plt.rcParams['figure.figsize']=(15,7)
+plt.style.use("dark_background")
+from matplotlib import cm
+import numpy as np
+import os
 
+# target_maturity_ivols = ivoldf[1]
+# fig, ax = plt.subplots()
+# ax.plot(strikes, target_maturity_ivols, label="Black Surface")
+# ax.plot(strikes, target_maturity_ivols, "o", label="Actual")
+# ax.set_xlabel("Strikes", size=9)
+# ax.set_ylabel("Vols", size=9)
+# ax.legend(loc="upper right")
+# fig.show()
+
+plot_maturities = np.array(maturities,dtype=float)/365.25
+moneyness = np.array(strikes,dtype=float)
+X, Y = np.meshgrid(plot_maturities, moneyness)
+Z = np.array([black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())])
+Z = Z.reshape(X.shape)
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+surf = ax.plot_surface(
+    X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+ax.set_xlabel("Maturities", size=9)
+ax.set_ylabel("Strikes", size=9)
+ax.set_zlabel("Implied Volatility", size=9)
+ax.view_init(elev=30, azim=-35)
+plt.show()
+plt.cla()
+plt.clf()
+
+# plot_volatility_surface(
+#     outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface)
+# plt.rcdefaults()
 
 
 

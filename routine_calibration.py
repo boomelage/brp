@@ -36,13 +36,10 @@ dividend_ts = settings['dividend_ts']
 # filter out sections of incomplete term structure data and iterate 
 # the routine through a list of maturities,strikes, black_var_surface for each
 # individual ivoldf
-from routine_ivol_collection import expiration_dates, strikes, S, black_var_surface, implied_vols_matrix
+from routine_ivol_collection import expiration_dates, strikes, S, black_var_surface
 
 
 S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
-
-print("\n implied_vols_matrix:")
-print(f"\n{implied_vols_matrix}")
 
 # =============================================================================
                                                           # calibration routine
@@ -110,9 +107,10 @@ for current_index, date in enumerate(expiration_dates):
         'rho':rho, 
         'v0':v0
         }
-    print('\nHeston model parameters:')
-    for key, value in heston_params.items():
-        print(f'{key}: {value}')        
+
+print('\nHeston model parameters:')
+for key, value in heston_params.items():
+    print(f'{key}: {value}')        
 
 
 
