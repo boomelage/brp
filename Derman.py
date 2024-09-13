@@ -99,7 +99,7 @@ class derman():
         return derman_vol
         
     
-    def make_derman_df(self, s, K, T, atm_vol):
+    def make_derman_df(self, s, K, T, atm_vol_df):
         derman_numpy = np.zeros((len(K), len(T)), dtype=float)
         derman_df = pd.DataFrame(derman_numpy)
         derman_df.index = K
@@ -110,18 +110,10 @@ class derman():
                     moneyness = k - s
                     b = self.derman_coefs.loc['b', t]
                     alpha = self.derman_coefs.loc['alpha', int(t)]
-                    derman_df.loc[k, t] = atm_vol + alpha + moneyness * b
+                    derman_df.loc[k, t] = atm_vol_df[t] + alpha + moneyness * b
                 except Exception:
                     pass
         return derman_df
-
-    def retrieve_derman_from_csv(self):
-        derman_coefs = pd.read_csv(r'derman_coefs.csv')
-        derman_coefs = derman_coefs.set_index('coef')
-        derman_coefs.columns = derman_coefs.columns.astype(int)
-        derman_maturities = derman_coefs.columns
-        return derman_coefs, derman_maturities
-    
     
     def make_derman_df_for_S(self, s, K, T, atm_vol, contract_details):
         def make_for_s(s, K, T, atm_vol, self,contract_details):
@@ -140,6 +132,13 @@ class derman():
         # Drop columns that contain any zeros
         derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
         return derman_df_for_s
+
+def retrieve_derman_from_csv():
+    derman_coefs = pd.read_csv(r'derman_coefs.csv')
+    derman_coefs = derman_coefs.set_index('coef')
+    derman_coefs.columns = derman_coefs.columns.astype(int)
+    derman_maturities = derman_coefs.columns
+    return derman_coefs, derman_maturities
 
 
 

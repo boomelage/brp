@@ -106,7 +106,7 @@ file_time = time.time()
 file_datetime = datetime.fromtimestamp(file_time)
 file_tag = file_datetime.strftime("%Y-%m-%d %H-%M-%S")
 filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
-implied_vols_df.to_csv(filename)
+# implied_vols_df.to_csv(filename)
 
 print(strikes)
 print(maturities)
@@ -115,14 +115,14 @@ print(maturities)
 implied_vols_df = implied_vols_df.loc[
     
 # strike filter
-5540:5640, 
+5575:5675, 
 # maturity filter
-:
+:371
 
     ]
 
-# implied_vols_df = implied_vols_df.replace(0.0, np.nan)
-# implied_vols_df = implied_vols_df.interpolate(axis=0)
+implied_vols_df = implied_vols_df.replace(0.0, np.nan)
+implied_vols_df = implied_vols_df.interpolate(axis=0)
 
 
 
@@ -133,13 +133,15 @@ implied_vols = implied_vols.loc[:, (implied_vols != 0).all(axis=0)]
 Ks = implied_vols.index
 Ts = implied_vols.columns
 
+
+implied_vols
 import QuantLib as ql
 implied_vols_matrix = ql.Matrix(len(Ks),len(Ts),0)
 for i, strike in enumerate(Ks):
     for j, maturity in enumerate(Ts):
         implied_vols_matrix[i][j] = implied_vols.loc[strike,maturity]
 
-print(implied_vols_matrix)
+print(f"\n{implied_vols_matrix}")
         
         
 from settings import model_settings

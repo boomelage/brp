@@ -14,10 +14,10 @@ import numpy as np
 import QuantLib as ql
 from data_query import dirdata
 from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
-# pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', None)
 # pd.set_option('display.max_rows', None)
 pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')
+# pd.reset_option('display.max_columns')
 
 class routine_collection():
     def __init__(self):
@@ -133,7 +133,7 @@ except Exception as e:
     
     
 
-contract_details['atm_vol'] = 0.1312
+contract_details['atm_vol'] = 0.
 """
                                 atm_vol momentarily fixed until proper data 
                                 format is collected
@@ -144,9 +144,12 @@ T = contract_details['days_to_maturity'].unique()
 # =============================================================================
                                                                        # Derman
 
-from Derman import retrieve_derman_from_csv, derman
+from Derman import derman, retrieve_derman_from_csv
 derman_coefs, derman_maturities = retrieve_derman_from_csv()
 derman = derman(derman_coefs = derman_coefs)
+
+
+
 
 contract_details = contract_details[
     contract_details['days_to_maturity'].isin(derman_maturities)]
@@ -172,6 +175,9 @@ def apply_derman_vols_row(row):
         row['volatility'] = np.nan
     
     return row
+
+
+
 """
 in the below mapping, volatility is being overwritten as it is assumed we do 
 not know it. in practice, the dataset would have a column of at-the-money 
@@ -179,6 +185,8 @@ implied volatilities correspondingly mapped to every strike. this is why
 atm_vol is fixed above
 
 """
+
+
 contract_details = contract_details.apply(
     apply_derman_vols_row, axis=1).dropna(
         subset=['volatility']).reset_index(drop=True)
@@ -194,5 +202,5 @@ def apply_derman_vols_row(row):
 
 
 
-contract_details = contract_details.apply(apply_derman_vols_row,axis=1)
+contract_details_derman = contract_details.copy().apply(apply_derman_vols_row,axis=1)
 
