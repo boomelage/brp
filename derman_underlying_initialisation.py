@@ -11,6 +11,15 @@ from Derman import derman
 derman = derman()
 
 
-ks, mats, ts = derman.retrieve_ts()
+# from routine_collection import contract_details
+# ks, mats, ts = derman.retrieve_ts()
+# derman_coefs = derman.get_derman_coefs()
+# derman_coefs.to_csv(r'derman_coefs.csv')
+# contract_details.to_csv(r'test_contract_details.csv')
 
-derman_coefs = derman.get_derman_coefs()
+import pandas as pd
+contract_details = pd.read_csv(r'test_contract_details.csv')
+derman_coefs, derman_maturities = derman.retrieve_derman_from_csv()
+derman_df = derman.derman_ivols_for_market(contract_details,derman_coefs)
+
+# derman_df.to_csv(r'derman_volatiltiy_surface.csv')

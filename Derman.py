@@ -7,6 +7,13 @@ Created on Thu Sep 12 20:52:50 2024
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
+
+
+
+"""
+"""
+
+
 import pandas as pd
 from data_query import dirdatacsv
 import numpy as np
@@ -23,11 +30,10 @@ class derman():
         
         file = self.data_files[0]
         try:
-            ts = pd.read_csv(file)
-            ts = ts.set_index(ts.iloc[:,0]).drop(columns = ts.columns[0])
-            ts = ts.astype(float)
-            ts.columns = ts.columns.astype(int)
-            ts.index = ts.index.astype(int)
+           ts = pd.read_csv(file)
+           ts = ts.set_index(ts.iloc[:, 0]).drop(columns=ts.columns[0])
+           ts = ts.astype(float)
+           ts.columns = ts.columns.astype(int)
         except Exception:
             print("check working directory files!")
         ts = ts.loc[
@@ -70,7 +76,6 @@ class derman():
         derman_coefs['coef'] = ['b','alpha','atmvol']
         derman_coefs.set_index('coef',inplace = True)
         derman_coefs = derman_coefs.loc[:, derman_coefs.loc['atmvol'] != 0]
-        derman_coefs.to_csv(r'derman_coefs.csv')
         return derman_coefs
     
     def derman_ivols_for_market(self,df,derman_coefs):
@@ -78,7 +83,7 @@ class derman():
         alpha = derman_coefs.loc['alpha']
         K = df['strike_price']
         S = df['spot_price']
-        iv = df['atmiv']
+        iv = df['atm_vol']
         df['volatility'] = \
             iv + \
                 alpha[df['days_to_maturity']] +\
@@ -110,38 +115,30 @@ class derman():
                     pass
         return derman_df
 
-
-
-def retrieve_derman_from_csv():
-    derman_coefs = pd.read_csv(r'derman_coefs.csv')
-    derman_coefs = derman_coefs.set_index('coef')
-    derman_coefs.columns = derman_coefs.columns.astype(int)
-    derman_maturities = derman_coefs.columns
-    return derman_coefs, derman_maturities
-
-def make_derman_df_for_S(s, K, T, atm_vol, contract_details):
-    def make_for_s(s, K, T, atm_vol, contract_details):
-        derman_coefs, derman_maturities = retrieve_derman_from_csv()
-        from Derman import derman  # Ensure that you're importing the class
-
-        # Create an instance of the derman class
-        derman_instance = derman(derman_coefs=derman_coefs)
-
-        # Filter the contract details by maturities present in derman_maturities
-        contract_details = contract_details[
-            contract_details['days_to_maturity'].isin(derman_maturities)
-        ].reset_index(drop=True)
-
-        # Create the derman DataFrame
-        derman_df_for_s = derman_instance.make_derman_df(s, K, T, atm_vol)
+    def retrieve_derman_from_csv(self):
+        derman_coefs = pd.read_csv(r'derman_coefs.csv')
+        derman_coefs = derman_coefs.set_index('coef')
+        derman_coefs.columns = derman_coefs.columns.astype(int)
+        derman_maturities = derman_coefs.columns
+        return derman_coefs, derman_maturities
+    
+    def make_derman_df_for_S(self, s, K, T, atm_vol, contract_details):
+        def make_for_s(s, K, T, atm_vol, self,contract_details):
+            derman_coefs, derman_maturities = self.retrieve_derman_from_csv()
+            contract_details = contract_details[
+                contract_details['days_to_maturity'].isin(derman_maturities)
+            ].reset_index(drop=True)
+    
+            # Create the derman DataFrame
+            derman_df_for_s = self.make_derman_df(s, K, T, atm_vol)
+            return derman_df_for_s
+    
+        # Call make_for_s to get derman DataFrame
+        derman_df_for_s = make_for_s(s, K, T, atm_vol, contract_details)
+    
+        # Drop columns that contain any zeros
+        derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
         return derman_df_for_s
-
-    # Call make_for_s to get derman DataFrame
-    derman_df_for_s = make_for_s(s, K, T, atm_vol, contract_details)
-
-    # Drop columns that contain any zeros
-    derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
-    return derman_df_for_s
 
 
 
