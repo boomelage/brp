@@ -21,21 +21,25 @@ class derman():
     def retrieve_ts(self):
         
         file = self.data_files[0]
-        ts = pd.read_csv(file)
-        ts = ts.set_index(ts.iloc[:,0]).drop(columns = ts.columns[0])
-        ts = ts.astype(float)
-        ts.columns = ts.columns.astype(int)
-        ts.index = ts.index.astype(int)
+        try:
+            ts = pd.read_csv(file)
+            ts = ts.set_index(ts.iloc[:,0]).drop(columns = ts.columns[0])
+            ts = ts.astype(float)
+            ts.columns = ts.columns.astype(int)
+            ts.index = ts.index.astype(int)
+        except Exception:
+            print("check working directory files!")
         ts = ts.loc[
             
             5540:5640,
-            28:169
+            :
     
             ]
         ts = ts.loc[:, (ts != 0).any(axis=0)]
     
         ks = ts.index.tolist()
         mats = ts.columns.tolist()
+        ts = ts/100
         return ks, mats, ts
         
     def compute_derman_ivols(self,maturity):
@@ -64,6 +68,8 @@ class derman():
         derman_coefs = pd.DataFrame(derman_coefs)
         derman_coefs['coef'] = ['b','alpha','atmvol']
         derman_coefs.set_index('coef',inplace = True)
+        derman_coefs = derman_coefs.loc[:, derman_coefs.loc['atmvol'] != 0]
+        derman_coefs.to_csv(r'derman_coefs.csv')
         return derman_coefs
     
     def make_derman_surface(self):
@@ -111,11 +117,12 @@ derman_df = derman.make_derman_df(derman_surface)
 
 
 
-import QuantLib as ql
-implied_vols_matrix = ql.Matrix(len(ks),len(mats),0)
-for i, strike in enumerate(ks):
-    for j, maturity in enumerate(mats):
-        implied_vols_matrix[i][j] = derman_df.loc[strike,maturity]
+
+# import QuantLib as ql
+# implied_vols_matrix = ql.Matrix(len(ks),len(mats),0)
+# for i, strike in enumerate(ks):
+#     for j, maturity in enumerate(mats):
+#         implied_vols_matrix[i][j] = derman_df.loc[strike,maturity]
 
 
 

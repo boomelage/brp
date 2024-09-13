@@ -32,8 +32,8 @@ dividend_ts = settings['dividend_ts']
 # =============================================================================
                                                          # implied volatilities
 
-from Derman import black_var_surface, S, ks
-Ks = ks
+from routine_collection import contract_details
+S = contract_details['']
 S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
 
 # =============================================================================

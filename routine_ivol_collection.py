@@ -155,7 +155,7 @@ dividend_ts = settings['dividend_ts']
 
 expiration_dates = ms.compute_ql_maturity_dates(Ts)
 S = np.median(Ks)
-
+strikes
 
 # import matplotlib.pyplot as plt
 # plt.rcParams['figure.figsize']=(15,7)

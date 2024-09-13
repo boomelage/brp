@@ -15,6 +15,8 @@ import QuantLib as ql
 from data_query import dirdata
 from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
 pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_rows', None)
+pd.reset_option('display.max_rows')
 
 class routine_collection():
     def __init__(self):
@@ -31,7 +33,6 @@ class routine_collection():
         splitter = int(len(df.columns)/2)
         calls = df.iloc[:,:splitter]
         calls = calls[~(calls['DyEx'] < 1)]
-
         calls['spot_price'] = np.median(calls['Strike'])
         calls['volatility'] = calls['IVM'] / 100
         calls['dividend_rate'] = calls['DvYd'] / 100
@@ -68,9 +69,7 @@ class routine_collection():
         market_data['theta'] = heston_params['theta']
         market_data['sigma'] = heston_params['sigma']
         market_data['rho'] = heston_params['rho']
-        
         market_data['calculation_date'] = calculation_date
-        
         def compute_maturity_date(row):
             row['maturity_date'] = calculation_date + ql.Period(
                 int(row['days_to_maturity']),ql.Days)
@@ -102,45 +101,62 @@ class routine_collection():
         return market_data
 
 
-    def collect_contracts(self):
-        from Derman import derman_coefs
-        market_data = self.collect_market_data()
-        market_data = market_data[
-            (market_data['strike_price'] >= 5540)
-            & 
-            (market_data['strike_price'] <= 5640)
-            ]
+
+def apply_derman_vols(row):
+    row = row.copy()
+    atm_vol = row.loc['atm_vol']
+    days_to_maturity = row.loc['days_to_maturity']
+    moneyness = row.loc['spot_price'] - row.loc['strike_price']
+    try:
+        alpha = derman_coefs.loc['alpha',days_to_maturity]
+        b = derman_coefs.loc['b',days_to_maturity]
+        derman_vol = atm_vol + alpha + moneyness*b
+        row['derman_vol'] = derman_vol
+        return row
+    except Exception as e:
+        print(f'error: {e}')
+        row['derman_vol'] = np.nan
         
-        market_data = market_data[
-            (market_data['days_to_maturity'] >= int(
-                min(derman_coefs.columns)
-                ))
-            & 
-            (market_data['days_to_maturity'] <= int(
-                max(derman_coefs.columns)
-                ))
-            ]
         
-        def find_closest(value, valid_values):
-            return min(valid_values, key=lambda x: abs(x - value))
         
-        valid_days = derman_coefs.columns
-        market_data['closest_days'] = market_data['days_to_maturity'].apply(
-            lambda x: find_closest(x, valid_days))
-        
-        market_data['b'] = market_data['closest_days'].apply(
-            lambda x: derman_coefs.loc['b', x])
-        market_data['alpha'] = market_data['closest_days'].apply(
-            lambda x: derman_coefs.loc['alpha', x])
-        market_data['KminusS'] = market_data['strike_price']-market_data['spot_price']
-        
-        market_data['volatility'] = \
-                market_data['histIVatm'] + \
-                    market_data['KminusS']*market_data['b'] + \
-                        market_data['alpha']
-                       
-        market_data = market_data.loc[:,'spot_price':'maturity_date']
-        return market_data
+
+
+derman_coefs = pd.read_csv(r'derman_coefs.csv')
+derman_coefs = derman_coefs.set_index('coef')
+derman_coefs.columns = derman_coefs.columns.astype(int)
 
 rc = routine_collection()
-market_data = rc.collect_market_data()
+try:
+    contract_details = rc.collect_market_data()
+except Exception:
+    print('check working directory files!')
+    
+    
+contract_details = contract_details.copy()
+contract_details['atm_vol'] = contract_details['volatility']
+
+contract_details
+
+
+contract_details = contract_details.apply(
+    apply_derman_vols,axis=1).dropna(
+        subset='derman_vol').reset_index(drop=True)
+ 
+contract_details['volatility'] = contract_details['derman_vol']
+contract_details = contract_details.drop(columns=['derman_vol','atm_vol'])
+
+contract_details
+
+
+
+
+
+
+
+
+
+
+
+
+
+
