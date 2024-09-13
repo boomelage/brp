@@ -13,16 +13,16 @@ import QuantLib as ql
 from itertools import product
 from settings import model_settings
 from pricing import BS_price_vanillas, noisyfier
-from routine_collection import market_data
+from routine_collection import contract_details
 
 pd.set_option('display.max_columns', None)
 pd.reset_option('display.max_rows', None)
 
 calculation_date = ql.Date.todaysDate()
 
-s = [np.median(market_data['spot_price'].unique().tolist())]
-k = market_data['strike_price'].unique().tolist()
-t = market_data['days_to_maturity'].unique().tolist()
+s = [np.median(contract_details['spot_price'].unique().tolist())]
+k = contract_details['strike_price'].unique().tolist()
+t = contract_details['days_to_maturity'].unique().tolist()
 contract_details = pd.DataFrame(
     product(
         s,
@@ -35,7 +35,7 @@ contract_details = pd.DataFrame(
         "days_to_maturity",
              ])
 
-data_for_pivots = market_data[market_data['spot_price'] == s[0]]
+data_for_pivots = contract_details[contract_details['spot_price'] == s[0]]
 
 
 
@@ -58,30 +58,32 @@ def map_var(varname):
     )
     
 
-map_var('risk_free_rate')
-map_var('volatility')
-map_var('dividend_rate')
-contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
+# map_var('risk_free_rate')
+# map_var('volatility')
+# map_var('dividend_rate')
+# contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
+# contract_details
+# contract_details['w'] = 1
+
 contract_details
-contract_details['w'] = 1
 
-ms = model_settings()
+# ms = model_settings()
 
-settings, ezprint = ms.import_model_settings()
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
-calculation_date = settings['calculation_date']
-day_count = settings['day_count']
-calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
-
+# settings, ezprint = ms.import_model_settings()
+# dividend_rate = settings['dividend_rate']
+# risk_free_rate = settings['risk_free_rate']
+# calculation_date = settings['calculation_date']
+# day_count = settings['day_count']
+# calendar = settings['calendar']
+# flat_ts = settings['flat_ts']
+# dividend_ts = settings['dividend_ts']
 
 
-option_prices = BS_price_vanillas(contract_details)
-# option_prices = heston_price_vanillas()
-dataset = noisyfier(option_prices)
-dataset = dataset.dropna()
-dataset
-print(dataset)
-print(dataset.describe())
+
+# option_prices = BS_price_vanillas(contract_details)
+# # option_prices = heston_price_vanillas()
+# dataset = noisyfier(option_prices)
+# dataset = dataset.dropna()
+# dataset
+# print(dataset)
+# print(dataset.describe())

@@ -5,6 +5,10 @@ Created on Tue Sep 10 12:40:38 2024
 
 This class collects market data exported from the 'calls/puts' tab in OMON
 
+below is a routine which can take a dataset of spots, strikes, atm implied
+volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
+static flag 'w' set to 1 indicating a call payoff
+
 """
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
@@ -101,29 +105,15 @@ class routine_collection():
         return market_data
 
 
+"""
+routine which can take a dataset of spots, strikes, atm implied
+volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
+static flag 'w' set to 1 indicating a call payoff
 
-def apply_derman_vols(row):
-    row = row.copy()
-    atm_vol = row.loc['atm_vol']
-    days_to_maturity = row.loc['days_to_maturity']
-    moneyness = row.loc['spot_price'] - row.loc['strike_price']
-    try:
-        alpha = derman_coefs.loc['alpha',days_to_maturity]
-        b = derman_coefs.loc['b',days_to_maturity]
-        derman_vol = atm_vol + alpha + moneyness*b
-        row['derman_vol'] = derman_vol
-        return row
-    except Exception as e:
-        print(f'error: {e}')
-        row['derman_vol'] = np.nan
-        
-        
-        
+"""
 
-
-derman_coefs = pd.read_csv(r'derman_coefs.csv')
-derman_coefs = derman_coefs.set_index('coef')
-derman_coefs.columns = derman_coefs.columns.astype(int)
+# =============================================================================
+                                                              # data collection
 
 rc = routine_collection()
 try:
@@ -131,24 +121,60 @@ try:
 except Exception:
     print('check working directory files!')
     
-    
 contract_details = contract_details.copy()
-contract_details['atm_vol'] = contract_details['volatility']
+contract_details['atm_vol'] = 0.1312
 
-contract_details
 
+K = contract_details['strike_price'].unique()
+T = contract_details['days_to_maturity'].unique()
+
+# =============================================================================
+                                                                       # Derman
+from Derman import retrieve_derman_from_csv, derman
+derman_coefs, derman_maturities = retrieve_derman_from_csv()
+derman = derman(derman_coefs = derman_coefs)
+
+contract_details = contract_details[
+    contract_details['days_to_maturity'].isin(derman_maturities)]
+
+contract_details = contract_details.reset_index(drop=True)
+
+
+def apply_derman_vols_row(row):
+    s = row['spot_price']
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    atm_vol = row['atm_vol']
+    
+    if t not in derman_coefs.columns:
+        print(f"Days to maturity {t} not found in derman_coefs. Skipping row.")
+        row['volatility'] = np.nan
+        return row
+    
+    try:
+        derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
+        row['volatility'] = derman_vol
+    except Exception as e:
+        print(f"Error computing Derman vol for row: {e}")
+        row['volatility'] = np.nan
+    
+    return row
 
 contract_details = contract_details.apply(
-    apply_derman_vols,axis=1).dropna(
-        subset='derman_vol').reset_index(drop=True)
- 
-contract_details['volatility'] = contract_details['derman_vol']
-contract_details = contract_details.drop(columns=['derman_vol','atm_vol'])
+    apply_derman_vols_row, axis=1).dropna(
+        subset=['volatility']).reset_index(drop=True)
 
-contract_details
+# def apply_derman_vols_row(row):
+#     s = row['spot_price']
+#     k = row['strike_price']
+#     t = row['days_to_maturity']
+#     atm_vol = row['atm_vol']
+#     derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
+#     row['volatility'] = derman_vol
+#     return row
 
 
-
+# contract_details = contract_details.apply(apply_derman_vols_row,axis=1)
 
 
 

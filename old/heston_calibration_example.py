@@ -99,7 +99,7 @@ black_var_surface.setInterpolation("bicubic")
 one_year_idx = 11 # 12th row in data is for 1 year expiry
 date = expiration_dates[one_year_idx]
 for j, s in enumerate(strikes):
-    t = (date - calculation_date )
+    t = (date - calculation_date)
     p = ql.Period(t, ql.Days)
     sigma = data[one_year_idx][j]
     #sigma = black_var_surface.blackVol(t/365.25, s)

@@ -10,12 +10,28 @@ def clear_all():
             del globals()[name]
 clear_all()
 import os
-import QuantLib as ql
-import warnings
-import time
-warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
+
+"""
+
+calibration routine based on historical atm ivols using Derman's approximation
+for otm ivols. atm ivol is momentarily a constant for simplicity. 
+
+
+"""
+
+import QuantLib as ql
+import time
+import numpy as np
+import pandas as pd
+
+
+from Derman import retrieve_derman_from_csv, make_derman_df_for_S
+derman_coefs, derman_maturities = retrieve_derman_from_csv()
+
+from Derman import derman
+derman = derman(derman_coefs=derman_coefs)
 
 from settings import model_settings
 ms = model_settings()
@@ -29,91 +45,97 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
 
-# =============================================================================
-                                                         # implied volatilities
+from routine_generation import K, T, contract_details
+contract_spots = contract_details['spot_price'].unique()
+groupedby_s = contract_details.groupby(by='spot_price')
 
-from routine_collection import contract_details
-S = contract_details['']
-S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
+for s in contract_spots:
+    contract_details_for_s = groupedby_s.get_group(s)
+    S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
+    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
+    process = ql.HestonProcess(
+        flat_ts,                
+        dividend_ts,            
+        S_handle,               
+        v0,                     # Initial volatility
+        kappa,                  # Mean reversion speed
+        theta,                  # Long-run variance (volatility squared)
+        sigma,                  # Volatility of the volatility
+        rho                     # Correlation between asset and volatility
+    )
 
-# =============================================================================
-                                                          # calibration routine
+    model = ql.HestonModel(process)
+    engine = ql.AnalyticHestonEngine(model)
 
-v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
-process = ql.HestonProcess(
-    flat_ts,                
-    dividend_ts,            
-    S_handle,               
-    v0,                     # Initial volatility
-    kappa,                  # Mean reversion speed
-    theta,                  # Long-run variance (volatility squared)
-    sigma,                  # Volatility of the volatility
-    rho                     # Correlation between asset and volatility
-)
-
-model = ql.HestonModel(process)
-engine = ql.AnalyticHestonEngine(model)
-
-print(process)
-heston_helpers = []
-
-
-from routine_collection import market_data
-
-for i, row in market_data.iterrows():
-    k = market_data.loc['strike_price']
-    t = day_count.yearFraction(
-       calculation_date, market_data['maturity_date'])
-    sigma = black_var_surface.blackVol(t, k)  
-    helper = ql.HestonModelHelper(
-       ql.Period(int(t * 365), ql.Days),
-       calendar, 
-       S, 
-       k,
-       ql.QuoteHandle(ql.SimpleQuote(sigma)),
-       flat_ts, 
-       dividend_ts
-       )
-    helper.setPricingEngine(engine)
-    heston_helpers.append(helper)
-   
-
-    lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
-    model.calibrate(heston_helpers, lm,
-                     ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
-    theta, kappa, sigma, rho, v0 = model.params()
+    print(process)
+    heston_helpers = []
     
-    print (
-        "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
-            % \
-                (theta, kappa, sigma, rho, v0)
-        )
-    avg = 0.0
-    time.sleep(0.005)
-    print ("%15s %15s %15s %20s" % (
-        "Strikes", "Market Value",
-          "Model Value", "Relative Error (%)"))
-    print ("="*70)
-    for i in range(min(len(heston_helpers), len(Ks))):
-        opt = heston_helpers[i]
-        err = (opt.modelValue() / opt.marketValue() - 1.0)
-        print(f"{Ks[i]:15.2f} {opt.marketValue():14.5f} "
-              f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
-        avg += abs(err)  # accumulate the absolute error
-    avg = avg*100.0/len(heston_helpers)
-    print("-"*70)
-    print("Total Average Abs Error (%%) : %5.3f" % (avg))
-    heston_params = {
-        'theta':theta, 
-        'kappa':kappa, 
-        'sigma':sigma, 
-        'rho':rho, 
-        'v0':v0
-        }
-
-print('\nHeston model parameters:')
-for key, value in heston_params.items():
-    print(f'{key}: {value}')        
+    groupedby_sk = contract_details_for_s.groupby(by='strike_price')
+    for k in K:        
+        atm_vol = 0.15
+        derman_df_for_s = make_derman_df_for_S(s, K, T, atm_vol, contract_details)
+        derT = np.sort(derman_df_for_s.columns).astype(float)
+        derK = np.sort(derman_df_for_s.index).astype(float)
+        
+        implied_vols_matrix = ql.Matrix(len(derK),len(derT),0.0)
+        for i, k in enumerate(derK):
+            for j, t in enumerate(derT):
+                implied_vols_matrix[i][j] = derman_df_for_s.loc[k,t] 
+                expiration_dates = ms.compute_ql_maturity_dates(derT)
+        black_var_surface = ms.make_black_var_surface(expiration_dates, derK, implied_vols_matrix)
+                
+        for t in derT:
+            date = calculation_date + ql.Period(int(t),ql.Days)
+            dt = (date - calculation_date)
+            sigma = black_var_surface.blackVol(dt/365.25, k)  
+            p = ql.Period(dt, ql.Days)
+            
+            helper = ql.HestonModelHelper(
+                p,
+                calendar,
+                s, 
+                k,
+                ql.QuoteHandle(ql.SimpleQuote(sigma)),
+                flat_ts,
+                dividend_ts)
+            helper.setPricingEngine(engine)
+            heston_helpers.append(helper)
+        lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
+        model.calibrate(heston_helpers, lm,
+                          ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+        theta, kappa, sigma, rho, v0 = model.params()
+        
+        print (
+            "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
+                % \
+                    (theta, kappa, sigma, rho, v0)
+            )
+        avg = 0.0
+        time.sleep(0.005)
+        print ("%15s %15s %15s %20s" % (
+            "Strikes", "Market Value",
+              "Model Value", "Relative Error (%)"))
+        print ("="*70)
+        for i in range(min(len(heston_helpers), len(K))):
+            opt = heston_helpers[i]
+            err = (opt.modelValue() / opt.marketValue() - 1.0)
+            print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
+                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            avg += abs(err)  # accumulate the absolute error
+        avg = avg*100.0/len(heston_helpers)
+        print("-"*70)
+        print("Total Average Abs Error (%%) : %5.3f" % (avg))
+        heston_params = {
+            'theta':theta, 
+            'kappa':kappa, 
+            'sigma':sigma, 
+            'rho':rho, 
+            'v0':v0
+            }
+        
+        print('\nHeston model parameters:')
+        for key, value in heston_params.items():
+            print(f'{key}: {value}')        
 
 
 

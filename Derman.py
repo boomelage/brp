@@ -14,9 +14,10 @@ from sklearn.linear_model import LinearRegression
 pd.set_option('display.max_columns',None)
 
 class derman():
-    def __init__(self, data_files=dirdatacsv()):
+    def __init__(self, derman_coefs = None, data_files = dirdatacsv()):
         self.data_files = data_files
         self.mats = []
+        self.derman_coefs = derman_coefs
         
     def retrieve_ts(self):
         
@@ -43,8 +44,8 @@ class derman():
         return ks, mats, ts
         
     def compute_derman_ivols(self,maturity):
-        TSatmat = ts.loc[:,maturity]
-        strikes = ts.index
+        TSatmat = self.ts.loc[:,maturity]
+        strikes = self.ts.index
         S = int(np.median(strikes))
         x = np.array(strikes - S,dtype=float)
         atmvol = np.median(TSatmat)
@@ -72,25 +73,6 @@ class derman():
         derman_coefs.to_csv(r'derman_coefs.csv')
         return derman_coefs
     
-    def make_derman_surface(self):
-        derman_surface = np.empty(len(mats),dtype=object)
-        
-        for i, maturity in enumerate(mats):
-            b, alpha, atmvol, derman_ivols = self.compute_derman_ivols(maturity)
-            derman_surface[i] = derman_ivols
-        return derman_surface
-        
-    def make_derman_df(self, derman_surface):
-        derman_df = pd.DataFrame(index=ks, columns=mats)
-        for i, maturity in enumerate(mats):
-            for j, k in enumerate(ks):
-                try:
-                    derman_df.loc[k,maturity] = derman_surface[i][j]
-                except Exception as e:
-                    print(f"error {e}")
-                    print(f'i={i},j={j}')
-        return derman_df
-    
     def derman_ivols_for_market(self,df,derman_coefs):
         b = derman_coefs.loc['b']
         alpha = derman_coefs.loc['alpha']
@@ -102,83 +84,63 @@ class derman():
                 alpha[df['days_to_maturity']] +\
                     b[df['days_to_maturity']]*(K-S)
         return df
-                    
-derman = derman()
+    
+            
+    def compute_one_derman_vol(self,s,k,t,atm_vol):
+        moneyness = k-s
+        b = self.derman_coefs.loc['b',t]
+        alpha = self.derman_coefs.loc['alpha',t]
+        derman_vol =  alpha + atm_vol + b*moneyness
+        return derman_vol
+        
+    
+    def make_derman_df(self, s, K, T, atm_vol):
+        derman_numpy = np.zeros((len(K), len(T)), dtype=float)
+        derman_df = pd.DataFrame(derman_numpy)
+        derman_df.index = K
+        derman_df.columns = T
+        for k in K:
+            for t in T:
+                try:
+                    moneyness = k - s
+                    b = self.derman_coefs.loc['b', t]
+                    alpha = self.derman_coefs.loc['alpha', int(t)]
+                    derman_df.loc[k, t] = atm_vol + alpha + moneyness * b
+                except Exception:
+                    pass
+        return derman_df
 
-ks, mats, ts = derman.retrieve_ts()
-
-S = np.median(ks)
-
-derman_coefs = derman.get_derman_coefs()
-
-derman_surface = derman.make_derman_surface()
-
-derman_df = derman.make_derman_df(derman_surface)
 
 
+def retrieve_derman_from_csv():
+    derman_coefs = pd.read_csv(r'derman_coefs.csv')
+    derman_coefs = derman_coefs.set_index('coef')
+    derman_coefs.columns = derman_coefs.columns.astype(int)
+    derman_maturities = derman_coefs.columns
+    return derman_coefs, derman_maturities
 
+def make_derman_df_for_S(s, K, T, atm_vol, contract_details):
+    def make_for_s(s, K, T, atm_vol, contract_details):
+        derman_coefs, derman_maturities = retrieve_derman_from_csv()
+        from Derman import derman  # Ensure that you're importing the class
 
-# import QuantLib as ql
-# implied_vols_matrix = ql.Matrix(len(ks),len(mats),0)
-# for i, strike in enumerate(ks):
-#     for j, maturity in enumerate(mats):
-#         implied_vols_matrix[i][j] = derman_df.loc[strike,maturity]
+        # Create an instance of the derman class
+        derman_instance = derman(derman_coefs=derman_coefs)
 
+        # Filter the contract details by maturities present in derman_maturities
+        contract_details = contract_details[
+            contract_details['days_to_maturity'].isin(derman_maturities)
+        ].reset_index(drop=True)
 
+        # Create the derman DataFrame
+        derman_df_for_s = derman_instance.make_derman_df(s, K, T, atm_vol)
+        return derman_df_for_s
 
+    # Call make_for_s to get derman DataFrame
+    derman_df_for_s = make_for_s(s, K, T, atm_vol, contract_details)
 
-# from settings import model_settings
-# ms = model_settings()
-# settings, ezprint = ms.import_model_settings()
-# dividend_rate = settings['dividend_rate']
-# risk_free_rate = settings['risk_free_rate']
-# calculation_date = settings['calculation_date']
-# day_count = settings['day_count']
-# calendar = settings['calendar']
-# flat_ts = settings['flat_ts']
-# dividend_ts = settings['dividend_ts']
+    # Drop columns that contain any zeros
+    derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
+    return derman_df_for_s
 
-# expiration_dates = ms.compute_ql_maturity_dates(mats)
-# S = np.median(ks)
-# black_var_surface = ql.BlackVarianceSurface(
-#     calculation_date, calendar,
-#     expiration_dates, ks,
-#     implied_vols_matrix, day_count)
-
-# import matplotlib.pyplot as plt
-# plt.rcParams['figure.figsize']=(15,7)
-# plt.style.use("dark_background")
-# from matplotlib import cm
-# import numpy as np
-# import os
-
-# target_maturity_ivols = derman_df.loc[:,]
-# fig, ax = plt.subplots()
-# ax.plot(ks, target_maturity_ivols, label="Black Surface")
-# ax.plot(ks, target_maturity_ivols, "o", label="Actual")
-# ax.set_xlabel("Strikes", size=9)
-# ax.set_ylabel("Vols", size=9)
-# ax.legend(loc="upper right")
-# fig.show()
-
-# plot_maturities = np.array(mats,dtype=float)/365.25
-# moneyness = np.array(ks,dtype=float)
-# X, Y = np.meshgrid(plot_maturities, moneyness)
-# Z = np.array(
-#     [
-#     black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())
-#       ])
-# Z = Z.reshape(X.shape)
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# surf = ax.plot_surface(
-#     X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
-# fig.colorbar(surf, shrink=0.5, aspect=5)
-# ax.set_xlabel("Maturities", size=9)
-# ax.set_ylabel("Strikes", size=9)
-# ax.set_zlabel("Implied Volatility", size=9)
-# ax.view_init(elev=30, azim=-35)
-# plt.show() 
-# plt.cla()
-# plt.clf()
       
