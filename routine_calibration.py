@@ -72,13 +72,12 @@ for s_idx, s in enumerate(S):
     print(process)
     heston_helpers = []
     
-    
     derman_df_for_s = derman.make_derman_df_for_S(
         s, K, T, derman_atm_dfs[s_idx], contract_details, derman_coefs, \
             derman_maturities)
 
-    derK = derman_df_for_s.index
-    derT = derman_df_for_s.columns
+    derK = np.sort(derman_df_for_s.index).astype(float)
+    derT = np.sort(derman_df_for_s.columns).astype(float)
     
     implied_vols_matrix = ql.Matrix(len(derK),len(derT),0.0)
     for i, k in enumerate(derK):
@@ -95,7 +94,63 @@ for s_idx, s in enumerate(S):
     groupedby_sk = contract_details_for_s.groupby(by='strike_price')
     
     for kk in derK:
+        for tt in derT:
+            date = calculation_date + ql.Period(int(tt),ql.Days)
+            dt = (date - calculation_date)
+            
+            sigma = black_var_surface.blackVol(dt/365.25, kk)  
+            p = ql.Period(dt, ql.Days)
+            
+            helper = ql.HestonModelHelper(
+                p,
+                calendar,
+                float(s),
+                kk,
+                ql.QuoteHandle(ql.SimpleQuote(sigma)),
+                flat_ts,
+                dividend_ts)
+            helper.setPricingEngine(engine)
+            heston_helpers.append(helper)
+        lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
+        model.calibrate(heston_helpers, lm,
+                          ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+        theta, kappa, sigma, rho, v0 = model.params()
         
+        print (
+            "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
+                % \
+                    (theta, kappa, sigma, rho, v0)
+            )
+        avg = 0.0
+        time.sleep(0.005)
+        print ("%15s %15s %15s %20s" % (
+            "Strikes", "Market Value",
+              "Model Value", "Relative Error (%)"))
+        print ("="*70)
+        for i in range(min(len(heston_helpers), len(K))):
+            opt = heston_helpers[i]
+            err = (opt.modelValue() / opt.marketValue() - 1.0)
+            print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
+                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            avg += abs(err)  # accumulate the absolute error
+        avg = avg*100.0/len(heston_helpers)
+        print("-"*70)
+        print("Total Average Abs Error (%%) : %5.3f" % (avg))
+        heston_params = {
+            'theta':theta, 
+            'kappa':kappa, 
+            'sigma':sigma, 
+            'rho':rho, 
+            'v0':v0
+            }
+        
+        print('\nHeston model parameters:')
+        for key, value in heston_params.items():
+            print(f'{key}: {value}')        
+
+
+
+
     
     
     

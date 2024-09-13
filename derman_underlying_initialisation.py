@@ -13,6 +13,7 @@ os.chdir(pwd)
 
 import time
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from Derman import derman
 from data_query import dirdata,dirdatacsv
@@ -74,9 +75,9 @@ contract_details = pd.read_csv(csvs[3])
 contract_details.index = contract_details[contract_details.columns[0]]
 contract_details = contract_details.drop(
     columns = contract_details.columns[0]).reset_index(drop=True)
-S = contract_details['spot_price'].unique().astype(int)
-K = contract_details['strike_price'].unique().astype(int)
-T = contract_details['days_to_maturity'].unique().astype(int)
+S = np.sort(contract_details['spot_price'].unique().astype(int))
+K = np.sort(contract_details['strike_price'].unique().astype(int))
+T = np.sort(contract_details['days_to_maturity'].unique().astype(int))
 
 """
 # =============================================================================
