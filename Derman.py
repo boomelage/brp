@@ -91,12 +91,17 @@ class derman():
         K = df['strike_price']
         S = df['spot_price']
         iv = df['atmiv']
-        df['volatility'] = alpha + b*(K-S) + iv
+        df['volatility'] = \
+            iv + \
+                alpha[df['days_to_maturity']] +\
+                    b[df['days_to_maturity']]*(K-S)
         return df
                     
 derman = derman()
 
 ks, mats, ts = derman.retrieve_ts()
+
+S = np.median(ks)
 
 derman_coefs = derman.get_derman_coefs()
 
@@ -112,7 +117,6 @@ for i, strike in enumerate(ks):
     for j, maturity in enumerate(mats):
         implied_vols_matrix[i][j] = derman_df.loc[strike,maturity]
 
-print(implied_vols_matrix)
 
 
 

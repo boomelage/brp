@@ -143,4 +143,4 @@ class routine_collection():
         return market_data
 
 rc = routine_collection()
-market_data = rc.collect_contracts()
+market_data = rc.collect_market_data()

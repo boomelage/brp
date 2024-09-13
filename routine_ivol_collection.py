@@ -129,6 +129,7 @@ implied_vols_df = implied_vols_df.loc[
 
 
 implied_vols = implied_vols_df.dropna(axis=1)
+implied_vols = implied_vols.loc[:, (implied_vols != 0).all(axis=0)]
 Ks = implied_vols.index
 Ts = implied_vols.columns
 
@@ -143,7 +144,7 @@ print(implied_vols_matrix)
         
 from settings import model_settings
 ms = model_settings()
-settings, ezprint = ms.import_model_settings()
+settings = ms.import_model_settings()
 dividend_rate = settings['dividend_rate']
 risk_free_rate = settings['risk_free_rate']
 calculation_date = settings['calculation_date']
