@@ -91,26 +91,12 @@ print(start_tag_format)
 # =============================================================================
                                                                  # loading data
 
-# from routine_collection import collect_market_data_and_price
-# excluded_file = r'SPXts.xlsx'
-# ticker = excluded_file[:excluded_file.find('ts')]
-# excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
-# print(excluded_file)
-# dataset = collect_market_data_and_price(excluded_file)
-# n_prices = f"\nestimated with {str(len(dataset))} "\
-#     f"option prices collected from the market"
-# print(n_prices)
+from derman_underlying_initialisation import contract_details, derman_data
+from pricing import BS_price_vanillas, noisyfier
 
-from routine_generation import dataset
-excluded_file = r'SPXts.xlsx'
-ticker = excluded_file[:excluded_file.find('ts')]
-excluded_file_format = f"\nTerm sturcutre: {excluded_file}"
-n_prices = f"estimated with {len(dataset)} synthesized option prices"
-print(f"\n{str(n_prices)}")
-
-# import pandas as pd
-# dataset = pd.read_csv(r"E:\git\brp\07092024-072748.csv")
-
+features = contract_details.copy().drop(columns='atm_vol')
+prices = BS_price_vanillas(features)
+dataset = noisyfier(prices)
 # =============================================================================
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
@@ -193,29 +179,29 @@ model_plot = mlop.plot_model_performance(model_stats, model_runtime,
 end_time = time.time()
 end_tag_datetime = datetime.fromtimestamp(end_time)
 end_tag = str(end_tag_datetime.strftime('%d%m%Y-%H%M%S'))
-output_path_tag = str(f"{ticker} {end_tag}")
-outputs_path = os.path.join('outputs',output_path_tag)
-os.makedirs(outputs_path, exist_ok=True)
-total_runtime = int(end_time - start_time)
-model_plot.save(filename = f'{ticker} prediction {end_tag}.png',
-                path = outputs_path,
-                dpi = 600)
-csv_path = os.path.join(outputs_path,f"{ticker} {end_tag}.csv")
-dataset.to_csv(csv_path)
-end_tag_format = str(end_tag_datetime.strftime('%c'))
-end_time_format = f"\n{end_tag_format}"
-print(end_time_format)
-total_model_runtime = f"\nTotal model runtime: {str(total_runtime)} seconds"
-print(total_model_runtime)
-txt_path = os.path.join(outputs_path, f"{ticker} {end_tag}.txt")
-with open(txt_path, 'w') as file:
-    file.write(str(n_prices))
-    file.write(str(excluded_file_format))
-    file.write(str(start_tag_format))
-    file.write(str(model_settings))
-    file.write(str(activation_function_tag))
-    file.write(str(max_iter_tag))
-    file.write(str(model_name))
-    file.write(str(end_time_format))
-    file.write(str(total_model_runtime))
+# output_path_tag = str(f"{ticker} {end_tag}")
+# outputs_path = os.path.join('outputs',output_path_tag)
+# os.makedirs(outputs_path, exist_ok=True)
+# total_runtime = int(end_time - start_time)
+# model_plot.save(filename = f'{ticker} prediction {end_tag}.png',
+#                 path = outputs_path,
+#                 dpi = 600)
+# csv_path = os.path.join(outputs_path,f"{ticker} {end_tag}.csv")
+# dataset.to_csv(csv_path)
+# end_tag_format = str(end_tag_datetime.strftime('%c'))
+# end_time_format = f"\n{end_tag_format}"
+# print(end_time_format)
+# total_model_runtime = f"\nTotal model runtime: {str(total_runtime)} seconds"
+# print(total_model_runtime)
+# txt_path = os.path.join(outputs_path, f"{ticker} {end_tag}.txt")
+# with open(txt_path, 'w') as file:
+#     file.write(str(n_prices))
+#     file.write(str(excluded_file_format))
+#     file.write(str(start_tag_format))
+#     file.write(str(model_settings))
+#     file.write(str(activation_function_tag))
+#     file.write(str(max_iter_tag))
+#     file.write(str(model_name))
+#     file.write(str(end_time_format))
+#     file.write(str(total_model_runtime))
     
