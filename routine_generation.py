@@ -58,12 +58,12 @@ def map_var(varname):
     )
     
 
-# map_var('risk_free_rate')
-# map_var('volatility')
-# map_var('dividend_rate')
-# contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
-# contract_details
-# contract_details['w'] = 1
+map_var('risk_free_rate')
+map_var('volatility')
+map_var('dividend_rate')
+contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
+contract_details
+contract_details['w'] = 1
 
 contract_details
 

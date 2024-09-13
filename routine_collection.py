@@ -14,9 +14,10 @@ import numpy as np
 import QuantLib as ql
 from data_query import dirdata
 from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
-# pd.reset_option('display.max_rows')
+# pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_rows', None)
+pd.reset_option('display.max_rows')
+pd.reset_option('display.max_columns')
 
 class routine_collection():
     def __init__(self):
@@ -129,13 +130,16 @@ except Exception:
     
 contract_details = contract_details.copy()
 contract_details['atm_vol'] = 0.1312
-
-
+"""
+                                atm_vol momentarily fixed until proper data 
+                                format is collected
+"""
 K = contract_details['strike_price'].unique()
 T = contract_details['days_to_maturity'].unique()
 
 # =============================================================================
                                                                        # Derman
+
 from Derman import retrieve_derman_from_csv, derman
 derman_coefs, derman_maturities = retrieve_derman_from_csv()
 derman = derman(derman_coefs = derman_coefs)
@@ -144,7 +148,6 @@ contract_details = contract_details[
     contract_details['days_to_maturity'].isin(derman_maturities)]
 
 contract_details = contract_details.reset_index(drop=True)
-
 
 def apply_derman_vols_row(row):
     s = row['spot_price']
