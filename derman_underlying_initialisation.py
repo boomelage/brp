@@ -45,6 +45,6 @@ contract_details
 
 
 
-# derman_df = derman.derman_ivols_for_market(market_ts,derman_coefs)
+derman_df = derman.derman_ivols_for_market(contract_details,derman_coefs)
 
 # derman_df.to_csv(r'derman_volatiltiy_surface.csv')
