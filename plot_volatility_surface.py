@@ -11,15 +11,18 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.figsize']=(15,7)
 plt.style.use("dark_background")
 from matplotlib import cm
-import re
 import pandas as pd
 import numpy as np
 import os
+import re
 
-expiry = 1
 def plot_volatility_surface(
-        outputs_path, ticker, ivoldf,strikes,maturities,black_var_surface):
-    target_maturity_ivols = ivoldf[expiry]
+         ivoldf,strikes,
+         maturities,
+         black_var_surface,
+         target_expiry,
+         outputs_path=None, ticker=None):
+    target_maturity_ivols = ivoldf[target_expiry]
     fig, ax = plt.subplots()
     ax.plot(strikes, target_maturity_ivols, label="Black Surface")
     ax.plot(strikes, target_maturity_ivols, "o", label="Actual")

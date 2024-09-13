@@ -62,9 +62,9 @@ class model_settings():
             "dividend_ts": dividend_ts
             }
             
-    def make_ql_array(self,size,nparr):
-        qlarr = ql.Array(size,1)
-        for i in range(size):
+    def make_ql_array(self,nparr):
+        qlarr = ql.Array(len(nparr),1)
+        for i in range(len(nparr)):
             qlarr[i] = float(nparr[i])
         return qlarr
     

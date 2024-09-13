@@ -23,7 +23,7 @@ derman = derman()
 
 ticker = r'SPX'
 
-clean_ts_filename = csvs[1]
+# clean_ts_filename = 
 raw_ts_filname = csvs[0]
 derman_coefs_filename = csvs[2]
 # contract_details_filename = csvs[1]
@@ -32,14 +32,8 @@ derman_coefs_filename = csvs[2]
 # =============================================================================
 
 """
-# from routine_ivol_collection import raw_market_ts, clean_market_ts
-# timestamp = time.time()
-# file_time = datetime.fromtimestamp(timestamp)
-# file_tag = file_time.strftime("%Y-%m-%d %H-%M-%S")
-# clean_market_ts_name = f"{ticker} {file_tag} clean_ts.csv"
-# raw_market_ts_name = f"{ticker} {file_tag} raw_ts.csv"
-# raw_market_ts.to_csv(raw_market_ts_name)
-# clean_market_ts.to_csv(clean_market_ts_name)
+from routine_ivol_collection import raw_ts, derman_ts
+
 
 """
 # =============================================================================
@@ -89,10 +83,7 @@ derman_coefs_filename = csvs[2]
                                               importing term structure from csv                    
 """
 
-clean_market_ts = pd.read_csv(clean_ts_filename)
-clean_market_ts = clean_market_ts.set_index(clean_market_ts.columns[0])
-# clean_market_ts.columns = clean_market_ts.columns.astype(int)
-# atm_vol_df = clean_market_ts.loc[int(min(S)):int(max(S))]
+
 
 """
 # =============================================================================
@@ -102,11 +93,6 @@ clean_market_ts = clean_market_ts.set_index(clean_market_ts.columns[0])
 from Derman import retrieve_derman_from_csv
 derman_coefs, derman_maturities = retrieve_derman_from_csv(derman_coefs_filename)
 
-"""
-# =============================================================================
-                                                 loading Derman historical data
-"""
 
-raw_market_ts = pd.read_csv(raw_ts_filname)
 
 
