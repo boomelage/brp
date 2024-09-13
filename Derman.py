@@ -18,17 +18,18 @@ import pandas as pd
 from data_query import dirdatacsv
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from derman_underlying_initialisation import implied_vols
 pd.set_option('display.max_columns',None)
 
 class derman():
-    def __init__(self, derman_coefs = None, data_files = dirdatacsv()):
-        self.data_files = data_files
+    def __init__(self, derman_coefs = None, derman_filename = r'derman_ts.csv'):
+        self.derman_filename = derman_filename
         self.mats = []
         self.derman_coefs = derman_coefs
         
     def retrieve_ts(self):
         
-        file = self.data_files[0]
+        file = self.derman_filename
         try:
            ts = pd.read_csv(file)
            ts = ts.set_index(ts.iloc[:, 0]).drop(columns=ts.columns[0])
@@ -38,7 +39,7 @@ class derman():
             print("check working directory files!")
         ts = ts.loc[
             
-            5540:5640,
+            min(implied_vols.index):max(implied_vols.index),
             :
     
             ]
@@ -48,7 +49,8 @@ class derman():
         mats = ts.columns.tolist()
         ts = ts/100
         return ks, mats, ts
-        
+
+
     def compute_derman_ivols(self,maturity,ts):
         TSatmat = ts.loc[:,maturity]
         strikes = ts.index
@@ -133,8 +135,8 @@ class derman():
         derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
         return derman_df_for_s
 
-def retrieve_derman_from_csv():
-    derman_coefs = pd.read_csv(r'derman_coefs.csv')
+def retrieve_derman_from_csv(filename):
+    derman_coefs = pd.read_csv(filename)
     derman_coefs = derman_coefs.set_index('coef')
     derman_coefs.columns = derman_coefs.columns.astype(int)
     derman_maturities = derman_coefs.columns

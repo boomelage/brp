@@ -133,7 +133,7 @@ except Exception as e:
     
     
 
-contract_details['atm_vol'] = 0.
+contract_details['atm_vol'] = 0.1312
 """
                                 atm_vol momentarily fixed until proper data 
                                 format is collected
@@ -144,8 +144,8 @@ T = contract_details['days_to_maturity'].unique()
 # =============================================================================
                                                                        # Derman
 
-from Derman import derman, retrieve_derman_from_csv
-derman_coefs, derman_maturities = retrieve_derman_from_csv()
+from Derman import derman
+from derman_underlying_initialisation import derman_coefs, derman_maturities
 derman = derman(derman_coefs = derman_coefs)
 
 

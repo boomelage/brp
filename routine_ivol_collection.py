@@ -115,26 +115,21 @@ print(maturities)
 implied_vols_df = implied_vols_df.loc[
     
 # strike filter
-5575:5675, 
+min(implied_vols_df.index):max(implied_vols_df.index), 
 # maturity filter
-:371
+:
 
     ]
 
 implied_vols_df = implied_vols_df.replace(0.0, np.nan)
 implied_vols_df = implied_vols_df.interpolate(axis=0)
 
-
-
-
-
 implied_vols = implied_vols_df.dropna(axis=1)
 implied_vols = implied_vols.loc[:, (implied_vols != 0).all(axis=0)]
+
 Ks = implied_vols.index
 Ts = implied_vols.columns
 
-
-implied_vols
 import QuantLib as ql
 implied_vols_matrix = ql.Matrix(len(Ks),len(Ts),0)
 for i, strike in enumerate(Ks):
@@ -142,8 +137,7 @@ for i, strike in enumerate(Ks):
         implied_vols_matrix[i][j] = implied_vols.loc[strike,maturity]
 
 print(f"\n{implied_vols_matrix}")
-        
-        
+
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
