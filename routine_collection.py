@@ -114,12 +114,12 @@ it is temporarily taking current option data with available volatilities.
 the idea is that one can download long time series of at-the-money implied
 volatiltities even from educational bloomberg terminals and approximate the
 implied voilatility using Derman's method for any combination of spots, 
-strikes, and maturities. i had somewhere a method to map dividend rates and
-risk free rates to the aforementioned combinations which can be massive when
-using vectors from timeseries data for the cartesian product in routine_gener-
-ation.py. this would allow one to easily create large training datasets from
-rather sparse information. naturally, there are many assumptions underpinning
-the implied volatility being a functional form of maturity, strike, and spot.
+strikes, and maturities. in routine_generation.py, ther is a method to map 
+dividend rates and risk free rates to the aforementioned combinations which can 
+be massive when using vectors from timeseries data for the cartesian product. 
+this would allow one to easily create large training datasets from rather 
+sparse information. naturally, there are many assumptions underpinning the 
+implied volatility being a functional form of maturity, strike, and spot.
 
 """
 
