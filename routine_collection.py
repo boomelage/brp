@@ -122,13 +122,17 @@ implied volatility being a functional form of maturity, strike, and spot.
 # =============================================================================
                                                               # data collection
 
-rc = routine_collection()
 try:
+    rc = routine_collection()
     contract_details = rc.collect_market_data()
-except Exception:
-    print('check working directory files!')
+    contract_details = contract_details.copy()
+except Exception as e:
+    print(f"\ncheck working directory files!\n"
+          f"\ncheck working directory files!\n"
+          F"\n\nerror:{e}\n\n")
     
-contract_details = contract_details.copy()
+    
+
 contract_details['atm_vol'] = 0.1312
 """
                                 atm_vol momentarily fixed until proper data 
@@ -187,6 +191,7 @@ def apply_derman_vols_row(row):
     derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
     row['volatility'] = derman_vol
     return row
+
 
 
 contract_details = contract_details.apply(apply_derman_vols_row,axis=1)

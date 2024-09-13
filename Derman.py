@@ -43,9 +43,9 @@ class derman():
         ts = ts/100
         return ks, mats, ts
         
-    def compute_derman_ivols(self,maturity):
-        TSatmat = self.ts.loc[:,maturity]
-        strikes = self.ts.index
+    def compute_derman_ivols(self,maturity,ts):
+        TSatmat = ts.loc[:,maturity]
+        strikes = ts.index
         S = int(np.median(strikes))
         x = np.array(strikes - S,dtype=float)
         atmvol = np.median(TSatmat)
@@ -64,7 +64,7 @@ class derman():
         ks, mats, ts = self.retrieve_ts()
         for i, maturity in enumerate(mats):
             for j, k in enumerate(ks):
-                b, alpha, atmvol, derman_ivols = self.compute_derman_ivols(maturity)
+                b, alpha, atmvol, derman_ivols = self.compute_derman_ivols(maturity,ts)
                 derman_coefs[int(f"{maturity}")] = [b, alpha, atmvol]
         derman_coefs = pd.DataFrame(derman_coefs)
         derman_coefs['coef'] = ['b','alpha','atmvol']
@@ -143,4 +143,6 @@ def make_derman_df_for_S(s, K, T, atm_vol, contract_details):
     derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]
     return derman_df_for_s
 
-      
+
+
+
