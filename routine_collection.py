@@ -110,6 +110,15 @@ routine which can take a dataset of spots, strikes, atm implied
 volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
 static flag 'w' set to 1 indicating a call payoff
 
+it is temporarily taking current option data with available volatilities.
+the idea is that one can download long time series of at-the-money implied
+volatiltities even from educational bloomberg terminals and approximate the
+implied voilatility using Derman's method for any combination of spots, 
+strikes, and maturities. i was working on a method to map dividend rates and
+risk free rates to the aforementioned combinations which can be massive when
+using vectors from timeseries data for the cartesian product in routine_gener-
+ation.py
+
 """
 
 # =============================================================================
@@ -164,19 +173,19 @@ contract_details = contract_details.apply(
     apply_derman_vols_row, axis=1).dropna(
         subset=['volatility']).reset_index(drop=True)
 
-# def apply_derman_vols_row(row):
-#     s = row['spot_price']
-#     k = row['strike_price']
-#     t = row['days_to_maturity']
-#     atm_vol = row['atm_vol']
-#     derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
-#     row['volatility'] = derman_vol
-#     return row
+def apply_derman_vols_row(row):
+    s = row['spot_price']
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    atm_vol = row['atm_vol']
+    derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
+    row['volatility'] = derman_vol
+    return row
 
 
-# contract_details = contract_details.apply(apply_derman_vols_row,axis=1)
+contract_details = contract_details.apply(apply_derman_vols_row,axis=1)
 
-
+print(contract_details)
 
 
 
