@@ -5,10 +5,6 @@ Created on Tue Sep 10 12:40:38 2024
 
 This class collects market data exported from the 'calls/puts' tab in OMON
 
-below is a routine which can take a dataset of spots, strikes, atm implied
-volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
-static flag 'w' set to 1 indicating a call payoff
-
 """
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
@@ -19,8 +15,8 @@ import QuantLib as ql
 from data_query import dirdata
 from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
 pd.set_option('display.max_columns', None)
-# pd.set_option('display.max_rows', None)
-pd.reset_option('display.max_rows')
+pd.set_option('display.max_rows', None)
+# pd.reset_option('display.max_rows')
 
 class routine_collection():
     def __init__(self):
@@ -104,9 +100,8 @@ class routine_collection():
         print(market_data)
         return market_data
 
-
 """
-routine which can take a dataset of spots, strikes, atm implied
+below is a routine which can take a dataset of spots, strikes, atm implied
 volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
 static flag 'w' set to 1 indicating a call payoff
 
@@ -170,7 +165,13 @@ def apply_derman_vols_row(row):
         row['volatility'] = np.nan
     
     return row
+"""
+in the below mapping, volatility is being overwritten as it is assumed we do 
+not know it. in practice, the dataset would have a column of at-the-money 
+implied volatilities correspondingly mapped to every strike. this is why 
+atm_vol is fixed above
 
+"""
 contract_details = contract_details.apply(
     apply_derman_vols_row, axis=1).dropna(
         subset=['volatility']).reset_index(drop=True)
@@ -186,14 +187,4 @@ def apply_derman_vols_row(row):
 
 
 contract_details = contract_details.apply(apply_derman_vols_row,axis=1)
-
-print(contract_details)
-
-
-
-
-
-
-
-
 
