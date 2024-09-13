@@ -110,7 +110,7 @@ class derman():
                     moneyness = k - s
                     b = self.derman_coefs.loc['b', t]
                     alpha = self.derman_coefs.loc['alpha', int(t)]
-                    derman_df.loc[k, t] = atm_vol_df[t] + alpha + moneyness * b
+                    derman_df.loc[k, t] = atm_vol_df.loc[s,t] + alpha + moneyness * b
                 except Exception:
                     pass
         return derman_df
