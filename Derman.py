@@ -8,24 +8,23 @@ import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
-
-
 """
 """
-
 
 import pandas as pd
 from data_query import dirdatacsv
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from derman_underlying_initialisation import implied_vols
+
 pd.set_option('display.max_columns',None)
 
 class derman():
-    def __init__(self, derman_coefs = None, derman_filename = r'derman_ts.csv'):
+    def __init__(
+            self, derman_coefs = None, derman_filename=None,implied_vols=None):
         self.derman_filename = derman_filename
         self.mats = []
         self.derman_coefs = derman_coefs
+        self.implied_vols = implied_vols
         
     def retrieve_ts(self):
         
@@ -39,7 +38,7 @@ class derman():
             print("check working directory files!")
         ts = ts.loc[
             
-            min(implied_vols.index):max(implied_vols.index),
+            min(self.implied_vols.index):max(self.implied_vols.index),
             :
     
             ]
@@ -117,19 +116,20 @@ class derman():
                     pass
         return derman_df
     
-    def make_derman_df_for_S(self, s, K, T, atm_vol, contract_details):
-        def make_for_s(s, K, T, atm_vol, self,contract_details):
-            derman_coefs, derman_maturities = self.retrieve_derman_from_csv()
+    def make_derman_df_for_S(self, s, K, T, atm_vol_df, contract_details, derman_coefs, derman_maturities):
+        def make_for_s(
+                s, K, T, 
+                atm_vol, contract_details, derman_coefs, derman_maturities):
             contract_details = contract_details[
                 contract_details['days_to_maturity'].isin(derman_maturities)
             ].reset_index(drop=True)
     
             # Create the derman DataFrame
-            derman_df_for_s = self.make_derman_df(s, K, T, atm_vol)
+            derman_df_for_s = self.make_derman_df(s, K, T, atm_vol_df)
             return derman_df_for_s
     
         # Call make_for_s to get derman DataFrame
-        derman_df_for_s = make_for_s(s, K, T, atm_vol, contract_details)
+        derman_df_for_s = make_for_s(s, K, T, atm_vol_df, contract_details, derman_coefs, derman_maturities)
     
         # Drop columns that contain any zeros
         derman_df_for_s = derman_df_for_s.loc[:, (derman_df_for_s != 0).all(axis=0)]

@@ -82,7 +82,8 @@ class model_settings():
                 implied_vols_matrix[i][j] = term_strucutre.loc[strike,maturity]
         return implied_vols_matrix
     
-    def make_black_var_surface(self, expiration_dates,Ks,implied_vols_matrix):
+    def make_black_var_surface(
+            self, expiration_dates, Ks, implied_vols_matrix):
         black_var_surface = ql.BlackVarianceSurface(
             self.calculation_date, self.calendar,
             expiration_dates, Ks,
