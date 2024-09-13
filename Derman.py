@@ -122,6 +122,7 @@ class derman():
         derman_maturities = derman_coefs.columns
         return derman_coefs, derman_maturities
     
+    
     def make_derman_df_for_S(self, s, K, T, atm_vol, contract_details):
         def make_for_s(s, K, T, atm_vol, self,contract_details):
             derman_coefs, derman_maturities = self.retrieve_derman_from_csv()
