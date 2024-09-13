@@ -13,13 +13,14 @@ import os
 import QuantLib as ql
 import warnings
 import time
+import numpy as np
 warnings.simplefilter(action='ignore')
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
 from settings import model_settings
 ms = model_settings()
-settings, ezprint = ms.import_model_settings()
+settings = ms.import_model_settings()
 dividend_rate = settings['dividend_rate']
 risk_free_rate = settings['risk_free_rate']
 calculation_date = settings['calculation_date']
@@ -32,8 +33,15 @@ dividend_ts = settings['dividend_ts']
 # =============================================================================
                                                          # implied volatilities
 
-from routine_ivol_collection import expiration_dates, Ks, S, \
-    black_var_surface
+# from routine_ivol_collection import expiration_dates, Ks, S, \
+    # black_var_surface
+    
+from Derman import implied_vols_matrix, ks, mats
+Ks = ks
+S = np.median(ks)
+expiration_dates = ms.compute_ql_maturity_dates(mats)
+black_var_surface = ms.make_black_var_surface(expiration_dates, Ks, implied_vols_matrix)
+
 S_handle = ql.QuoteHandle(ql.SimpleQuote(S))
 
 # =============================================================================

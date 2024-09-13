@@ -51,6 +51,7 @@ class model_settings():
         def ezprint():
             for ez in ezimport:
                 print(ez)
+        ezprint()
         return {
             "dividend_rate": dividend_rate, 
             "risk_free_rate": risk_free_rate, 
@@ -59,7 +60,7 @@ class model_settings():
             "calendar": calendar,
             "flat_ts": flat_ts,
             "dividend_ts": dividend_ts
-            }, ezprint
+            }
             
     def make_ql_array(self,size,nparr):
         qlarr = ql.Array(size,1)
@@ -70,9 +71,16 @@ class model_settings():
     def compute_ql_maturity_dates(self, maturities):
         expiration_dates = np.empty(len(maturities),dtype=object)
         for i, maturity in enumerate(maturities):
-            expiration_dates[i] = self.calculation_date + ql.Period(int(maturity), ql.Days)
+            expiration_dates[i] = self.calculation_date + ql.Period(
+                int(maturity), ql.Days)
         return expiration_dates
-
+    
+    def make_black_var_surface(self, expiration_dates,Ks,implied_vols_matrix):
+        black_var_surface = ql.BlackVarianceSurface(
+            self.calculation_date, self.calendar,
+            expiration_dates, Ks,
+            implied_vols_matrix, self.day_count)
+        return black_var_surface
     
     
     

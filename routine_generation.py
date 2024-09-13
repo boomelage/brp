@@ -11,52 +11,75 @@ import numpy as np
 import pandas as pd
 import QuantLib as ql
 from itertools import product
+from settings import model_settings
 from pricing import BS_price_vanillas, noisyfier
-from routine_collection import collect_market_data
-
-market_data = collect_market_data(r'SPXts.xlsx')
+from routine_collection import market_data
 
 pd.set_option('display.max_columns', None)
+pd.reset_option('display.max_rows', None)
+
 calculation_date = ql.Date.todaysDate()
 
-# v = market_data['volatility'].unique().tolist()
-s = market_data['spot_price'].unique().tolist()
+s = [np.median(market_data['spot_price'].unique().tolist())]
 k = market_data['strike_price'].unique().tolist()
 t = market_data['days_to_maturity'].unique().tolist()
-g = market_data['dividend_rate'].unique().tolist()
-r = market_data['risk_free_rate'].unique().tolist()
-k = np.linspace(min(k),max(k),5)
-# v = np.linspace(min(v),max(v),20)
 contract_details = pd.DataFrame(
     product(
         s,
         k,
-        # v,
         t,
-        # g,
-        # r,
         ),
     columns=[
         "spot_price", 
         "strike_price",
-        # "volatility",
         "days_to_maturity",
-        # "dividend_rate",
-        # "risk_free_rate",
              ])
 
-contract_details['risk_free_rate'] = np.average(r) #temporarily just an average
-contract_details['dividend_rate'] = np.average(g) #temporarily just an average
-contract_details['w'] = 1
-contract_details['calculation_date'] = calculation_date
+data_for_pivots = market_data[market_data['spot_price'] == s[0]]
 
-def compute_maturity_date(row):
-    row['maturity_date'] = calculation_date + ql.Period(int(row['days_to_maturity']), ql.Days)
-    return row
-contract_details = contract_details.apply(compute_maturity_date, axis=1)
+
+
+def map_var(varname):
+    def make_varpivot(varname):
+        pivot = data_for_pivots.pivot_table(
+            index = 'strike_price', columns = 'days_to_maturity', values = varname)
+        return pivot
+    
+    def map_var_by_row(varpivot, row, rowvar):
+        try:
+            return varpivot.loc[row['strike_price'], row[rowvar]]
+        except KeyError:
+            return np.nan
+        except Exception:
+            return np.nan
+    
+    contract_details[varname] = contract_details.apply(
+        lambda row: map_var_by_row(make_varpivot(varname), row, 'days_to_maturity'), axis=1
+    )
+    
+
+map_var('risk_free_rate')
+map_var('volatility')
+map_var('dividend_rate')
+contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
+contract_details
+contract_details['w'] = 1
+
+ms = model_settings()
+
+settings, ezprint = ms.import_model_settings()
+dividend_rate = settings['dividend_rate']
+risk_free_rate = settings['risk_free_rate']
+calculation_date = settings['calculation_date']
+day_count = settings['day_count']
+calendar = settings['calendar']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
+
+
 
 option_prices = BS_price_vanillas(contract_details)
-
+# option_prices = heston_price_vanillas()
 dataset = noisyfier(option_prices)
 dataset = dataset.dropna()
 dataset

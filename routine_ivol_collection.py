@@ -106,7 +106,7 @@ file_time = time.time()
 file_datetime = datetime.fromtimestamp(file_time)
 file_tag = file_datetime.strftime("%Y-%m-%d %H-%M-%S")
 filename = f"SPX {file_tag} (S {S})(K {mink}-{maxk})(T {minmat}-{maxmat}).csv"
-# implied_vols_df.to_csv(filename)
+implied_vols_df.to_csv(filename)
 
 print(strikes)
 print(maturities)
@@ -154,50 +154,46 @@ dividend_ts = settings['dividend_ts']
 
 expiration_dates = ms.compute_ql_maturity_dates(Ts)
 S = np.median(Ks)
-black_var_surface = ql.BlackVarianceSurface(
-    calculation_date, calendar,
-    expiration_dates, Ks,
-    implied_vols_matrix, day_count)
-
-import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize']=(15,7)
-plt.style.use("dark_background")
-from matplotlib import cm
-import numpy as np
-import os
-
-target_maturity_ivols = implied_vols_df.loc[:,]
-fig, ax = plt.subplots()
-ax.plot(Ks, target_maturity_ivols, label="Black Surface")
-ax.plot(Ks, target_maturity_ivols, "o", label="Actual")
-ax.set_xlabel("Strikes", size=9)
-ax.set_ylabel("Vols", size=9)
-ax.legend(loc="upper right")
-fig.show()
-
-plot_maturities = np.array(Ts,dtype=float)/365.25
-moneyness = np.array(Ks,dtype=float)
-X, Y = np.meshgrid(plot_maturities, moneyness)
-Z = np.array(
-    [
-    black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())
-      ])
-Z = Z.reshape(X.shape)
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-surf = ax.plot_surface(
-    X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
-fig.colorbar(surf, shrink=0.5, aspect=5)
-ax.set_xlabel("Maturities", size=9)
-ax.set_ylabel("Strikes", size=9)
-ax.set_zlabel("Implied Volatility", size=9)
-ax.view_init(elev=30, azim=-35)
-plt.show() 
-plt.cla()
-plt.clf()
 
 
-# implied_vols.loc[5475,492]
+# import matplotlib.pyplot as plt
+# plt.rcParams['figure.figsize']=(15,7)
+# plt.style.use("dark_background")
+# from matplotlib import cm
+# import numpy as np
+# import os
+
+# target_maturity_ivols = implied_vols_df.loc[:,]
+# fig, ax = plt.subplots()
+# ax.plot(Ks, target_maturity_ivols, label="Black Surface")
+# ax.plot(Ks, target_maturity_ivols, "o", label="Actual")
+# ax.set_xlabel("Strikes", size=9)
+# ax.set_ylabel("Vols", size=9)
+# ax.legend(loc="upper right")
+# fig.show()
+
+# plot_maturities = np.array(Ts,dtype=float)/365.25
+# moneyness = np.array(Ks,dtype=float)
+# X, Y = np.meshgrid(plot_maturities, moneyness)
+# Z = np.array(
+#     [
+#     black_var_surface.blackVol(x, y) for x, y in zip(X.flatten(), Y.flatten())
+#       ])
+# Z = Z.reshape(X.shape)
+# fig = plt.figure()
+# ax = fig.add_subplot(projection='3d')
+# surf = ax.plot_surface(
+#     X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0.1)
+# fig.colorbar(surf, shrink=0.5, aspect=5)
+# ax.set_xlabel("Maturities", size=9)
+# ax.set_ylabel("Strikes", size=9)
+# ax.set_zlabel("Implied Volatility", size=9)
+# ax.view_init(elev=30, azim=-35)
+# plt.show() 
+# plt.cla()
+# plt.clf()
+
+
 
 
 
