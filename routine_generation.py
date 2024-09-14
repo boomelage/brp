@@ -22,13 +22,30 @@ pd.reset_option('display.max_rows', None)
 
 
 """
+
+below is a routine which can take a dataset of spots, strikes, atm implied
+volatility, risk_free_rate, dividend_yield, maturities, and momentarily a
+static flag 'w' set to 1 indicating a call payoff
+
+it is temporarily taking current option data with available volatilities.
+the idea is that one can download long time series of at-the-money implied
+volatiltities even from educational bloomberg terminals and approximate the
+implied voilatility using Derman's method for any combination of spots, 
+strikes, and maturities. in routine_generation.py, ther is a method to map 
+dividend rates and risk free rates to the aforementioned combinations which can 
+be massive when using vectors from timeseries data for the cartesian product. 
+this would allow one to easily create large training datasets from rather 
+sparse information. naturally, there are many assumptions underpinning the 
+implied volatility being a functional form of maturity, strike, and spot.
+
+
 # =============================================================================
                                                            generation procedure
 """
-
-from import_files import contract_details, derman_coefs, derman_ts, spread_ts, raw_ts
+from routine_collection import collect_directory_market_data
+from import_files import derman_coefs, derman_ts, spread_ts, raw_ts
 calculation_date = ql.Date.todaysDate()
-
+contract_details = collect_directory_market_data()
 
 s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
 k = derman_ts.index

@@ -23,16 +23,15 @@ pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
 
     
-# """
-# # =============================================================================
-#                                                                  importing data
-# """
+"""
+# =============================================================================
+                                                                  importing data
+"""
 
 
+# from routine_ivol_collection import raw_ts
 
-from import_files import spread_ts
-raw_ts = spread_ts
-
+from import_files import raw_ts
 
 raw_ts = raw_ts.dropna(how = 'all')
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
@@ -40,10 +39,10 @@ raw_ts = raw_ts.drop_duplicates()
 atm_vols = raw_ts.dropna()
 
 
-# """
-# # =============================================================================
-#                                            cleaning the term structure manually
-# """
+"""
+# =============================================================================
+                                            cleaning the term structure manually
+"""
 spot_spread = np.array(raw_ts.loc[:,3].dropna().index)
 s = 5630
 raw_ts = raw_ts.dropna(axis=1, subset=[s])
@@ -104,59 +103,20 @@ ms = model_settings()
 implied_vols_matrix = ms.make_implied_vols_matrix(
     K, derman_maturities, derman_ts)
 
-# print(implied_vols_matrix)
+print(implied_vols_matrix)
 
 expiration_dates = ms.compute_ql_maturity_dates(derman_maturities)
 
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K.astype(float), implied_vols_matrix)
 
+from surface_plotting import plot_volatility_surface, plot_term_structure
 
+# fig = plot_volatility_surface(
+#     black_var_surface, K, derman_maturities)
 
-def plot_volatility_surface(black_var_surface = black_var_surface,
-                            K = K,
-                            T = T,
-                            ts_df = derman_ts,
-                            target_maturity = derman_maturities[0]):
-    import matplotlib.pyplot as plt
-    plt.rcParams['figure.figsize']=(15,7)
-    plt.style.use("dark_background")
-    from matplotlib import cm
-    target_maturity_ivols = ts_df[target_maturity]
-    fig, ax = plt.subplots()
-    ax.plot(K, target_maturity_ivols, label="Black Surface")
-    ax.plot(K, target_maturity_ivols, "o", label="Actual")
-    ax.set_xlabel("Strikes", size=9)
-    ax.set_ylabel("Vols", size=9)
-    ax.legend(loc="upper right")
-    fig.show()
-    
-    plot_maturities = np.sort(T/365).astype(float)
-    plot_strikes = np.sort(K).astype(float)
-    X, Y = np.meshgrid(plot_strikes, plot_maturities)
-    Z = np.array([[
-        black_var_surface.blackVol(y, x) for x in plot_strikes] 
-        for y in plot_maturities])
-    
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    
-    surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                    linewidth=0.1)
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-    
-    ax.set_xlabel("Strikes", size=9)
-    ax.set_ylabel("Maturities (Years)", size=9)
-    ax.set_zlabel("Volatility", size=9)
-    
-    plt.show()
-    plt.cla()
-    plt.clf()
-    return fig
-
-print("volatility surface generated")
-
-# fig = plot_volatility_surface()
+for t in derman_maturities:
+    fig = plot_term_structure(K,t,spread_ts,derman_ts)
 
 # for t in derman_maturities:
 #     print(t)

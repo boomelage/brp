@@ -12,7 +12,6 @@ os.chdir(pwd)
 """
 
 import pandas as pd
-from data_query import dirdatacsv
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -46,7 +45,6 @@ class derman():
     
         ks = ts.index.tolist()
         mats = ts.columns.tolist()
-        ts = ts/100
         return ks, mats, ts
 
 
@@ -62,7 +60,7 @@ class derman():
         model.fit(x,y)
         b = model.coef_[0]
         alpha = model.intercept_
-        derman_ivols = model.predict(x)/100
+        derman_ivols = model.predict(x)
         derman_ivols = derman_ivols*b + alpha + atmvol
         return b, alpha, atmvol, derman_ivols
         
@@ -139,8 +137,7 @@ def retrieve_derman_from_csv(filename):
     derman_coefs = pd.read_csv(filename)
     derman_coefs = derman_coefs.set_index('coef')
     derman_coefs.columns = derman_coefs.columns.astype(int)
-    derman_maturities = derman_coefs.columns
-    return derman_coefs, derman_maturities
+    return derman_coefs
 
 
 

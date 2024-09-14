@@ -42,7 +42,7 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
 
-from import_files import derman_coefs, derman_ts, spread_ts, raw_ts, contract_details
+from import_files import derman_ts, contract_details
 groupedby_s = contract_details.groupby(by='strike_price')
 S = [int(contract_details['spot_price'].unique()[1])]
 K = derman_ts.index
@@ -130,23 +130,19 @@ for s_idx, s in enumerate(S):
                           ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
         theta, kappa, sigma, rho, v0 = model.params()
         
-        # print (
-        #     "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
-        #         % \
-        #             (theta, kappa, sigma, rho, v0)
-            # )
         avg = 0.0
         time.sleep(0.005)
-        # print ("%15s %15s %15s %20s" % (
-        #     "Strikes", "Market Value",
-        #       "Model Value", "Relative Error (%)"))
-        # print ("="*70)
+        print ("%15s %15s %15s %20s" % (
+            "Strikes", "Market Value",
+              "Model Value", "Relative Error (%)"))
+        print ("="*70)
         for i in range(min(len(heston_helpers), len(K))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
-            # print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
-            #       f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
-            avg += abs(err)  # accumulate the absolute error
+            print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
+                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            avg += abs(err)
+        print ("="*70)
         avg = avg*100.0/len(heston_helpers)
         print("-"*40)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
@@ -155,14 +151,16 @@ for s_idx, s in enumerate(S):
             'kappa':kappa, 
             'sigma':sigma, 
             'rho':rho, 
-            'v0':v0
+            'v0':v0,
+            'error':avg
             }
         
-        print('Heston model parameters:\n')
+        print('\nHeston model parameters:')
         for key, value in heston_params.items():
             print(f'{key}: {value}')
-        print(f"for {int(t)} days maturity")
+        print(f"\nfor {int(t)} days maturity")
         print("-"*40)
+        print('\n\n')
         
         param_array_for_maturity[t_idx] =  heston_params
         

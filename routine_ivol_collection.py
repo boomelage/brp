@@ -16,9 +16,9 @@ import time
 from datetime import datetime
 
 pd.set_option('display.max_rows',None)
-pd.set_option('display.max_columns',None)
+# pd.set_option('display.max_columns',None)
 # pd.reset_option('display.max_rows')
-# pd.reset_option('display.max_columns')
+pd.reset_option('display.max_columns')
 
 
 data_files = xlsxs
@@ -74,6 +74,7 @@ df_combined = df_combined.dropna()
 # Step 3: Set Strike and DyEx as the MultiIndex
 df_indexed = df_combined.set_index(['Strike', 'DyEx'])
 df_indexed = df_indexed.sort_index()
+df_indexed
 
 Ts = np.sort(df_combined["DyEx"].unique())  
 Ts = Ts[Ts > 0]
@@ -112,3 +113,5 @@ T = np.sort(spread_ts.columns)
 K = np.sort(spread_ts.index)
 s = np.median(K)
 
+raw_ts = raw_ts/100
+print(f'\nterm structure collected:\n\n{raw_ts}\n')
