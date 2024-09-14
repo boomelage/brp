@@ -28,13 +28,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from derman_underlying_initialisation import derman_coefs,derman_maturities,\
-    implied_vols, contract_details, S, K, T
 
-from testing12 import derman_atm_dfs
-
-from Derman import derman
-derman = derman(derman_coefs=derman_coefs,implied_vols=implied_vols)
 
 from settings import model_settings
 ms = model_settings()
@@ -48,8 +42,17 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
 
-S = S
-groupedby_s = contract_details.groupby(by='spot_price')
+from import_files import derman_coefs, derman_ts, spread_ts, raw_ts, contract_details
+groupedby_s = contract_details.groupby(by='strike_price')
+S = [int(contract_details['spot_price'].unique()[1])]
+K = derman_ts.index
+T = derman_ts.columns
+
+
+
+param_array_for_maturity = np.empty(len(T),dtype=object)
+param_array_for_spot = np.empty(len(S),dtype=object)
+
 
 for s_idx, s in enumerate(S):
     contract_details_for_s = groupedby_s.get_group(s)
@@ -69,43 +72,54 @@ for s_idx, s in enumerate(S):
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
 
-    print(process)
     heston_helpers = []
-    
-    derman_df_for_s = derman.make_derman_df_for_S(
-        s, K, T, derman_atm_dfs[s_idx], contract_details, derman_coefs, \
-            derman_maturities)
 
-    derK = np.sort(derman_df_for_s.index).astype(float)
-    derT = np.sort(derman_df_for_s.columns).astype(float)
+    derK = np.sort(derman_ts.index).astype(float)
+    derT = np.sort(derman_ts.columns).astype(float)
     
-    implied_vols_matrix = ql.Matrix(len(derK),len(derT),0.0)
-    for i, k in enumerate(derK):
-        for j, t in enumerate(derT):
-            implied_vols_matrix[i][j] = derman_df_for_s.loc[k,t]
-    print(implied_vols_matrix)
+    implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, derman_ts)
     
     expiration_dates = ms.compute_ql_maturity_dates(derT)
-    
-    
+        
     black_var_surface = ms.make_black_var_surface(
         expiration_dates, derK.astype(float), implied_vols_matrix)
     
     groupedby_sk = contract_details_for_s.groupby(by='strike_price')
     
-    for kk in derK:
-        for tt in derT:
-            date = calculation_date + ql.Period(int(tt),ql.Days)
+    for t_idx, t in enumerate(derT):
+        
+        
+        v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
+        process = ql.HestonProcess(
+            flat_ts,                
+            dividend_ts,            
+            S_handle,               
+            v0,                     # Initial volatility
+            kappa,                  # Mean reversion speed
+            theta,                  # Long-run variance (volatility squared)
+            sigma,                  # Volatility of the volatility
+            rho                     # Correlation between asset and volatility
+        )
+
+        model = ql.HestonModel(process)
+        engine = ql.AnalyticHestonEngine(model)
+
+        heston_helpers = []
+        
+        
+        
+        for k_idx, k in enumerate(derK):
+            date = calculation_date + ql.Period(int(t),ql.Days)
             dt = (date - calculation_date)
             
-            sigma = black_var_surface.blackVol(dt/365.25, kk)  
+            sigma = black_var_surface.blackVol(dt/365.25, k)  
             p = ql.Period(dt, ql.Days)
             
             helper = ql.HestonModelHelper(
                 p,
                 calendar,
                 float(s),
-                kk,
+                k,
                 ql.QuoteHandle(ql.SimpleQuote(sigma)),
                 flat_ts,
                 dividend_ts)
@@ -116,25 +130,25 @@ for s_idx, s in enumerate(S):
                           ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
         theta, kappa, sigma, rho, v0 = model.params()
         
-        print (
-            "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
-                % \
-                    (theta, kappa, sigma, rho, v0)
-            )
+        # print (
+        #     "\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" \
+        #         % \
+        #             (theta, kappa, sigma, rho, v0)
+            # )
         avg = 0.0
         time.sleep(0.005)
-        print ("%15s %15s %15s %20s" % (
-            "Strikes", "Market Value",
-              "Model Value", "Relative Error (%)"))
-        print ("="*70)
+        # print ("%15s %15s %15s %20s" % (
+        #     "Strikes", "Market Value",
+        #       "Model Value", "Relative Error (%)"))
+        # print ("="*70)
         for i in range(min(len(heston_helpers), len(K))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
-            print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
-                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            # print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
+            #       f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
             avg += abs(err)  # accumulate the absolute error
         avg = avg*100.0/len(heston_helpers)
-        print("-"*70)
+        print("-"*40)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
         heston_params = {
             'theta':theta, 
@@ -144,15 +158,14 @@ for s_idx, s in enumerate(S):
             'v0':v0
             }
         
-        print('\nHeston model parameters:')
+        print('Heston model parameters:\n')
         for key, value in heston_params.items():
-            print(f'{key}: {value}')        
+            print(f'{key}: {value}')
+        print(f"for {int(t)} days maturity")
+        print("-"*40)
+        
+        param_array_for_maturity[t_idx] =  heston_params
+        
+param_array_for_spot[s_idx] = param_array_for_maturity
 
-
-
-
-    
-    
-    
-    
-    
+heston_params = param_array_for_spot

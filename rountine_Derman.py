@@ -28,12 +28,10 @@ pd.reset_option('display.max_columns')
 #                                                                  importing data
 # """
 
-from routine_generation import rfrpivot, dvypivot
-raw_ts = dvypivot
-raw_ts = rfrpivot
 
-# from routine_ivol_collection import spread_ts
-# raw_ts = spread_ts
+
+from import_files import spread_ts
+raw_ts = spread_ts
 
 
 raw_ts = raw_ts.dropna(how = 'all')
@@ -79,12 +77,11 @@ derman_ts = pd.DataFrame(derman_ts_np)
 derman_ts.index = K
 derman_ts.columns = derman_maturities
 
-derman_ts
 
-# """
-# # =============================================================================
-#                                                     applying Derman estimations
-# """
+"""
+# =============================================================================
+                                                    applying Derman estimations
+"""
 for i, k in enumerate(K):
     moneyness = k - s
     for j, t in enumerate(derman_maturities):
@@ -95,6 +92,11 @@ for i, k in enumerate(K):
             derman_coefs.loc['b',t] * moneyness
         )
 
+negative_dermans = derman_ts.copy().loc[:, (derman_ts < 0).any(axis=0)]
+negative_dermans
+derman_ts = derman_ts.drop(columns=negative_dermans.columns)
+derman_maturities = derman_ts.columns
+K = derman_ts.index
 
 
 from settings import model_settings
@@ -114,7 +116,7 @@ black_var_surface = ms.make_black_var_surface(
 def plot_volatility_surface(black_var_surface = black_var_surface,
                             K = K,
                             T = T,
-                            ts_df = spread_ts,
+                            ts_df = derman_ts,
                             target_maturity = derman_maturities[0]):
     import matplotlib.pyplot as plt
     plt.rcParams['figure.figsize']=(15,7)
@@ -152,8 +154,9 @@ def plot_volatility_surface(black_var_surface = black_var_surface,
     plt.clf()
     return fig
 
+print("volatility surface generated")
 
-fig = plot_volatility_surface()
+# fig = plot_volatility_surface()
 
-for t in derman_maturities:
-    print(t)
+# for t in derman_maturities:
+#     print(t)
