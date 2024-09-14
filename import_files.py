@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Sep 14 02:27:39 2024
+
+"""
+import os
+pwd = str(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(pwd)
+
+import pandas as pd
+from data_query import dirdatacsv
+csvs = dirdatacsv()
+
+
+derman_coefs = pd.read_csv(csvs[0])
+derman_coefs = derman_coefs.set_index('coef')
+derman_coefs.columns = derman_coefs.columns.astype(int)
+
+derman_ts = pd.read_csv(csvs[1])
+derman_ts = derman_ts.rename(
+    columns={derman_ts.columns[0]:'Strike'}).set_index('Strike')
+
+spread_ts = pd.read_csv(csvs[3])
+spread_ts = spread_ts.rename(
+    columns={spread_ts.columns[0]:'Strike'}).set_index('Strike')
+
+raw_ts = pd.read_csv(csvs[2])
+raw_ts = raw_ts.rename(
+    columns={raw_ts.columns[0]:'Strike'}).set_index('Strike')
