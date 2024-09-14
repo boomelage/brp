@@ -13,14 +13,12 @@ import QuantLib as ql
 from itertools import product
 from settings import model_settings
 from pricing import BS_price_vanillas, noisyfier
-from routine_collection import contract_details
-from import_files import derman_ts
+
 
 pd.set_option('display.max_columns', None)
 pd.reset_option('display.max_rows', None)
 # pd.reset_option('display.max_columns', None)
-calculation_date = ql.Date.todaysDate()
-s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
+
 
 
 """
@@ -28,6 +26,11 @@ s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
                                                            generation procedure
 """
 
+from import_files import contract_details, derman_coefs, derman_ts, spread_ts, raw_ts
+calculation_date = ql.Date.todaysDate()
+
+
+s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
 k = derman_ts.index
 t = derman_ts.columns
 features = pd.DataFrame(
@@ -107,20 +110,23 @@ print(f"\noriginal dataset:\n{contract_details}")
 print(f"\nnew dataset:\n{features}")
 print(f"\n{int(100*(features.shape[0]/contract_details.shape[0]-1))}% combinations gained")
 
-ms = model_settings()
-settings = ms.import_model_settings()
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
-calculation_date = settings['calculation_date']
-day_count = settings['day_count']
-calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
+# ms = model_settings()
+# settings = ms.import_model_settings()
+# dividend_rate = settings['dividend_rate']
+# risk_free_rate = settings['risk_free_rate']
+# calculation_date = settings['calculation_date']
+# day_count = settings['day_count']
+# calendar = settings['calendar']
+# flat_ts = settings['flat_ts']
+# dividend_ts = settings['dividend_ts']
 
-option_prices = BS_price_vanillas(features)
-# option_prices = heston_price_vanillas()
-dataset = noisyfier(option_prices)
-dataset = dataset.dropna()
-dataset
-print(dataset)
-print(dataset.describe())
+# option_prices = BS_price_vanillas(features)
+# # option_prices = heston_price_vanillas()
+# dataset = noisyfier(option_prices)
+# dataset = dataset.dropna()
+# dataset
+# print(dataset)
+# print(dataset.describe())
+
+
+# negative_columns = df.loc[:, (df < 0).any(axis=0)]
