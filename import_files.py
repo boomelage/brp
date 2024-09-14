@@ -92,28 +92,27 @@ raw_ts = raw_ts.loc[
 #     plt.cla()
 #     plt.clf()
 
+"""
+"""
+contract_details = collect_directory_market_data()
+
+"""
+"""
+
 
 """
 # =============================================================================
                                                                      save files
                                                                    
                                                                          raw_ts
-"""
+from routine_ivol_collection import raw_ts
+raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
 
-
-
-# from routine_ivol_collection import raw_ts
-# raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
-
-"""
                                                                          Derman
-"""
+from rountine_Derman import derman_coefs
+derman_coefs.drop_duplicates().to_csv(f"{generic} derman_coefs.csv")
 
-# from rountine_Derman import derman_coefs
-# derman_coefs.drop_duplicates().to_csv(f"{generic} derman_coefs.csv")
-
-"""
                                                                contract_details
+contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
+
 """
-contract_details = collect_directory_market_data()
-# contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
