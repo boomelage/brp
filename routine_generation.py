@@ -45,18 +45,34 @@ details_indexed = contract_details.copy().set_index([
     'strike_price','days_to_maturity'])
 features = features[features['spot_price'] == s[0]]
 
-def map_vol(row,varname,varmap):
-    row[varname] = varmap.loc[
+def map_vol(row,varname):
+    row[varname] = derman_ts.loc[
         int(row['strike_price']),
         int(row['days_to_maturity'])
         ]
     return row
 
+def map_features(row,varname):
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    row[varname] = details_indexed.loc[k,t][varname]
+    return row
+
+
 
 varname = 'volatility'
-varmap = derman_ts
-features = features.apply(lambda row: map_vol(row, varname, varmap), axis=1)
+features = features.apply(lambda row: map_vol(row, varname), axis=1)
 features = features.dropna(axis=0).reset_index(drop=True)
+
+varname = 'risk_free_rate'
+varname = 'dividend_Rate'
+
+
+
+
+
+
+
 features['w'] = 1
 
 

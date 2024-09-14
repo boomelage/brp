@@ -93,6 +93,7 @@ raw_ts_df = raw_ts_df.set_index(Ks)
 
 raw_ts = raw_ts_df.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
+raw_ts = raw_ts.drop_duplicates()
 atm_vols = raw_ts.dropna()
 
 
@@ -106,7 +107,7 @@ strike_spread = raw_ts.iloc[:,1].dropna().index
 spot = float(np.median(strike_spread))
 
 spread_ts = raw_ts.loc[strike_spread,:]
-spread_ts = spread_ts.fillna(0)
+spread_ts = spread_ts.fillna(0).drop_duplicates()
 
 spread_ts = spread_ts.loc[
     :
@@ -147,8 +148,10 @@ derman_ts = pd.DataFrame(derman_ts_np)
 derman_ts.index = K
 derman_ts.columns = derman_maturities
 
-
-
+"""
+# =============================================================================
+                                                                   Derman coefs
+"""
 for i, k in enumerate(K):
     moneyness = k - s
     for j, t in enumerate(derman_maturities):
@@ -157,9 +160,12 @@ for i, k in enumerate(K):
                 derman_coefs.loc['b',t] * moneyness
                 )
 
+
+
 from settings import model_settings
 ms = model_settings()
-implied_vols_matrix = ms.make_implied_vols_matrix(K, derman_maturities, derman_ts)
+implied_vols_matrix = ms.make_implied_vols_matrix(
+    K, derman_maturities, derman_ts)
 
 print(implied_vols_matrix)
 

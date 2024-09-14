@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -12,30 +13,52 @@ import pandas as pd
 from data_query import dirdatacsv
 csvs = dirdatacsv()
 
-
-derman_coefs = pd.read_csv(csvs[0])
+dcname = [file for file in csvs if 'derman_coefs' in file][0]
+derman_coefs = pd.read_csv(dcname)
 derman_coefs = derman_coefs.set_index('coef')
 derman_coefs.columns = derman_coefs.columns.astype(int)
 
-
-derman_ts = pd.read_csv(csvs[2])
+dtsname = [file for file in csvs if 'derman_ts' in file][0]
+derman_ts = pd.read_csv(dtsname).drop_duplicates()
 derman_ts = derman_ts.rename(
     columns={derman_ts.columns[0]:'Strike'}).set_index('Strike')
 derman_ts.columns = derman_ts.columns.astype(int)
 
-
-spread_ts = pd.read_csv(csvs[4])
+stsname = [file for file in csvs if 'spread_ts' in file][0]
+spread_ts = pd.read_csv(stsname).drop_duplicates()
 spread_ts = spread_ts.rename(
     columns={spread_ts.columns[0]:'Strike'}).set_index('Strike')
 spread_ts.columns = spread_ts.columns.astype(int)
 
-
-raw_ts = pd.read_csv(csvs[3])
+rawtsname = [file for file in csvs if 'raw_ts' in file][0]
+raw_ts = pd.read_csv(rawtsname).drop_duplicates()
 raw_ts = raw_ts.rename(
     columns={raw_ts.columns[0]:'Strike'}).set_index('Strike')
 raw_ts.columns = raw_ts.columns.astype(int)
+imported_ts = {
+    'derman_coefs': derman_coefs,
+    'derman_ts': derman_ts,
+    'spread_ts': spread_ts,
+    'raw_ts': raw_ts,
+    }
+print('\nderman_coefs, derman_ts, spread_ts, raw_ts\n')
 
 
-contract_details = pd.read_csv(csvs[1])
+derman_coefs = imported_ts['derman_coefs']
+derman_ts = imported_ts['derman_ts']
+spread_ts = imported_ts['spread_ts']
+raw_ts = imported_ts['raw_ts']
+
+
+contdetname = [file for file in csvs if 'contract_details' in file][0]
+contract_details = pd.read_csv(contdetname).drop_duplicates()
 contract_details = contract_details.drop(
     columns = contract_details.columns[0])
+print('\ncontract_details\n')
+
+
+print('\nfiles imported\n')
+
+
+
+
