@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import QuantLib as ql
 from itertools import product
-from settings import model_settings
 from pricing import BS_price_vanillas, noisyfier
 
 
@@ -32,27 +31,46 @@ the idea is that one can download long time series of at-the-money implied
 volatiltities even from educational bloomberg terminals and approximate the
 implied voilatility using Derman's method for any combination of spots, 
 strikes, and maturities. in routine_generation.py, ther is a method to map 
-dividend rates and risk free rates to the aforementioned combinations which can 
-be massive when using vectors from timeseries data for the cartesian product. 
-this would allow one to easily create large training datasets from rather 
-sparse information. naturally, there are many assumptions underpinning the 
-implied volatility being a functional form of maturity, strike, and spot.
+dividend rates and risk free rates to the aforementioned combinations which 
+can be massive when using vectors from timeseries data for the cartesian 
+product. this would allow one to easily create large training datasets from 
+rather sparse information. naturally, there are many assumptions underpinning 
+the implied volatility being a functional form of maturity, strike, and spot.
 
 
 # =============================================================================
                                                            generation procedure
 """
+
+from settings import model_settings
+ms = model_settings()
+settings = ms.import_model_settings()
+
+dividend_rate = settings['dividend_rate']
+risk_free_rate = settings['risk_free_rate']
+calculation_date = settings['calculation_date']
+day_count = settings['day_count']
+calendar = settings['calendar']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
+security_settings = settings['security_settings']
+ticker = security_settings[0]
+lower_strike = security_settings[1]
+upper_strike = security_settings[2]
+lower_maturity = security_settings[3]
+upper_maturity = security_settings[4]
+s = security_settings[5]
+
+
 from routine_collection import collect_directory_market_data
-from import_files import derman_coefs, derman_ts, spread_ts, raw_ts
-calculation_date = ql.Date.todaysDate()
 contract_details = collect_directory_market_data()
 
-s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
-k = derman_ts.index
-t = derman_ts.columns
+
+k = np.sort(contract_details['strike_price'].unique())
+t = np.sort(contract_details['days_to_maturity'].unique())
 features = pd.DataFrame(
     product(
-        s,
+        [s],
         k,
         t,
         ),
@@ -62,20 +80,10 @@ features = pd.DataFrame(
         "days_to_maturity",
               ])
 
+
+
 details_indexed = contract_details.copy().set_index([
     'strike_price','days_to_maturity'])
-features = features[features['spot_price'] == s[0]]
-
-
-def map_vol(row):
-    row['volatility'] = derman_ts.loc[
-        int(row['strike_price']),
-        int(row['days_to_maturity'])
-        ]
-    return row
-
-features = features.apply(lambda row: map_vol(row), axis=1)
-features = features.dropna(axis=0).reset_index(drop=True)
 
 
 rfrpivot = contract_details.pivot_table(
@@ -121,28 +129,22 @@ def map_rate(rate_series, ratename):
 features = map_rate(rfrs, 'risk_free_rate')
 features = map_rate(dvys, 'dividend_rate')
 
+
+
+
 features['w'] = 1
 features = features.dropna()
 print(f"\noriginal dataset:\n{contract_details}")
 print(f"\nnew dataset:\n{features}")
 print(f"\n{int(100*(features.shape[0]/contract_details.shape[0]-1))}% combinations gained")
 
-ms = model_settings()
-settings = ms.import_model_settings()
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
-calculation_date = settings['calculation_date']
-day_count = settings['day_count']
-calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
 
-option_prices = BS_price_vanillas(features)
-# option_prices = heston_price_vanillas()
-dataset = noisyfier(option_prices)
-dataset = dataset.dropna()
-dataset
-print(dataset)
-print(dataset.describe())
+# option_prices = BS_price_vanillas(features)
+# # option_prices = heston_price_vanillas()
+# dataset = noisyfier(option_prices)
+# dataset = dataset.dropna()
+# dataset
+# print(dataset)
+# print(dataset.describe())
 
 

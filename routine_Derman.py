@@ -15,11 +15,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data_query import dirdata, dirdatacsv
 from Derman import derman
+derman = derman()
 from surface_plotting import plot_volatility_surface, plot_term_structure
 csvs = dirdatacsv()
 xlsxs = dirdata()
-ms = model_settings()
-derman = derman()
+
 
 from settings import model_settings
 ms = model_settings()
@@ -33,10 +33,10 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 security_settings = settings['security_settings']
 ticker = security_settings[0]
-lower_strike = security_settings[1]
-upper_strike = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
+lower_strike = None
+upper_strike = None
+lower_maturity = None
+upper_maturity = None
 s = security_settings[5]
 
 # pd.set_option('display.max_rows',None)
@@ -46,11 +46,11 @@ pd.reset_option('display.max_columns')
 
 
 
-from routine_ivol_collection import raw_ts
-trimmed_ts = raw_ts.dropna(axis=1, subset=[s])
+from import_files import raw_ts
+# trimmed_ts = raw_ts.dropna(axis=1, subset=[s])
 
 
-trimmed_ts = trimmed_ts.dropna(how = 'all')
+trimmed_ts = raw_ts.dropna(how = 'all')
 trimmed_ts = trimmed_ts.dropna(how = 'all', axis = 1)
 trimmed_ts = trimmed_ts.drop_duplicates()
 
@@ -70,19 +70,21 @@ T = np.sort(trimmed_ts.columns)
 K = np.sort(trimmed_ts.index)
 
 
-
 def compute_derman_coefs(T,K,ts_df):
     derman_coefs = {}
     for i, k in enumerate(K):
         for j, t in enumerate(T):
             atm_value = atm_vols[t]
             b, alpha, derman_ivols = derman.compute_derman_ivols(s, t, trimmed_ts, atm_value)
+            if b < 0:
+                b = b
+            else:
+                b = 0
             derman_coefs[t] = [b, alpha, atm_value]
     derman_coefs = pd.DataFrame(derman_coefs)
     derman_coefs['coef'] = ['b','alpha','atm_value']
     derman_coefs.set_index('coef',inplace = True)
     return derman_coefs
-
 
 derman_coefs = compute_derman_coefs(T,K,trimmed_ts)
 derman_maturities = np.sort(derman_coefs.columns)
@@ -110,7 +112,6 @@ for i, k in enumerate(K):
 negative_dermans = derman_ts.copy().loc[:, (derman_ts < 0).any(axis=0)]
 negative_dermans
 derman_ts = derman_ts.drop(columns=negative_dermans.columns)
-derman_maturities = derman_ts.columns
 T = derman_ts.columns
 K = derman_ts.index
 

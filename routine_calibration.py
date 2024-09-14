@@ -5,6 +5,8 @@ Created on Fri Sep 13 21:45:51 2024
 @author: boomelage
 """
 
+
+
 def clear_all():
     globals_ = globals().copy()  # Make a copy to avoid 
     for name in globals_:        # modifying during iteration
@@ -20,15 +22,12 @@ os.chdir(pwd)
 calibration routine based on historical atm ivols using Derman's approximation
 for otm ivols. atm ivol is momentarily a constant for simplicity. 
 
-
 """
-
-import QuantLib as ql
 import time
+start_time = time.time()
+import QuantLib as ql
 import numpy as np
 import pandas as pd
-
-
 
 from settings import model_settings
 ms = model_settings()
@@ -40,57 +39,37 @@ day_count = settings['day_count']
 calendar = settings['calendar']
 flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
+security_settings = settings['security_settings']
+ticker = security_settings[0]
+lower_strike = security_settings[1]
+upper_strike = security_settings[2]
+lower_maturity = security_settings[3]
+upper_maturity = security_settings[4]
+s = security_settings[5]
 
 
-from import_files import, contract_details
-groupedby_s = contract_details.groupby(by='strike_price')
+from import_files import contract_details
+from routine_Derman import derman_ts
+
+
 S = [int(contract_details['spot_price'].unique()[1])]
-ts_df = spread_ts
+ts_df = derman_ts
 K = ts_df.index
 T = ts_df.columns
 
-
-
-param_array_for_maturity = np.empty(len(T),dtype=object)
-param_array_for_spot = np.empty(len(S),dtype=object)
-
-
+heston_dicts = np.empty(len(S),dtype=object)
 for s_idx, s in enumerate(S):
-    contract_details_for_s = groupedby_s.get_group(s)
     S_handle = ql.QuoteHandle(ql.SimpleQuote(float(s)))
-    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
-    process = ql.HestonProcess(
-        flat_ts,                
-        dividend_ts,            
-        S_handle,               
-        v0,                     # Initial volatility
-        kappa,                  # Mean reversion speed
-        theta,                  # Long-run variance (volatility squared)
-        sigma,                  # Volatility of the volatility
-        rho                     # Correlation between asset and volatility
-    )
-
-    model = ql.HestonModel(process)
-    engine = ql.AnalyticHestonEngine(model)
-
-    heston_helpers = []
-
     derK = np.sort(ts_df.index).astype(float)
     derT = np.sort(ts_df.columns).astype(float)
-    
     implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, ts_df)
-    
     expiration_dates = ms.compute_ql_maturity_dates(derT)
-        
     black_var_surface = ms.make_black_var_surface(
         expiration_dates, derK.astype(float), implied_vols_matrix)
     
-    groupedby_sk = contract_details_for_s.groupby(by='strike_price')
-    
+    sets_for_maturities = np.empty(len(derT),dtype=object)
     for t_idx, t in enumerate(derT):
-        
-        
-        v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5;
+        v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
         process = ql.HestonProcess(
             flat_ts,                
             dividend_ts,            
@@ -101,21 +80,17 @@ for s_idx, s in enumerate(S):
             sigma,                  # Volatility of the volatility
             rho                     # Correlation between asset and volatility
         )
-
+        
         model = ql.HestonModel(process)
         engine = ql.AnalyticHestonEngine(model)
-
+        
         heston_helpers = []
-        
-        
-        
+        date = calculation_date + ql.Period(int(t),ql.Days)
+        dt = (date - calculation_date)
+        p = ql.Period(dt, ql.Days)
+                
         for k_idx, k in enumerate(derK):
-            date = calculation_date + ql.Period(int(t),ql.Days)
-            dt = (date - calculation_date)
-            
-            sigma = black_var_surface.blackVol(dt/365.25, k)  
-            p = ql.Period(dt, ql.Days)
-            
+            sigma = black_var_surface.blackVol(dt/365.25, k) 
             helper = ql.HestonModelHelper(
                 p,
                 calendar,
@@ -133,20 +108,15 @@ for s_idx, s in enumerate(S):
         
         avg = 0.0
         time.sleep(0.005)
-        print ("%15s %15s %15s %20s" % (
-            "Strikes", "Market Value",
-              "Model Value", "Relative Error (%)"))
-        print ("="*70)
+        
         for i in range(min(len(heston_helpers), len(K))):
             opt = heston_helpers[i]
             err = (opt.modelValue() / opt.marketValue() - 1.0)
-            print(f"{K[i]:15.2f} {opt.marketValue():14.5f} "
-                  f"{opt.modelValue():15.5f} {100.0 * err:20.7f}")
+            
             avg += abs(err)
-        print ("="*70)
+            
         avg = avg*100.0/len(heston_helpers)
-        print("-"*40)
-        print("Total Average Abs Error (%%) : %5.3f" % (avg))
+        
         heston_params = {
             'theta':theta, 
             'kappa':kappa, 
@@ -155,16 +125,15 @@ for s_idx, s in enumerate(S):
             'v0':v0,
             'error':avg
             }
-        
+        sets_for_maturities[t_idx] = heston_params
+        print("-"*40)
+        print("Total Average Abs Error (%%) : %5.3f" % (avg))
         print('\nHeston model parameters:')
         for key, value in heston_params.items():
             print(f'{key}: {value}')
-        print(f"\nfor {int(t)} days maturity")
+        print(f"\nfor {int(t)} day maturity")
         print("-"*40)
-        print('\n\n')
-        
-        param_array_for_maturity[t_idx] =  heston_params
-        
-param_array_for_spot[s_idx] = param_array_for_maturity
-
-heston_params = param_array_for_spot
+    heston_dicts[s_idx] = sets_for_maturities
+end_time = time.time()
+runtime = int(end_time-start_time)
+print(f"total model runtime: {runtime} seconds")
