@@ -12,8 +12,6 @@ csvs = dirdatacsv()
 xlsxs = dirdata()
 import pandas as pd
 import numpy as np
-import time
-from datetime import datetime
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()

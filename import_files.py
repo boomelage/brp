@@ -5,16 +5,16 @@
 Created on Sat Sep 14 02:27:39 2024
 
 """
-from routine_collection import collect_directory_market_data
+import os
+pwd = str(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(pwd)
 from settings import model_settings
 from data_query import dirdatacsv
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
 import time
 from datetime import datetime
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
+
 
 csvs = dirdatacsv()
 ms = model_settings()
@@ -63,56 +63,57 @@ raw_ts = raw_ts.loc[
                                                                contract_details
 """
 
-# contract_details_name = [
-#     file for file in csvs if 'contract_details' in file][0]
-# contract_details = pd.read_csv(contract_details_name).drop_duplicates()
-# contract_details = contract_details.drop(
-#     columns = contract_details.columns[0])
+contract_details_name = [
+    file for file in csvs if 'contract_details' in file][0]
+contract_details = pd.read_csv(contract_details_name).drop_duplicates()
+contract_details = contract_details.drop(
+    columns = contract_details.columns[0])
 
 """
                                                                          Derman
 """
 
-# derman_ts_name = [file for file in csvs if 'derman_coefs' in file][0]
-# derman_coefs = pd.read_csv(derman_ts_name).set_index('coef')
+derman_ts_name = [file for file in csvs if 'derman_coefs' in file][0]
+derman_coefs = pd.read_csv(derman_ts_name).set_index('coef')
 
 """
                                                                        plotting
 """
-
-# from surface_plotting import plot_volatility_surface, plot_term_structure
-# T = derman_ts.columns
-# K = derman_ts.index
-# expiration_dates = ms.compute_ql_maturity_dates(T)
-# implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
-# black_var_surface = ms.make_black_var_surface(expiration_dates, K, implied_vols_matrix)
-# fig = plot_volatility_surface(black_var_surface, K, T)
-# for t in T:
-#     fig = plot_term_structure(K, t, spread_ts, derman_ts)
-#     plt.cla()
-#     plt.clf()
-
-"""
-"""
-contract_details = collect_directory_market_data()
-
-"""
-"""
-
+from routine_Derman import derman_ts
+from file_cleaner import trimmed_ts
+from surface_plotting import plot_volatility_surface, plot_term_structure
+T = derman_ts.columns
+K = derman_ts.index
+expiration_dates = ms.compute_ql_maturity_dates(T)
+implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
+black_var_surface = ms.make_black_var_surface(
+    expiration_dates, K, implied_vols_matrix)
+fig = plot_volatility_surface(black_var_surface, K, T)
+for t in T:
+    fig = plot_term_structure(K, t, trimmed_ts, derman_ts)
+    plt.cla()
+    plt.clf()
 
 """
 # =============================================================================
-                                                                     save files
-                                                                   
-                                                                         raw_ts
-from routine_ivol_collection import raw_ts
-raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
-
-                                                                         Derman
-from rountine_Derman import derman_coefs
-derman_coefs.drop_duplicates().to_csv(f"{generic} derman_coefs.csv")
-
-                                                               contract_details
-contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
-
+#                                                                    save files
 """
+                                                                   
+                                                                       # raw_ts
+# raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
+# raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
+
+
+                                                                       # Derman
+                                                                        
+# from routine_Derman import derman_coefs
+# derman_coefs.drop_duplicates().to_csv(f"{generic} derman_coefs.csv")
+
+
+                                                             # contract_details
+
+# contract_details = collect_directory_market_data()                                                             
+# contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
+
+print('files processed')
+

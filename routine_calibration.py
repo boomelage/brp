@@ -2,10 +2,7 @@
 """
 Created on Fri Sep 13 21:45:51 2024
 
-@author: boomelage
 """
-
-
 
 def clear_all():
     globals_ = globals().copy()  # Make a copy to avoid 
@@ -17,17 +14,10 @@ import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 
-"""
-
-calibration routine based on historical atm ivols using Derman's approximation
-for otm ivols. atm ivol is momentarily a constant for simplicity. 
-
-"""
 import time
 start_time = time.time()
 import QuantLib as ql
 import numpy as np
-import pandas as pd
 
 from settings import model_settings
 ms = model_settings()
@@ -47,19 +37,16 @@ lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
 s = security_settings[5]
 
+S = [s]
 
-from import_files import contract_details
 from routine_Derman import derman_ts
-
-
-S = [int(contract_details['spot_price'].unique()[1])]
 ts_df = derman_ts
 K = ts_df.index
 T = ts_df.columns
 
 heston_dicts = np.empty(len(S),dtype=object)
 for s_idx, s in enumerate(S):
-    S_handle = ql.QuoteHandle(ql.SimpleQuote(float(s)))
+    S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     derK = np.sort(ts_df.index).astype(float)
     derT = np.sort(ts_df.columns).astype(float)
     implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, ts_df)

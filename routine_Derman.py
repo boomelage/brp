@@ -1,26 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# """
-# Created on Wed Sep 11 19:08:30 2024
+"""
+Created on Wed Sep 11 19:08:30 2024
 
-# """  
-
-import os
-pwd = os.path.dirname(os.path.abspath(__file__))
-os.chdir(pwd)
-import time
+"""  
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from data_query import dirdata, dirdatacsv
-from Derman import derman
-derman = derman()
-from surface_plotting import plot_volatility_surface, plot_term_structure
-csvs = dirdatacsv()
-xlsxs = dirdata()
-
-
+from sklearn.linear_model import LinearRegression
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
@@ -38,44 +25,63 @@ upper_strike = None
 lower_maturity = None
 upper_maturity = None
 s = security_settings[5]
+from data_query import dirdatacsv
+csvs = dirdatacsv()
+rawtsname = [file for file in csvs if 'raw_ts' in file][0]
+raw_ts = pd.read_csv(rawtsname).drop_duplicates()
+raw_ts = raw_ts.rename(
+    columns={raw_ts.columns[0]: 'Strike'}).set_index('Strike')
+raw_ts.columns = raw_ts.columns.astype(int)
+raw_ts = raw_ts.loc[
+    lower_strike:upper_strike,
+    lower_maturity:upper_maturity]
 
-# pd.set_option('display.max_rows',None)
-# pd.set_option('display.max_columns',None)
-pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')
 
 
-
-from import_files import raw_ts
-# trimmed_ts = raw_ts.dropna(axis=1, subset=[s])
+"""
+script start
+"""
 
 
 trimmed_ts = raw_ts.dropna(how = 'all')
 trimmed_ts = trimmed_ts.dropna(how = 'all', axis = 1)
 trimmed_ts = trimmed_ts.drop_duplicates()
 
-
 trimmed_ts = trimmed_ts.loc[
     lower_strike:upper_strike,
     lower_maturity:upper_maturity
     ]
-
-
-    
-
 trimmed_ts = trimmed_ts.fillna(0.000000)
-
 atm_vols = trimmed_ts.loc[s]
+
+
+
+
 T = np.sort(trimmed_ts.columns)
 K = np.sort(trimmed_ts.index)
 
 
-def compute_derman_coefs(T,K,ts_df):
+def compute_one_derman_coef(ts_df, s, t, K):
+    TSatmat = ts_df.loc[:,t]
+    atm_value = np.median(TSatmat)
+    strikes = ts_df.index
+    x = np.array(strikes - s,dtype=float)
+    y = np.array(TSatmat - atm_value,dtype=float)
+    model = LinearRegression()
+    x = x.reshape(-1,1)
+    model.fit(x,y)
+    b = model.coef_[0]
+    alpha = model.intercept_
+    derman_ivols = model.predict(x)
+    derman_ivols = derman_ivols*b + alpha + atm_value
+    return b, alpha, derman_ivols
+
+def compute_derman_coefs(ts_df, s, T, K):
     derman_coefs = {}
     for i, k in enumerate(K):
         for j, t in enumerate(T):
             atm_value = atm_vols[t]
-            b, alpha, derman_ivols = derman.compute_derman_ivols(s, t, trimmed_ts, atm_value)
+            b, alpha, derman_ivols = compute_one_derman_coef(ts_df, s, t, K)
             if b < 0:
                 b = b
             else:
@@ -86,19 +92,20 @@ def compute_derman_coefs(T,K,ts_df):
     derman_coefs.set_index('coef',inplace = True)
     return derman_coefs
 
-derman_coefs = compute_derman_coefs(T,K,trimmed_ts)
+derman_coefs = compute_derman_coefs(trimmed_ts, s, T, K)
 derman_maturities = np.sort(derman_coefs.columns)
-
-derman_ts_np = np.zeros((len(K),len(derman_maturities)),dtype=float)
-derman_ts = pd.DataFrame(derman_ts_np)
-derman_ts.index = K
-derman_ts.columns = derman_maturities
 
 
 """
 # =============================================================================
                                                     applying Derman estimations
 """
+
+derman_ts_np = np.zeros((len(K),len(derman_maturities)),dtype=float)
+derman_ts = pd.DataFrame(derman_ts_np)
+derman_ts.index = K
+derman_ts.columns = derman_maturities
+
 for i, k in enumerate(K):
     moneyness = k - s
     for j, t in enumerate(derman_maturities):
@@ -112,17 +119,5 @@ for i, k in enumerate(K):
 negative_dermans = derman_ts.copy().loc[:, (derman_ts < 0).any(axis=0)]
 negative_dermans
 derman_ts = derman_ts.drop(columns=negative_dermans.columns)
-T = derman_ts.columns
-K = derman_ts.index
 
-
-expiration_dates = ms.compute_ql_maturity_dates(T)
-implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
-black_var_surface = ms.make_black_var_surface(expiration_dates, K, implied_vols_matrix)
-fig = plot_volatility_surface(black_var_surface, K, T)
-for t in T:
-    time.sleep(0.05)
-    fig = plot_term_structure(K, t, trimmed_ts, derman_ts)
-    plt.cla()
-    plt.clf()
-
+print('term structure approximated')
