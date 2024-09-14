@@ -14,16 +14,22 @@ from itertools import product
 from settings import model_settings
 from pricing import BS_price_vanillas, noisyfier
 from routine_collection import contract_details
+from import_files import derman_ts
 
-pd.set_option('display.max_columns', None)
-pd.reset_option('display.max_rows', None)
+# pd.set_option('display.max_columns', None)
+# pd.reset_option('display.max_rows', None)
 
 calculation_date = ql.Date.todaysDate()
+s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
 
-s = [np.median(contract_details['spot_price'].unique().tolist())]
-k = contract_details['strike_price'].unique().tolist()
-t = contract_details['days_to_maturity'].unique().tolist()
-contract_details = pd.DataFrame(
+
+"""
+                                                            generation function
+"""
+
+k = derman_ts.index
+t = derman_ts.columns
+features = pd.DataFrame(
     product(
         s,
         k,
@@ -33,43 +39,30 @@ contract_details = pd.DataFrame(
         "spot_price", 
         "strike_price",
         "days_to_maturity",
-             ])
+              ])
 
-data_for_pivots = contract_details[contract_details['spot_price'] == s[0]]
+details_indexed = contract_details.copy().set_index([
+    'strike_price','days_to_maturity'])
+features = features[features['spot_price'] == s[0]]
+
+def map_vol(row,varname,varmap):
+    row[varname] = varmap.loc[
+        int(row['strike_price']),
+        int(row['days_to_maturity'])
+        ]
+    return row
 
 
+varname = 'volatility'
+varmap = derman_ts
+features = features.apply(lambda row: map_vol(row, varname, varmap), axis=1)
+features = features.dropna(axis=0).reset_index(drop=True)
+features['w'] = 1
 
-def map_var(varname):
-    def make_varpivot(varname):
-        pivot = data_for_pivots.pivot_table(
-            index = 'strike_price', columns = 'days_to_maturity', values = varname)
-        return pivot
-    
-    def map_var_by_row(varpivot, row, rowvar):
-        try:
-            return varpivot.loc[row['strike_price'], row[rowvar]]
-        except KeyError:
-            return np.nan
-        except Exception:
-            return np.nan
-    
-    contract_details[varname] = contract_details.apply(
-        lambda row: map_var_by_row(make_varpivot(varname), row, 'days_to_maturity'), axis=1
-    )
-    
 
-map_var('risk_free_rate')
-map_var('volatility')
-map_var('dividend_rate')
-contract_details = contract_details.dropna(axis=0).reset_index(drop=True)
-contract_details
-contract_details['w'] = 1
-
-contract_details
 
 # ms = model_settings()
-
-# settings, ezprint = ms.import_model_settings()
+# settings = ms.import_model_settings()
 # dividend_rate = settings['dividend_rate']
 # risk_free_rate = settings['risk_free_rate']
 # calculation_date = settings['calculation_date']
@@ -77,8 +70,6 @@ contract_details
 # calendar = settings['calendar']
 # flat_ts = settings['flat_ts']
 # dividend_ts = settings['dividend_ts']
-
-
 
 # option_prices = BS_price_vanillas(contract_details)
 # # option_prices = heston_price_vanillas()

@@ -27,4 +27,4 @@ generic = f"{ticker} {time_tag}"
 # spread_ts.to_csv(f"{generic} spread_ts.csv")
 # derman_ts.to_csv(f"{generic} derman_ts.csv")
 # derman_coefs.to_csv(f"{generic} derman_coefs.csv")
-contract_details.to_csv(f"{generic} contract_details.csv")
+# contract_details.to_csv(f"{generic} contract_details.csv")
