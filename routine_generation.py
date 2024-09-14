@@ -17,8 +17,8 @@ from routine_collection import contract_details
 from import_files import derman_ts
 
 # pd.set_option('display.max_columns', None)
-# pd.reset_option('display.max_rows', None)
-
+pd.reset_option('display.max_rows', None)
+pd.reset_option('display.max_columns', None)
 calculation_date = ql.Date.todaysDate()
 s = [np.sort(contract_details['spot_price'].unique().tolist())[0]]
 
@@ -52,28 +52,24 @@ def map_vol(row,varname):
         ]
     return row
 
-def map_features(row,varname):
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    row[varname] = details_indexed.loc[k,t][varname]
-    return row
-
-
-
 varname = 'volatility'
 features = features.apply(lambda row: map_vol(row, varname), axis=1)
 features = features.dropna(axis=0).reset_index(drop=True)
 
-varname = 'risk_free_rate'
-varname = 'dividend_Rate'
+rfrpivot = contract_details.pivot_table(
+    values = 'risk_free_rate', 
+    index = 'strike_price', 
+    columns = 'days_to_maturity'
+    )
+
+dvypivot = contract_details.pivot_table(
+    values = 'dividend_rate', 
+    index = 'strike_price', 
+    columns = 'days_to_maturity'
+    )
 
 
-
-
-
-
-
-features['w'] = 1
+# features['w'] = 1
 
 
 
