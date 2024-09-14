@@ -80,11 +80,8 @@ features = pd.DataFrame(
         "days_to_maturity",
               ])
 
-
-
 details_indexed = contract_details.copy().set_index([
     'strike_price','days_to_maturity'])
-
 
 rfrpivot = contract_details.pivot_table(
     values = 'risk_free_rate', 
