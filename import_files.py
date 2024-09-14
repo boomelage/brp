@@ -35,13 +35,14 @@ raw_ts = pd.read_csv(rawtsname).drop_duplicates()
 raw_ts = raw_ts.rename(
     columns={raw_ts.columns[0]:'Strike'}).set_index('Strike')
 raw_ts.columns = raw_ts.columns.astype(int)
+print('\nderman_coefs, derman_ts, spread_ts, raw_ts\n')
 imported_ts = {
     'derman_coefs': derman_coefs,
     'derman_ts': derman_ts,
     'spread_ts': spread_ts,
     'raw_ts': raw_ts,
     }
-print('\nderman_coefs, derman_ts, spread_ts, raw_ts\n')
+
 
 
 derman_coefs = imported_ts['derman_coefs']
