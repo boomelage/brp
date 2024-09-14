@@ -130,77 +130,69 @@ except Exception as e:
     print(f"\ncheck working directory files!\n"
           f"\ncheck working directory files!\n"
           F"\n\nerror:{e}\n\n")
-    
-    
 
-contract_details['atm_vol'] = 0.1312
-"""
-                                atm_vol momentarily fixed until proper data 
-                                format is collected
-"""
-K = contract_details['strike_price'].unique()
+market_K = contract_details['strike_price'].unique()
 T = contract_details['days_to_maturity'].unique()
 
+
+
 # =============================================================================
-                                                                       # Derman
-
-from Derman import derman
-from derman_underlying_initialisation import derman_coefs, derman_maturities
-derman = derman(derman_coefs = derman_coefs)
-
-
-
-
-contract_details = contract_details[
-    contract_details['days_to_maturity'].isin(derman_maturities)]
-
-contract_details = contract_details.reset_index(drop=True)
-
-def apply_derman_vols_row(row):
-    s = row['spot_price']
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    atm_vol = row['atm_vol']
-    
-    if t not in derman_coefs.columns:
-        print(f"Days to maturity {t} not found in derman_coefs. Skipping row.")
-        row['volatility'] = np.nan
-        return row
-    
-    try:
-        derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
-        row['volatility'] = derman_vol
-    except Exception as e:
-        print(f"Error computing Derman vol for row: {e}")
-        row['volatility'] = np.nan
-    
-    return row
-
-
-
-"""
-in the below mapping, volatility is being overwritten as it is assumed we do 
-not know it. in practice, the dataset would have a column of at-the-money 
-implied volatilities correspondingly mapped to every strike. this is why 
-atm_vol is fixed above
-
-"""
-
-
-contract_details = contract_details.apply(
-    apply_derman_vols_row, axis=1).dropna(
-        subset=['volatility']).reset_index(drop=True)
-
-def apply_derman_vols_row(row):
-    s = row['spot_price']
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    atm_vol = row['atm_vol']
-    derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
-    row['volatility'] = derman_vol
-    return row
-
-
-
-contract_details_derman = contract_details.copy().apply(apply_derman_vols_row,axis=1)
-
+# # =============================================================================
+#                                                                        # Derman
+# 
+# 
+# contract_details = contract_details[
+#     contract_details['days_to_maturity'].isin(derman_maturities)]
+# 
+# contract_details = contract_details.reset_index(drop=True)
+# 
+# def apply_derman_vols_row(row):
+#     s = row['spot_price']
+#     k = row['strike_price']
+#     t = row['days_to_maturity']
+#     atm_vol = row['atm_vol']
+#     
+#     if t not in derman_coefs.columns:
+#         print(f"Days to maturity {t} not found in derman_coefs. Skipping row.")
+#         row['volatility'] = np.nan
+#         return row
+#     
+#     try:
+#         derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
+#         row['volatility'] = derman_vol
+#     except Exception as e:
+#         print(f"Error computing Derman vol for row: {e}")
+#         row['volatility'] = np.nan
+#     
+#     return row
+# 
+# 
+# 
+# """
+# in the below mapping, volatility is being overwritten as it is assumed we do 
+# not know it. in practice, the dataset would have a column of at-the-money 
+# implied volatilities correspondingly mapped to every strike. this is why 
+# atm_vol is fixed above
+# 
+# """
+# 
+# 
+# contract_details = contract_details.apply(
+#     apply_derman_vols_row, axis=1).dropna(
+#         subset=['volatility']).reset_index(drop=True)
+# 
+# def apply_derman_vols_row(row):
+#     s = row['spot_price']
+#     k = row['strike_price']
+#     t = row['days_to_maturity']
+#     atm_vol = row['atm_vol']
+#     derman_vol = derman.compute_one_derman_vol(s, k, t, atm_vol)
+#     row['volatility'] = derman_vol
+#     return row
+# 
+# 
+# 
+# contract_details_derman = contract_details.copy().apply(apply_derman_vols_row,axis=1)
+# 
+# 
+# =============================================================================

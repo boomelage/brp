@@ -102,7 +102,7 @@ atm_vols = raw_ts.dropna()
 """
 
 
-strike_spread = raw_ts.iloc[:,0].dropna().index
+strike_spread = raw_ts.iloc[:,1].dropna().index
 spot = float(np.median(strike_spread))
 
 spread_ts = raw_ts.loc[strike_spread,:]
@@ -116,7 +116,7 @@ spread_ts = spread_ts.loc[
 
 T = np.sort(spread_ts.columns)
 K = np.sort(spread_ts.index)
-s = np.median(K)
+s = np.median(strike_spread)
 
 
 from Derman import derman
@@ -159,19 +159,21 @@ for i, k in enumerate(K):
 
 from settings import model_settings
 ms = model_settings()
-derman_vol_matrix = ms.make_implied_vols_matrix(K, derman_maturities, derman_ts)
+implied_vols_matrix = ms.make_implied_vols_matrix(K, derman_maturities, derman_ts)
 
-print(derman_vol_matrix)
+print(implied_vols_matrix)
 
 expiration_dates = ms.compute_ql_maturity_dates(derman_maturities)
 
-derman_surface = ms.make_black_var_surface(
-    expiration_dates, K.astype(float), derman_vol_matrix)
+black_var_surface = ms.make_black_var_surface(
+    expiration_dates, K.astype(float), implied_vols_matrix)
 
-def plot_volatility_surface(black_var_surface = derman_surface,
+
+
+def plot_volatility_surface(black_var_surface = black_var_surface,
                             K = K,
                             T = T,
-                            ts_df = spread_ts,
+                            ts_df = derman_ts,
                             target_maturity = 3):
     import matplotlib.pyplot as plt
     plt.rcParams['figure.figsize']=(15,7)
