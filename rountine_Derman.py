@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Sep 11 19:08:30 2024
 
-"""
+# """
+# Created on Wed Sep 11 19:08:30 2024
+
+# """  
+
 import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+os.chdir(parent_dir)
+
 from data_query import dirdata, dirdatacsv
 csvs = dirdatacsv()
 xlsxs = dirdata()
@@ -18,17 +22,19 @@ import numpy as np
 pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
 
-"""
-# =============================================================================
-                                                                 importing data
-"""
+    
+# """
+# # =============================================================================
+#                                                                  importing data
+# """
 
-# from routine_generation import rfrpivot, dvypivot
-# raw_ts = dvypivot
-# raw_ts = rfrpivot
+from routine_generation import rfrpivot, dvypivot
+raw_ts = dvypivot
+raw_ts = rfrpivot
 
-from import_files import imported_ts, derman_coefs, derman_ts, spread_ts, raw_ts
-raw_ts = spread_ts
+# from routine_ivol_collection import spread_ts
+# raw_ts = spread_ts
+
 
 raw_ts = raw_ts.dropna(how = 'all')
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
@@ -36,12 +42,12 @@ raw_ts = raw_ts.drop_duplicates()
 atm_vols = raw_ts.dropna()
 
 
-"""
-# =============================================================================
-                                           cleaning the term structure manually
-"""
-spot_spread = np.array(raw_ts.loc[:,34].dropna().index)
-s = int(np.median(spot_spread))
+# """
+# # =============================================================================
+#                                            cleaning the term structure manually
+# """
+spot_spread = np.array(raw_ts.loc[:,3].dropna().index)
+s = 5630
 raw_ts = raw_ts.dropna(axis=1, subset=[s])
 
 strike_spread = spot_spread
@@ -75,9 +81,9 @@ derman_ts.columns = derman_maturities
 
 derman_ts
 
-"""
-# =============================================================================
-                                                    applying Derman estimations
+# """
+# # =============================================================================
+#                                                     applying Derman estimations
 # """
 for i, k in enumerate(K):
     moneyness = k - s
