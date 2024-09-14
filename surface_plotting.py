@@ -3,16 +3,14 @@
 """
 Created on Sat Sep 14 17:26:58 2024
 
-@author: doomd
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
-plt.rcParams['figure.figsize']=(15,7)
-plt.style.use("dark_background")
 from matplotlib import cm
-
 def plot_volatility_surface(black_var_surface, K, T):
+    plt.rcParams['figure.figsize']=(15,7)
+    K = K.astype(int)
     plot_maturities = np.sort(T/365).astype(float)
     plot_strikes = np.sort(K).astype(float)
     X, Y = np.meshgrid(plot_strikes, plot_maturities)
@@ -35,14 +33,14 @@ def plot_volatility_surface(black_var_surface, K, T):
     plt.cla()
     plt.clf()
     return fig
-
-
 def plot_term_structure(
         K,
         target_maturity,
         real_ts,
         est_ts
         ):
+    plt.rcParams['figure.figsize']=(6,4)
+    K = K.astype(int)
     fig, ax = plt.subplots()
     real_target_ivols = real_ts[target_maturity]
     est_taget_ivols = est_ts[target_maturity]
@@ -52,3 +50,4 @@ def plot_term_structure(
     plt.show()
     plt.cla()
     plt.clf()
+    return fig

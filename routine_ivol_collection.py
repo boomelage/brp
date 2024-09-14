@@ -14,6 +14,23 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
+from settings import model_settings
+ms = model_settings()
+settings = ms.import_model_settings()
+dividend_rate = settings['dividend_rate']
+risk_free_rate = settings['risk_free_rate']
+calculation_date = settings['calculation_date']
+day_count = settings['day_count']
+calendar = settings['calendar']
+flat_ts = settings['flat_ts']
+dividend_ts = settings['dividend_ts']
+security_settings = settings['security_settings']
+ticker = security_settings[0]
+lower_strike = security_settings[1]
+upper_strike = security_settings[2]
+lower_maturity = security_settings[3]
+upper_maturity = security_settings[4]
+s = security_settings[5]
 
 pd.set_option('display.max_rows',None)
 # pd.set_option('display.max_columns',None)
@@ -94,24 +111,6 @@ raw_ts_df = raw_ts_df.set_index(Ks)
 
 raw_ts = raw_ts_df.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
-atm_vols = raw_ts.dropna()
-
-
-strike_spread = raw_ts.iloc[:,0].dropna().index
-spot = float(np.median(strike_spread))
-
-spread_ts = raw_ts.loc[strike_spread,:]
-spread_ts = spread_ts.fillna(0)
-
-spread_ts = spread_ts.loc[
-    :
-        ,
-    :
-        ]
-
-T = np.sort(spread_ts.columns)
-K = np.sort(spread_ts.index)
-s = np.median(K)
-
 raw_ts = raw_ts/100
+
 print(f'\nterm structure collected:\n\n{raw_ts}\n')

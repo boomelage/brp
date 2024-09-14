@@ -16,18 +16,19 @@ ticker = r"SPX"
 
 file_time = time.time()
 file_datetime = datetime.fromtimestamp(file_time)
-# time_tag = file_datetime.strftime('%Y-%m-%d')
-time_tag = '2024-09-13'
-generic = f"{ticker} {time_tag}"
+time_tag = file_datetime.strftime('%H-%M-%S')
+date_tag = '2024-09-13'
+generic = f"{ticker} {date_tag} {time_tag}"
 
-from rountine_Derman import raw_ts, derman_ts, spread_ts, derman_coefs
+from routine_ivol_collection import raw_ts
 raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
-spread_ts.drop_duplicates().to_csv(f"{generic} spread_ts.csv")
+
+from rountine_Derman import raw_ts, derman_ts, derman_coefs
 derman_ts.drop_duplicates().to_csv(f"{generic} derman_ts.csv")
 derman_coefs.drop_duplicates().to_csv(f"{generic} derman_coefs.csv")
 
-from routine_collection import collect_directory_market_data
-contract_details = collect_directory_market_data()
-contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
+# from routine_collection import collect_directory_market_data
+# contract_details = collect_directory_market_data()
+# contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
 
 print('files saved')

@@ -42,11 +42,12 @@ flat_ts = settings['flat_ts']
 dividend_ts = settings['dividend_ts']
 
 
-from import_files import derman_ts, contract_details
+from import_files import, contract_details
 groupedby_s = contract_details.groupby(by='strike_price')
 S = [int(contract_details['spot_price'].unique()[1])]
-K = derman_ts.index
-T = derman_ts.columns
+ts_df = spread_ts
+K = ts_df.index
+T = ts_df.columns
 
 
 
@@ -74,10 +75,10 @@ for s_idx, s in enumerate(S):
 
     heston_helpers = []
 
-    derK = np.sort(derman_ts.index).astype(float)
-    derT = np.sort(derman_ts.columns).astype(float)
+    derK = np.sort(ts_df.index).astype(float)
+    derT = np.sort(ts_df.columns).astype(float)
     
-    implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, derman_ts)
+    implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, ts_df)
     
     expiration_dates = ms.compute_ql_maturity_dates(derT)
         

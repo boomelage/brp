@@ -48,21 +48,19 @@ class derman():
         return ks, mats, ts
 
 
-    def compute_derman_ivols(self,maturity,ts):
+    def compute_derman_ivols(self,s,maturity,ts,atm_value):
         TSatmat = ts.loc[:,maturity]
         strikes = ts.index
-        S = int(np.median(strikes))
-        x = np.array(strikes - S,dtype=float)
-        atmvol = np.median(TSatmat)
-        y = np.array(TSatmat - atmvol,dtype=float)
+        x = np.array(strikes - s,dtype=float)
+        y = np.array(TSatmat - atm_value,dtype=float)
         model = LinearRegression()
         x = x.reshape(-1,1)
         model.fit(x,y)
         b = model.coef_[0]
         alpha = model.intercept_
         derman_ivols = model.predict(x)
-        derman_ivols = derman_ivols*b + alpha + atmvol
-        return b, alpha, atmvol, derman_ivols
+        derman_ivols = derman_ivols*b + alpha + atm_value
+        return b, alpha, derman_ivols
         
     def get_derman_coefs(self):
         derman_coefs = {}
@@ -70,11 +68,10 @@ class derman():
         for i, maturity in enumerate(mats):
             for j, k in enumerate(ks):
                 b, alpha, atmvol, derman_ivols = self.compute_derman_ivols(maturity,ts)
-                derman_coefs[int(f"{maturity}")] = [b, alpha, atmvol]
+                derman_coefs[int(f"{maturity}")] = [b, alpha]
         derman_coefs = pd.DataFrame(derman_coefs)
-        derman_coefs['coef'] = ['b','alpha','atmvol']
+        derman_coefs['coef'] = ['b','alpha']
         derman_coefs.set_index('coef',inplace = True)
-        derman_coefs = derman_coefs.loc[:, derman_coefs.loc['atmvol'] != 0]
         return derman_coefs
     
     def derman_ivols_for_market(self,df,derman_coefs):
