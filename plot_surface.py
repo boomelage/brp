@@ -42,10 +42,10 @@ def plot_term_structure(
     plt.rcParams['figure.figsize']=(6,4)
     K = K.astype(int)
     fig, ax = plt.subplots()
-    ax.set_title(title)
     ax.plot(K, est_ts, label="Derman")
     ax.plot(K, real_ts, "o", label="Actual")
-    ax.legend = ax.legend(loc="upper right")
+    legend = ax.legend(loc="upper right")
+    plt.title = title
     plt.show()
     plt.cla()
     plt.clf()
