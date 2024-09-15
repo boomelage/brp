@@ -19,8 +19,8 @@ class model_settings():
             calendar           =    ql.UnitedStates(m=1),
             calculation_date   =    ql.Date.todaysDate(),
             ticker             =    'SPX',
-            lower_strike       =    None,
-            upper_strike       =    None,
+            lower_strike       =    5610,
+            upper_strike       =    5660,
             lower_maturity     =    None,
             upper_maturity     =    None,
             s                  =    5630

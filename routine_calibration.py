@@ -22,13 +22,9 @@ import numpy as np
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
 calculation_date = settings['calculation_date']
 day_count = settings['day_count']
 calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
 security_settings = settings['security_settings']
 ticker = security_settings[0]
 lower_strike = security_settings[1]
@@ -38,6 +34,8 @@ upper_maturity = security_settings[4]
 s = security_settings[5]
 
 S = [s]
+
+from routine_generation import rfrpivot, dvypivot
 
 from routine_Derman import derman_ts
 ts_df = derman_ts
@@ -56,6 +54,14 @@ for s_idx, s in enumerate(S):
     
     sets_for_maturities = np.empty(len(derT),dtype=object)
     for t_idx, t in enumerate(derT):
+        
+        risk_free_rate = float(rfrpivot.loc[:,t].dropna().unique()[0])
+        dividend_rate = float(dvypivot.loc[:,t].dropna().unique()[0])
+        flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+            calculation_date, risk_free_rate, day_count))
+        dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
+            calculation_date, dividend_rate, day_count))
+        
         v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
         process = ql.HestonProcess(
             flat_ts,                
@@ -125,3 +131,17 @@ end_time = time.time()
 runtime = int(end_time-start_time)
 print(f"total model runtime: {runtime} seconds")
 
+import matplotlib.pyplot as plt
+from routine_Derman import derman_ts, trimmed_ts
+from surface_plotting import plot_volatility_surface, plot_term_structure
+T = derman_ts.columns
+K = derman_ts.index
+expiration_dates = ms.compute_ql_maturity_dates(T)
+implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
+black_var_surface = ms.make_black_var_surface(
+    expiration_dates, K, implied_vols_matrix)
+fig = plot_volatility_surface(black_var_surface, K, T)
+for t in T:
+    fig = plot_term_structure(K, t, trimmed_ts, derman_ts)
+    plt.cla()
+    plt.clf()
