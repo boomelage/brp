@@ -14,14 +14,14 @@ from sklearn.linear_model import LinearRegression
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
-calculation_date = settings['calculation_date']
-day_count = settings['day_count']
-calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
-security_settings = settings['security_settings']
+dividend_rate = settings[0]['dividend_rate']
+risk_free_rate = settings[0]['risk_free_rate']
+calculation_date = settings[0]['calculation_date']
+day_count = settings[0]['day_count']
+calendar = settings[0]['calendar']
+security_settings = settings[0]['security_settings']
+flat_ts = settings[0]['flat_ts']
+dividend_ts = settings[0]['dividend_ts']
 ticker = security_settings[0]
 lower_strike = security_settings[1]
 upper_strike = security_settings[2]
@@ -85,7 +85,7 @@ def compute_derman_coefs(raw_ts, s, T, K, atm_vols):
     return derman_coefs
 
 derman_coefs = compute_derman_coefs(raw_ts, s, T, K, atm_vols)
-print(f'\n{derman_coefs}\n')
+
 
 derman_ts_np = np.zeros((len(K),len(T)),dtype=float)
 derman_ts = pd.DataFrame(derman_ts_np)
@@ -101,5 +101,5 @@ for i, k in enumerate(K):
             derman_coefs.loc['alpha',t] + derman_coefs.loc['atm_value',t] + \
             derman_coefs.loc['b',t] * moneyness
         )
-print(f'\n{derman_ts}\n')
+
 print('\nterm structure approximated\n')

@@ -58,32 +58,35 @@ class routine_collection():
             market_data = market_data.sort_values(by='days_to_maturity')
             market_data = market_data.reset_index(drop=True)
         return market_data
+# =============================================================================
+# # """
+# #     def collect_market_data_and_price(self):
+# #         market_data = self.concat_option_data()
+#         
+# #         calculation_date = ql.Date.todaysDate()
+# #         from routine_calibration import heston_params
+# #         market_data['v0'] = heston_params['v0']
+# #         market_data['kappa'] = heston_params['kappa']
+# #         market_data['theta'] = heston_params['theta']
+# #         market_data['sigma'] = heston_params['sigma']
+# #         market_data['rho'] = heston_params['rho']
+# #         market_data['calculation_date'] = calculation_date
+# #         def compute_maturity_date(row):
+# #             row['maturity_date'] = calculation_date + ql.Period(
+# #                 int(row['days_to_maturity']),ql.Days)
+# #             return row
+#         
+# #         market_data = market_data.apply(compute_maturity_date, axis=1)
+#         
+# #         option_prices = BS_price_vanillas(market_data)
+# #         option_prices = heston_price_vanillas(option_prices)
+# #         option_prices = noisyfier(option_prices)
+# #         priced_market_data = option_prices.dropna()
+# #         print(priced_market_data)
+# #         return priced_market_data
+# # """    
+# =============================================================================
 
-    def collect_market_data_and_price(self):
-        market_data = self.concat_option_data()
-        
-        calculation_date = ql.Date.todaysDate()
-        from routine_calibration import heston_params
-        market_data['v0'] = heston_params['v0']
-        market_data['kappa'] = heston_params['kappa']
-        market_data['theta'] = heston_params['theta']
-        market_data['sigma'] = heston_params['sigma']
-        market_data['rho'] = heston_params['rho']
-        market_data['calculation_date'] = calculation_date
-        def compute_maturity_date(row):
-            row['maturity_date'] = calculation_date + ql.Period(
-                int(row['days_to_maturity']),ql.Days)
-            return row
-        
-        market_data = market_data.apply(compute_maturity_date, axis=1)
-        
-        option_prices = BS_price_vanillas(market_data)
-        option_prices = heston_price_vanillas(option_prices)
-        option_prices = noisyfier(option_prices)
-        priced_market_data = option_prices.dropna()
-        print(priced_market_data)
-        return priced_market_data
-    
     def collect_market_data(self):
         market_data = self.concat_option_data()
         
@@ -100,7 +103,6 @@ class routine_collection():
         print(market_data)
         return market_data
 
-
 # =============================================================================
                                                               # data collection
 def collect_directory_market_data():
@@ -108,10 +110,9 @@ def collect_directory_market_data():
         rc = routine_collection()
         contract_details = rc.collect_market_data()
         contract_details = contract_details.copy()
+        print('\nmarket data collected')
         return contract_details
     except Exception:
         for i in range(100):
             print('ensure the correct files are in the working directory!')
         pass
-
-print('\nmarket data collected')

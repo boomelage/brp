@@ -10,14 +10,9 @@ os.chdir(pwd)
 import numpy as np
 import pandas as pd
 from itertools import product
-from pricing import BS_price_vanillas, noisyfier
-
-
 pd.set_option('display.max_columns', None)
 pd.reset_option('display.max_rows', None)
 # pd.reset_option('display.max_columns', None)
-
-
 
 """
 
@@ -37,7 +32,7 @@ rather sparse information. naturally, there are many assumptions underpinning
 the implied volatility being a functional form of maturity, strike, and spot.
 
 """
-
+from pricing import BS_price_vanillas, noisyfier
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
@@ -101,49 +96,63 @@ dvypivot = contract_details.pivot_table(
     index = 'strike_price', 
     columns = 'days_to_maturity'
     )
-dvy_K = dvypivot.index
-dvy_T = dvypivot.columns
-dvy_np = np.zeros((1,len(dvy_T)))
-dvys = pd.DataFrame(dvy_np)
-dvys.columns = dvy_T
-for t in dvy_T:
-        dvys[t] = float(dvypivot.loc[:,t].dropna().unique()[0])
-rfr_K = rfrpivot.index
-rfr_T = rfrpivot.columns
-rfr_np = np.zeros((1,len(rfr_T)))
-rfrs = pd.DataFrame(rfr_np)
-rfrs.columns = rfr_T
-for t in rfr_T:
-        rfrs[t] = float(rfrpivot.loc[:,t].dropna().unique()[0])
+
+rfrpivot
+
+rvec = np.zeros(rfrpivot.shape[1],dtype=float)
+rvec = pd.DataFrame(rvec)
+rvec.index = rfrpivot.columns
+for i, k in enumerate(rfrpivot.index):
+    for j, t in enumerate(rfrpivot.columns):
+        rvec.loc[t] = float(np.median(rfrpivot.loc[:, t].dropna().unique()))
+
+gvec = np.zeros(dvypivot.shape[1],dtype=float)
+gvec = pd.DataFrame(gvec)
+gvec.index = dvypivot.columns
+for i, k in enumerate(dvypivot.index):
+    for j, t in enumerate(dvypivot.columns):
+        gvec.loc[t] = float(np.median(dvypivot.loc[:, t].dropna().unique()))
+
+
+rates_dict = {'risk_free_rate':rvec,'dividend_rate':gvec}
+
+    # example
+t = (rvec.index[45],0)
+rt0 = rates_dict['risk_free_rate'].loc[t]
+print(f'\nexample rt0: {rt0}\n')
+
+
 
 """
 mapping appropriate rates
 """
-def map_rate(rate_series, ratename):
+
+
+def map_rate(ratename):
     for row in features.index:
         try:
-            t = int(features.iloc[row]['days_to_maturity'])
-            features.loc[row,ratename] = rate_series.loc[0,t]
+            t = (int(features.iloc[row]['days_to_maturity']),0)
+            features.loc[row,ratename] = rates_dict[ratename].loc[t]
         except Exception:
             features.loc[row,ratename] = np.nan
     return features
         
-features = map_rate(rfrs, 'risk_free_rate')
-features = map_rate(dvys, 'dividend_rate')
-
+features = map_rate('risk_free_rate')
+features = map_rate('dividend_rate')
 
 """
                               computing Derman estimation of implied volatility
 """
-atm_vol = 0.1312
-def compute_derman_volatility_row(row,atm_vol):
+from routine_Derman import atm_vols
+
+def compute_derman_volatility_row(row,atm_vols):
     try:
         t = int(row['days_to_maturity'])
         moneyness = row['spot_price'] - row['strike_price']
-        atm_vol = atm_vol
+        atm_value = atm_vols[t]
         alpha = derman_coefs.loc['alpha',t]
         b = derman_coefs.loc['b',t]
-        derman_vol = atm_vol + alpha + b*moneyness
+        derman_vol = atm_value + alpha + b*moneyness
         row['volatility'] = derman_vol
         return row
     except Exception:
@@ -151,15 +160,17 @@ def compute_derman_volatility_row(row,atm_vol):
         return row
 
 features = features.apply(
-    lambda row: compute_derman_volatility_row(row, atm_vol), axis=1)
-
-
+    lambda row: compute_derman_volatility_row(row, atm_vols), axis=1)
 
 features['w'] = 1 # flag for call/put
+features['calculation_date'] = contract_details['calculation_date']
+features['maturity_date'] = contract_details['maturity_date']
 features = features.dropna()
 
+print(f'\n{features}\n')
+
 """
-                                                   generating synthetic dataset
+                                                    generating synthetic dataset
 """
 
 

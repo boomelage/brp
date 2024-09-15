@@ -44,7 +44,7 @@ class model_settings():
         self.lower_maturity     =    lower_maturity
         self.upper_maturity     =    upper_maturity
         self.s                  =    s
-        self.security_settings = (
+        self.security_settings  = (
             self.ticker, self.lower_strike, self.upper_strike, 
             self.lower_maturity, self.upper_maturity, self.s)
         
@@ -59,14 +59,14 @@ class model_settings():
         security_settings = self.security_settings
         ezimport = [
             "",
-            "dividend_rate = settings['dividend_rate']",
-            "risk_free_rate = settings['risk_free_rate']",
-            "calculation_date = settings['calculation_date']",
-            "day_count = settings['day_count']",
-            "calendar = settings['calendar']",
-            "flat_ts = settings['flat_ts']",
-            "dividend_ts = settings['dividend_ts']",
-            "security_settings = settings['security_settings']",
+            "dividend_rate = settings[0]['dividend_rate']",
+            "risk_free_rate = settings[0]['risk_free_rate']",
+            "calculation_date = settings[0]['calculation_date']",
+            "day_count = settings[0]['day_count']",
+            "calendar = settings[0]['calendar']",
+            "security_settings = settings[0]['security_settings']",
+            "flat_ts = settings[0]['flat_ts']",
+            "dividend_ts = settings[0]['dividend_ts']",
             "ticker = security_settings[0]",
             "lower_strike = security_settings[1]",
             "upper_strike = security_settings[2]",
@@ -74,11 +74,11 @@ class model_settings():
             "upper_maturity = security_settings[4]",
             "s = security_settings[5]"
             ]
+        
         def ezprint():
             for ez in ezimport:
                 print(ez)
-        ezprint()
-        return {
+        return [{
             "dividend_rate": dividend_rate, 
             "risk_free_rate": risk_free_rate, 
             "calculation_date": calculation_date, 
@@ -87,7 +87,7 @@ class model_settings():
             "flat_ts": flat_ts,
             "dividend_ts": dividend_ts,
             "security_settings": security_settings
-            }
+            }, ezprint]
             
     def make_ql_array(self,nparr):
         qlarr = ql.Array(len(nparr),1)
