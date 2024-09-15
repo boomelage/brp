@@ -36,22 +36,8 @@ from pricing import BS_price_vanillas, noisyfier
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-
-dividend_rate = settings['dividend_rate']
-risk_free_rate = settings['risk_free_rate']
-calculation_date = settings['calculation_date']
-day_count = settings['day_count']
-calendar = settings['calendar']
-flat_ts = settings['flat_ts']
-dividend_ts = settings['dividend_ts']
-security_settings = settings['security_settings']
-ticker = security_settings[0]
-lower_strike = security_settings[1]
-upper_strike = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
+security_settings = settings[0]['security_settings']
 s = security_settings[5]
-
 """
 # =============================================================================
                                                            generation procedure
