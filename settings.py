@@ -13,18 +13,17 @@ from data_query import dirdatacsv
 class model_settings():
     
     def __init__(self,
-                 
-            dividend_rate      =    9999,
-            risk_free_rate     =    9999, 
+            ticker             =    'SPX',
+            s                  =    5630,
             day_count          =    ql.Actual365Fixed(), 
             calendar           =    ql.UnitedStates(m=1),
             calculation_date   =    ql.Date.todaysDate(),
-            ticker             =    'SPX',
             lower_maturity     =    None,
             upper_maturity     =    None,
-            lower_strike       =    5610,
-            upper_strike       =    5660,
-            s                  =    5630
+            lower_strike       =    None,
+            upper_strike       =    None,
+            dividend_rate      =    9999999,
+            risk_free_rate     =    9999999
             ):
         self.csvs = dirdatacsv()
         self.day_count = day_count

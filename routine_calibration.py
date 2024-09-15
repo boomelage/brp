@@ -2,35 +2,35 @@
 """
 Created on Fri Sep 13 21:45:51 2024
 
-"""
 
+from derman_plotting import plot_derman_fit
+plot_derman_fit()
+
+"""
 def clear_all():
-    globals_ = globals().copy()  # Make a copy to avoid 
-    for name in globals_:        # modifying during iteration
+    globals_ = globals().copy()
+    for name in globals_:
         if not name.startswith('_') and name not in ['clear_all']:
             del globals()[name]
 clear_all()
 import os
 pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
-
 import time
-start_time = time.time()
 import QuantLib as ql
 import numpy as np
-from routine_generation import rates_dict
-from routine_Derman import derman_ts
 
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-
 security_settings = settings[0]['security_settings']
 s = security_settings[5]
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
-
+from routine_generation import rates_dict
+from routine_Derman import derman_ts
+start_time = time.time()
 
 S = [s]
 ts_df = derman_ts
@@ -123,24 +123,8 @@ for s_idx, s in enumerate(S):
         
     heston_dicts[s_idx] = sets_for_maturities
 
-
-"""
-
-
-
-
-from derman_plotting import plot_derman_fit
-plot_derman_fit()
-
-
-
-
-
-"""
 end_time = time.time()
 runtime = int(end_time-start_time)
-print(f'\nmodel calibrated in {runtime} seconds')
-
 
 print('\nbest restults:')
 for i, s in enumerate(heston_dicts):
@@ -156,17 +140,3 @@ for i, s in enumerate(heston_dicts):
 
         else:
             pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
