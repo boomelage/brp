@@ -79,8 +79,7 @@ derman_coefs = pd.read_csv(derman_ts_name).set_index('coef')
 """
                                                                        plotting
 """
-from routine_Derman import derman_ts
-from file_cleaner import trimmed_ts
+from routine_Derman import derman_ts, trimmed_ts
 from surface_plotting import plot_volatility_surface, plot_term_structure
 T = derman_ts.columns
 K = derman_ts.index
@@ -111,9 +110,9 @@ for t in T:
 
 
                                                              # contract_details
-
-# contract_details = collect_directory_market_data()                                                             
-# contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
+from routine_collection import collect_directory_market_data
+contract_details = collect_directory_market_data()                                                             
+contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
 
 print('files processed')
 
