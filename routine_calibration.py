@@ -18,26 +18,21 @@ import time
 start_time = time.time()
 import QuantLib as ql
 import numpy as np
+from routine_generation import rates_dict
+from routine_Derman import derman_ts
 
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-calculation_date = settings[0]['calculation_date']
+
+security_settings = settings[0]['security_settings']
+s = security_settings[5]
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
-security_settings = settings[0]['security_settings']
-ticker = security_settings[0]
-lower_strike = security_settings[1]
-upper_strike = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
-s = security_settings[5]
+calculation_date = settings[0]['calculation_date']
+
 
 S = [s]
-
-
-from routine_generation import rates_dict
-from routine_Derman import derman_ts
 ts_df = derman_ts
 K = ts_df.index
 T = ts_df.columns
@@ -76,7 +71,6 @@ for s_idx, s in enumerate(S):
         
         model = ql.HestonModel(process)
         engine = ql.AnalyticHestonEngine(model)
-        
         heston_helpers = []
         date = calculation_date + ql.Period(int(t),ql.Days)
         dt = (date - calculation_date)
@@ -116,18 +110,63 @@ for s_idx, s in enumerate(S):
             'sigma':sigma, 
             'rho':rho, 
             'v0':v0,
-            'error':avg
+            'error': (avg/100,f"{int(t)}D")
             }
         sets_for_maturities[t_idx] = heston_params
         print("-"*40)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
-        print('\nHeston model parameters:')
+        print(f"for {int(t)} day maturity\n")
         for key, value in heston_params.items():
             print(f'{key}: {value}')
-        print(f"\nfor {int(t)} day maturity")
+
         print("-"*40)
+        
     heston_dicts[s_idx] = sets_for_maturities
+
+
+"""
+
+
+
+
+from derman_plotting import plot_derman_fit
+plot_derman_fit()
+
+
+
+
+
+"""
 end_time = time.time()
 runtime = int(end_time-start_time)
-print(f"total model runtime: {runtime} seconds")
+print(f'\nmodel calibrated in {runtime} seconds')
+
+
+print('\nbest restults:')
+for i, s in enumerate(heston_dicts):
+    for j, t in enumerate(s):
+        error = t['error']
+        if error[0] < 0.01:
+            print("-"*15)
+            # for key, value in t.items():
+            #     print(f'{key}: {value}')
+            print(f'error: {round(error[0]*100,4)}%')
+            print(f"maturity: {error[1]}")
+            print("-"*15)
+
+        else:
+            pass
+
+
+
+
+
+
+
+
+
+
+
+
+
 
