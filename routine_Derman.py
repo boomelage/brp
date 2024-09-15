@@ -11,23 +11,22 @@ os.chdir(pwd)
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
+
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-dividend_rate = settings[0]['dividend_rate']
-risk_free_rate = settings[0]['risk_free_rate']
-calculation_date = settings[0]['calculation_date']
+
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
+calculation_date = settings[0]['calculation_date']
 security_settings = settings[0]['security_settings']
-flat_ts = settings[0]['flat_ts']
-dividend_ts = settings[0]['dividend_ts']
+s = security_settings[5]
 ticker = security_settings[0]
-lower_strike = security_settings[1]
-upper_strike = security_settings[2]
+lower_moneyness = security_settings[1]
+upper_moneyness = security_settings[2]
 lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
-s = security_settings[5]
+
 from data_query import dirdatacsv
 csvs = dirdatacsv()
 rawtsname = [file for file in csvs if 'raw_ts' in file][0]
@@ -35,9 +34,6 @@ raw_ts = pd.read_csv(rawtsname).drop_duplicates()
 raw_ts = raw_ts.rename(
     columns={raw_ts.columns[0]: 'Strike'}).set_index('Strike')
 raw_ts.columns = raw_ts.columns.astype(int)
-raw_ts = raw_ts.loc[
-    lower_strike:upper_strike,
-    lower_maturity:upper_maturity]
 
 """
 script start
@@ -46,10 +42,10 @@ script start
 trimmed_ts = raw_ts.dropna(how = 'all')
 trimmed_ts = trimmed_ts.dropna(how = 'all', axis = 1)
 trimmed_ts = trimmed_ts.drop_duplicates()
-trimmed_ts = trimmed_ts.loc[
-    lower_strike:upper_strike,
-    lower_maturity:upper_maturity
-    ]
+trimmed_ts = trimmed_ts[
+    (trimmed_ts.index > lower_moneyness) &
+    (trimmed_ts.index < upper_moneyness)
+]
 atm_vols = trimmed_ts.loc[s]
 atm_vols = atm_vols.dropna()
 T = np.sort(atm_vols.index)
@@ -103,3 +99,4 @@ for i, k in enumerate(K):
         )
 
 print('\nterm structure approximated\n')
+print(f'\n{derman_ts[derman_ts<0].dropna()}')

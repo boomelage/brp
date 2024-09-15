@@ -19,6 +19,7 @@ os.chdir(pwd)
 import time
 import QuantLib as ql
 import numpy as np
+import pandas as pd
 
 from settings import model_settings
 ms = model_settings()
@@ -33,12 +34,24 @@ from routine_Derman import derman_ts
 start_time = time.time()
 
 S = [s]
-ts_df = derman_ts
-K = ts_df.index
-T = ts_df.columns
+
+
 
 heston_dicts = np.empty(len(S),dtype=object)
+
 for s_idx, s in enumerate(S):
+    
+    ts_df = derman_ts
+    K = ts_df.index
+    T = ts_df.columns
+    
+    heston_np_s = np.zeros((6,len(T)),dtype=float)
+    heston_df_s = pd.DataFrame(heston_np_s)
+    df_s_name = str(f"S = {int(s)}")
+    heston_df_s[df_s_name] = ['v0','kappa','theta','rho','sigma','error']
+    heston_df_s = heston_df_s.set_index(df_s_name)
+    heston_df_s.columns = T
+    
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     derK = np.sort(ts_df.index).astype(float)
     derT = np.sort(ts_df.columns).astype(float)
@@ -52,10 +65,8 @@ for s_idx, s in enumerate(S):
         
         risk_free_rate = float(rates_dict['risk_free_rate'].loc[t,0])
         dividend_rate = float(rates_dict['dividend_rate'].loc[t,0])
-        flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-            calculation_date, risk_free_rate, day_count))
-        dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-            calculation_date, dividend_rate, day_count))
+        flat_ts = ms.make_ts_object(risk_free_rate)
+        dividend_ts = ms.make_ts_object(dividend_rate)
         
         v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
         process = ql.HestonProcess(
@@ -103,6 +114,12 @@ for s_idx, s in enumerate(S):
             avg += abs(err)
             
         avg = avg*100.0/len(heston_helpers)
+        heston_df_s.loc['theta',t] = theta
+        heston_df_s.loc['kappa',t] = kappa
+        heston_df_s.loc['sigma',t] = sigma
+        heston_df_s.loc['rho',t] = rho
+        heston_df_s.loc['v0',t] = v0
+        heston_df_s.loc['error',t] = avg
         
         heston_params = {
             'theta':theta, 
@@ -125,18 +142,16 @@ for s_idx, s in enumerate(S):
 
 end_time = time.time()
 runtime = int(end_time-start_time)
-
-print('\nbest restults:')
+print('\nrestults under \n1% abs error:')
 for i, s in enumerate(heston_dicts):
     for j, t in enumerate(s):
         error = t['error']
         if error[0] < 0.01:
             print("-"*15)
-            # for key, value in t.items():
-            #     print(f'{key}: {value}')
             print(f'error: {round(error[0]*100,4)}%')
             print(f"maturity: {error[1]}")
             print("-"*15)
-
         else:
             pass
+
+print(heston_df_s)

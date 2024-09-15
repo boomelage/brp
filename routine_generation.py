@@ -10,9 +10,9 @@ os.chdir(pwd)
 import numpy as np
 import pandas as pd
 from itertools import product
-pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_columns', None)
 pd.reset_option('display.max_rows', None)
-# pd.reset_option('display.max_columns', None)
+pd.reset_option('display.max_columns', None)
 
 """
 

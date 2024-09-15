@@ -35,17 +35,14 @@ def plot_volatility_surface(black_var_surface, K, T):
     return fig
 def plot_term_structure(
         K,
-        target_maturity,
         real_ts,
         est_ts
         ):
     plt.rcParams['figure.figsize']=(6,4)
     K = K.astype(int)
     fig, ax = plt.subplots()
-    real_target_ivols = real_ts[target_maturity]
-    est_taget_ivols = est_ts[target_maturity]
-    ax.plot(K, est_taget_ivols, label="Derman")
-    ax.plot(K, real_target_ivols, "o", label="Actual")
+    ax.plot(K, est_ts, label="Derman")
+    ax.plot(K, real_ts, "o", label="Actual")
     legend = ax.legend(loc="upper right")
     plt.show()
     plt.cla()

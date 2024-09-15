@@ -9,7 +9,6 @@ os.chdir(pwd)
 import QuantLib as ql
 import numpy as np
 from data_query import dirdatacsv
-
 class model_settings():
     
     def __init__(self,
@@ -18,10 +17,8 @@ class model_settings():
             day_count          =    ql.Actual365Fixed(), 
             calendar           =    ql.UnitedStates(m=1),
             calculation_date   =    ql.Date.todaysDate(),
-            lower_maturity     =    None,
+            lower_maturity     =    28,
             upper_maturity     =    None,
-            lower_strike       =    None,
-            upper_strike       =    None,
             dividend_rate      =    9999999,
             risk_free_rate     =    9999999
             ):
@@ -30,23 +27,18 @@ class model_settings():
         self.calendar = calendar
         self.calculation_date = calculation_date
         self.ticker             =    ticker
-        self.lower_strike       =    lower_strike
-        self.upper_strike       =    upper_strike
         self.lower_maturity     =    lower_maturity
         self.upper_maturity     =    upper_maturity
         self.s                  =    s
+        self.lower_moneyness    =    s*0.5
+        self.upper_moneyness    =    6000
         self.security_settings  = (
-            self.ticker, self.lower_strike, self.upper_strike, 
+            self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
             )
-        
         self.dividend_rate = dividend_rate
-        self.risk_free_rate = risk_free_rate
+        self.risk_free_rate = ql.QuoteHandle(ql.SimpleQuote(risk_free_rate))
         self.dividend_rate = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
-        self.flat_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-            self.calculation_date, self.risk_free_rate, self.day_count))
-        self.dividend_ts = ql.YieldTermStructureHandle(ql.FlatForward(
-            self.calculation_date, self.dividend_rate, self.day_count))
         ql.Settings.instance().evaluationDate = calculation_date
         
     def import_model_settings(self):
@@ -55,22 +47,18 @@ class model_settings():
         calculation_date = self.calculation_date
         day_count = self.day_count
         calendar = self.calendar
-        dividend_ts = self.dividend_ts
-        flat_ts = self.flat_ts
         security_settings = self.security_settings
         ezimport = [
             "",
             "dividend_rate = settings[0]['dividend_rate']",
             "risk_free_rate = settings[0]['risk_free_rate']",
-            "flat_ts = settings[0]['flat_ts']",
-            "dividend_ts = settings[0]['dividend_ts']",
             "",
             "security_settings = settings[0]['security_settings']",
             "s = security_settings[5]",
             "",
             "ticker = security_settings[0]",
-            "lower_strike = security_settings[1]",
-            "upper_strike = security_settings[2]",
+            "lower_moneyness = security_settings[1]",
+            "upper_moneyness = security_settings[2]",
             "lower_maturity = security_settings[3]",
             "upper_maturity = security_settings[4]",
             "",
@@ -89,8 +77,6 @@ class model_settings():
             "calculation_date": calculation_date, 
             "day_count": day_count, 
             "calendar": calendar,
-            "flat_ts": flat_ts,
-            "dividend_ts": dividend_ts,
             "security_settings": security_settings
             }, ezprint]
             
@@ -121,3 +107,8 @@ class model_settings():
             expiration_dates, Ks,
             implied_vols_matrix, self.day_count)
         return black_var_surface
+
+    def make_ts_object(self,rate):
+        ts_object = ql.YieldTermStructureHandle(ql.FlatForward(
+            self.calculation_date, rate, self.day_count))
+        return ts_object

@@ -56,8 +56,8 @@ transformers=[
     # ("transformation_2", model_scaler[1],feature_set)
     ]     
 
-random_state = 42
-test_size = 0.01
+random_state = None
+test_size = 0.20
 
                                                       # Neural Network Settings
 max_iter = 10000
@@ -174,6 +174,7 @@ model_plot = mlop.plot_model_performance(model_stats, model_runtime,
 end_time = time.time()
 end_tag_datetime = datetime.fromtimestamp(end_time)
 end_tag = str(end_tag_datetime.strftime('%d%m%Y-%H%M%S'))
+
 # output_path_tag = str(f"{ticker} {end_tag}")
 # outputs_path = os.path.join('outputs',output_path_tag)
 # os.makedirs(outputs_path, exist_ok=True)
@@ -199,4 +200,4 @@ end_tag = str(end_tag_datetime.strftime('%d%m%Y-%H%M%S'))
 #     file.write(str(model_name))
 #     file.write(str(end_time_format))
 #     file.write(str(total_model_runtime))
-    
+
