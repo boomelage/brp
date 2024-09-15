@@ -43,18 +43,12 @@ def plot_derman_fit():
         plot_derman = plot_derman[plot_ts.index]
         K = plot_derman.index
         title = f"t = {t} days"
-        plot_term_structure(K, plot_ts, plot_derman,title)
-    T_sur = T[(T>=lower_maturity)&
-              (T<=upper_maturity)]
-    K = derman_ts.index
-    K_sur = K[(K>=lower_moneyness)&
-              (K<=upper_moneyness)]
-    
-    expiration_dates = ms.compute_ql_maturity_dates(T_sur)
-    implied_vols_matrix = ms.make_implied_vols_matrix(K_sur, T_sur, derman_ts)
+        plot_term_structure(K, plot_ts, plot_derman, title)
+    expiration_dates = ms.compute_ql_maturity_dates(T)
+    implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
     black_var_surface = ms.make_black_var_surface(
-        expiration_dates, K_sur, implied_vols_matrix)
-    plot_volatility_surface(black_var_surface, K_sur, T_sur)
+        expiration_dates, K, implied_vols_matrix)
+    plot_volatility_surface(black_var_surface, K, T)
     
     
 plot_derman_fit()

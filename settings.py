@@ -25,18 +25,21 @@ class model_settings():
         
         self.ticker             =    'SPX'
         
-        self.lower_maturity     =    0
-        self.upper_maturity     =    999999
-        self.s                  =    5400
+        self.lower_maturity     =    28
+        self.upper_maturity     =    400
+        
+        from import_ts import s
+        self.s                  =    float(s)
 
-        self.lower_moneyness    =    self.s * 0
-        self.upper_moneyness    =    self.s * 999
+        self.lower_moneyness    =    0
+        self.upper_moneyness    =    5899
         self.security_settings  = (
             self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
             )
         self.risk_free_rate = ql.QuoteHandle(ql.SimpleQuote(risk_free_rate))
         self.dividend_rate = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
+        self.s = int(self.s)
         ql.Settings.instance().evaluationDate = calculation_date
         
     def import_model_settings(self):

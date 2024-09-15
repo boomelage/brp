@@ -27,14 +27,7 @@ upper_moneyness = security_settings[2]
 lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
 
-from data_query import dirdatacsv
-csvs = dirdatacsv()
-rawtsname = [file for file in csvs if 'raw_ts' in file][0]
-raw_ts = pd.read_csv(rawtsname).drop_duplicates()
-raw_ts = raw_ts.rename(
-    columns={raw_ts.columns[0]: 'Strike'}).set_index('Strike')
-raw_ts.columns = raw_ts.columns.astype(int)
-raw_ts = raw_ts.replace(0,np.nan)
+from import_ts import raw_ts
 
 """
 script start
@@ -47,6 +40,10 @@ trimmed_ts = trimmed_ts[
     (trimmed_ts.index > lower_moneyness) &
     (trimmed_ts.index < upper_moneyness)
 ]
+
+trimmed_ts = trimmed_ts.loc[:,lower_maturity:upper_maturity]
+
+
 atm_vols = trimmed_ts.loc[s]
 atm_vols = atm_vols.dropna()
 T = np.sort(atm_vols.index)
@@ -100,4 +97,4 @@ for i, k in enumerate(K):
         )
 
 
-print('\nterm structure approximated\n')
+print('\nterm structure approximated')
