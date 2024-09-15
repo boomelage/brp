@@ -27,18 +27,13 @@ upper_moneyness = security_settings[2]
 lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
 
-from data_query import dirdatacsv
-csvs = dirdatacsv()
-rawtsname = [file for file in csvs if 'raw_ts' in file][0]
-raw_ts = pd.read_csv(rawtsname).drop_duplicates()
-raw_ts = raw_ts.rename(
-    columns={raw_ts.columns[0]: 'Strike'}).set_index('Strike')
-raw_ts.columns = raw_ts.columns.astype(int)
-raw_ts = raw_ts.replace(0,np.nan)
+
 
 """
 script start
 """
+
+from import_files import raw_ts
 
 trimmed_ts = raw_ts.dropna(how = 'all')
 trimmed_ts = trimmed_ts.dropna(how = 'all', axis = 1)
