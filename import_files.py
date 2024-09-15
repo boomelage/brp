@@ -16,32 +16,38 @@ from datetime import datetime
 
 from data_query import dirdatacsv
 csvs = dirdatacsv()
+
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
+
+dividend_rate = settings[0]['dividend_rate']
+risk_free_rate = settings[0]['risk_free_rate']
+
 security_settings = settings[0]['security_settings']
 s = security_settings[5]
+
 ticker = security_settings[0]
 lower_moneyness = security_settings[1]
 upper_moneyness = security_settings[2]
 lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
+
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
-
 
 file_time = time.time()
 file_datetime = datetime.fromtimestamp(file_time)
 time_tag = file_datetime.strftime('%H-%M-%S')
 date_tag = file_datetime.strftime('%Y-%m-%d')
-date_tag = '2024-09-13'
+date_tag = '2024-09-12'
 generic = f"{ticker} {date_tag} {time_tag}"
 
 """
 # =============================================================================
                                                                    import files
-                                                                   
+
                                                                          raw_ts
 """
 
@@ -80,7 +86,7 @@ raw_ts = raw_ts.replace(0,np.nan)
                                                                          raw_ts
 """
 
-# raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
+# from routine_ivol_collection import raw_ts
 # raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
 
 """

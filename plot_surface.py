@@ -44,8 +44,8 @@ def plot_term_structure(
     fig, ax = plt.subplots()
     ax.plot(K, est_ts, label="Derman")
     ax.plot(K, real_ts, "o", label="Actual")
-    legend = ax.legend(loc="upper right")
-    plt.title = title
+    ax.legend = ax.legend(loc="upper right")
+    ax.set_title(title)
     plt.show()
     plt.cla()
     plt.clf()

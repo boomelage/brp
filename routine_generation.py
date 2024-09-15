@@ -53,9 +53,10 @@ contract_details = collect_directory_market_data()
 
 k = np.sort(contract_details['strike_price'].unique())
 t = np.sort(derman_coefs.columns)
+s = np.sort(contract_details['spot_price'].unique())
 features = pd.DataFrame(
     product(
-        [s],
+        s,
         k,
         t,
         ),
@@ -169,7 +170,7 @@ option_prices = BS_price_vanillas(features)
 
 dataset = noisyfier(option_prices)
 dataset = dataset[~(
-    dataset['observed_price']<0.01*s
+    dataset['observed_price']<0.01*dataset['spot_price']
     )]
 dataset = dataset.dropna()
 dataset
