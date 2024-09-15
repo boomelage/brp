@@ -34,6 +34,7 @@ raw_ts = pd.read_csv(rawtsname).drop_duplicates()
 raw_ts = raw_ts.rename(
     columns={raw_ts.columns[0]: 'Strike'}).set_index('Strike')
 raw_ts.columns = raw_ts.columns.astype(int)
+raw_ts = raw_ts.replace(0,np.nan)
 
 """
 script start
@@ -98,5 +99,5 @@ for i, k in enumerate(K):
             derman_coefs.loc['b',t] * moneyness
         )
 
+
 print('\nterm structure approximated\n')
-print(f'\n{derman_ts[derman_ts<0].dropna()}')

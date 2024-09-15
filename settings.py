@@ -12,31 +12,29 @@ from data_query import dirdatacsv
 class model_settings():
     
     def __init__(self,
-            ticker             =    'SPX',
-            s                  =    5630,
             day_count          =    ql.Actual365Fixed(), 
             calendar           =    ql.UnitedStates(m=1),
             calculation_date   =    ql.Date.todaysDate(),
-            lower_maturity     =    28,
-            upper_maturity     =    None,
             dividend_rate      =    9999999,
             risk_free_rate     =    9999999
             ):
-        self.csvs = dirdatacsv()
-        self.day_count = day_count
-        self.calendar = calendar
-        self.calculation_date = calculation_date
-        self.ticker             =    ticker
-        self.lower_maturity     =    lower_maturity
-        self.upper_maturity     =    upper_maturity
-        self.s                  =    s
-        self.lower_moneyness    =    s*0.5
-        self.upper_moneyness    =    6000
+        self.csvs               = dirdatacsv()
+        self.day_count          = day_count
+        self.calendar           = calendar
+        self.calculation_date   = calculation_date
+        
+        self.ticker             =    'SPX'
+        
+        self.lower_maturity     =    0
+        self.upper_maturity     =    999999
+        self.s                  =    5400
+
+        self.lower_moneyness    =    self.s * 0
+        self.upper_moneyness    =    self.s * 999
         self.security_settings  = (
             self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
             )
-        self.dividend_rate = dividend_rate
         self.risk_free_rate = ql.QuoteHandle(ql.SimpleQuote(risk_free_rate))
         self.dividend_rate = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
         ql.Settings.instance().evaluationDate = calculation_date

@@ -3,7 +3,7 @@
 Created on Fri Sep 13 21:45:51 2024
 
 
-from derman_plotting import plot_derman_fit
+from plot_derman import plot_derman_fit
 plot_derman_fit()
 
 """
@@ -34,8 +34,6 @@ from routine_Derman import derman_ts
 start_time = time.time()
 
 S = [s]
-
-
 
 heston_dicts = np.empty(len(S),dtype=object)
 
@@ -119,7 +117,7 @@ for s_idx, s in enumerate(S):
         heston_df_s.loc['sigma',t] = sigma
         heston_df_s.loc['rho',t] = rho
         heston_df_s.loc['v0',t] = v0
-        heston_df_s.loc['error',t] = avg
+        heston_df_s.loc['error',t] = avg/100
         
         heston_params = {
             'theta':theta, 
@@ -142,11 +140,13 @@ for s_idx, s in enumerate(S):
 
 end_time = time.time()
 runtime = int(end_time-start_time)
-print('\nrestults under \n1% abs error:')
+print('\nmaturities under \n1% abs error:')
+
+tolerance = 0.01
 for i, s in enumerate(heston_dicts):
     for j, t in enumerate(s):
         error = t['error']
-        if error[0] < 0.01:
+        if error[0] < tolerance:
             print("-"*15)
             print(f'error: {round(error[0]*100,4)}%')
             print(f"maturity: {error[1]}")
@@ -154,4 +154,11 @@ for i, s in enumerate(heston_dicts):
         else:
             pass
 
-print(heston_df_s)
+
+mask = heston_df_s.loc['error', :] < tolerance
+heston_df = heston_df_s.loc[:, mask]
+
+from plot_derman import plot_derman_fit
+plot_derman_fit()
+
+print(f'\nparameters with under {int(tolerance*100)}% pricing error:\n{heston_df}')

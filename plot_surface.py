@@ -36,7 +36,8 @@ def plot_volatility_surface(black_var_surface, K, T):
 def plot_term_structure(
         K,
         real_ts,
-        est_ts
+        est_ts,
+        title,
         ):
     plt.rcParams['figure.figsize']=(6,4)
     K = K.astype(int)
@@ -44,6 +45,7 @@ def plot_term_structure(
     ax.plot(K, est_ts, label="Derman")
     ax.plot(K, real_ts, "o", label="Actual")
     legend = ax.legend(loc="upper right")
+    plt.title = title
     plt.show()
     plt.cla()
     plt.clf()
