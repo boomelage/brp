@@ -9,7 +9,6 @@ pwd = str(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(pwd)
 import numpy as np
 import pandas as pd
-import QuantLib as ql
 from itertools import product
 from pricing import BS_price_vanillas, noisyfier
 
@@ -37,9 +36,6 @@ product. this would allow one to easily create large training datasets from
 rather sparse information. naturally, there are many assumptions underpinning 
 the implied volatility being a functional form of maturity, strike, and spot.
 
-
-# =============================================================================
-                                                           generation procedure
 """
 
 from settings import model_settings
@@ -61,13 +57,21 @@ lower_maturity = security_settings[3]
 upper_maturity = security_settings[4]
 s = security_settings[5]
 
+"""
+# =============================================================================
+                                                           generation procedure
+"""
 
+from routine_Derman import derman_coefs
 from routine_collection import collect_directory_market_data
 contract_details = collect_directory_market_data()
 
+"""
+                     generating features based on available Derman coefficients
+"""
 
 k = np.sort(contract_details['strike_price'].unique())
-t = np.sort(contract_details['days_to_maturity'].unique())
+t = np.sort(derman_coefs.columns)
 features = pd.DataFrame(
     product(
         [s],
@@ -80,40 +84,41 @@ features = pd.DataFrame(
         "days_to_maturity",
               ])
 
+
+"""
+                                getting r and g pivots from current market_data
+"""
+
 details_indexed = contract_details.copy().set_index([
     'strike_price','days_to_maturity'])
-
 rfrpivot = contract_details.pivot_table(
     values = 'risk_free_rate', 
     index = 'strike_price', 
     columns = 'days_to_maturity'
     )
-
 dvypivot = contract_details.pivot_table(
     values = 'dividend_rate', 
     index = 'strike_price', 
     columns = 'days_to_maturity'
     )
-
 dvy_K = dvypivot.index
 dvy_T = dvypivot.columns
 dvy_np = np.zeros((1,len(dvy_T)))
 dvys = pd.DataFrame(dvy_np)
 dvys.columns = dvy_T
-
 for t in dvy_T:
         dvys[t] = float(dvypivot.loc[:,t].dropna().unique()[0])
-
 rfr_K = rfrpivot.index
 rfr_T = rfrpivot.columns
 rfr_np = np.zeros((1,len(rfr_T)))
 rfrs = pd.DataFrame(rfr_np)
 rfrs.columns = rfr_T
-
 for t in rfr_T:
         rfrs[t] = float(rfrpivot.loc[:,t].dropna().unique()[0])
 
-
+"""
+mapping appropriate rates
+"""
 def map_rate(rate_series, ratename):
     for row in features.index:
         try:
@@ -127,21 +132,51 @@ features = map_rate(rfrs, 'risk_free_rate')
 features = map_rate(dvys, 'dividend_rate')
 
 
+"""
+                              computing Derman estimation of implied volatility
+"""
+atm_vol = 0.1312
+def compute_derman_volatility_row(row,atm_vol):
+    try:
+        t = int(row['days_to_maturity'])
+        moneyness = row['spot_price'] - row['strike_price']
+        atm_vol = atm_vol
+        alpha = derman_coefs.loc['alpha',t]
+        b = derman_coefs.loc['b',t]
+        derman_vol = atm_vol + alpha + b*moneyness
+        row['volatility'] = derman_vol
+        return row
+    except Exception:
+        row['volatility'] = np.nan
+        return row
+
+features = features.apply(
+    lambda row: compute_derman_volatility_row(row, atm_vol), axis=1)
 
 
-features['w'] = 1
+
+features['w'] = 1 # flag for call/put
 features = features.dropna()
-print(f"\noriginal dataset:\n{contract_details}")
-print(f"\nnew dataset:\n{features}")
-print(f"\n{int(100*(features.shape[0]/contract_details.shape[0]-1))}% combinations gained")
+
+"""
+                                                   generating synthetic dataset
+"""
 
 
-# option_prices = BS_price_vanillas(features)
-# # option_prices = heston_price_vanillas()
-# dataset = noisyfier(option_prices)
-# dataset = dataset.dropna()
-# dataset
-# print(dataset)
-# print(dataset.describe())
+option_prices = BS_price_vanillas(features)
 
+# from routine_calibration import heston_dicts
+# from pricing import heston_price_vanillas
+# # map appropriate parameters
+# option_prices = heston_price_vanillas(option_prices)
 
+dataset = noisyfier(option_prices)
+dataset = dataset[~(
+    dataset['observed_price']<0.01*s
+    )]
+dataset = dataset.dropna()
+dataset
+print(f'\noriginal count: {contract_details.shape[0]}\n')
+print(f'\nnew count: {dataset.shape[0]}')
+print('\n')
+print(f'{dataset.describe()}\n')

@@ -63,18 +63,18 @@ raw_ts = raw_ts.loc[
                                                                contract_details
 """
 
-contract_details_name = [
-    file for file in csvs if 'contract_details' in file][0]
-contract_details = pd.read_csv(contract_details_name).drop_duplicates()
-contract_details = contract_details.drop(
-    columns = contract_details.columns[0])
+# contract_details_name = [
+#     file for file in csvs if 'contract_details' in file][0]
+# contract_details = pd.read_csv(contract_details_name).drop_duplicates()
+# contract_details = contract_details.drop(
+#     columns = contract_details.columns[0])
 
 """
                                                                          Derman
 """
 
-derman_ts_name = [file for file in csvs if 'derman_coefs' in file][0]
-derman_coefs = pd.read_csv(derman_ts_name).set_index('coef')
+# derman_ts_name = [file for file in csvs if 'derman_coefs' in file][0]
+# derman_coefs = pd.read_csv(derman_ts_name).set_index('coef')
 
 """
                                                                        plotting

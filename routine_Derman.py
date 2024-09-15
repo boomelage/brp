@@ -4,7 +4,10 @@
 """
 Created on Wed Sep 11 19:08:30 2024
 
-"""  
+"""
+import os
+pwd = os.path.dirname(os.path.abspath(__file__))
+os.chdir(pwd)
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -36,88 +39,92 @@ raw_ts = raw_ts.loc[
     lower_strike:upper_strike,
     lower_maturity:upper_maturity]
 
-
-
 """
 script start
 """
 
-
 trimmed_ts = raw_ts.dropna(how = 'all')
 trimmed_ts = trimmed_ts.dropna(how = 'all', axis = 1)
 trimmed_ts = trimmed_ts.drop_duplicates()
-
 trimmed_ts = trimmed_ts.loc[
     lower_strike:upper_strike,
     lower_maturity:upper_maturity
     ]
-trimmed_ts = trimmed_ts.fillna(0.000000)
 atm_vols = trimmed_ts.loc[s]
+atm_vols = atm_vols.dropna()
 
-
-
-
-T = np.sort(trimmed_ts.columns)
+T = np.sort(atm_vols.index)
 K = np.sort(trimmed_ts.index)
 
 
-def compute_one_derman_coef(ts_df, s, t, K):
-    TSatmat = ts_df.loc[:,t]
-    atm_value = np.median(TSatmat)
-    strikes = ts_df.index
-    x = np.array(strikes - s,dtype=float)
-    y = np.array(TSatmat - atm_value,dtype=float)
+def compute_one_derman_coef(ts_df, s, t, atm_value):
+    
+    term_struct = ts_df.loc[:,t].dropna()
+    K_reg = term_struct.columns()
+    
+    x = np.array(K_reg  - s,dtype=float)
+    y = np.array(term_struct  - atm_value,dtype=float)
+    
+    
     model = LinearRegression()
     x = x.reshape(-1,1)
     model.fit(x,y)
+        
     b = model.coef_[0]
     alpha = model.intercept_
-    derman_ivols = model.predict(x)
-    derman_ivols = derman_ivols*b + alpha + atm_value
-    return b, alpha, derman_ivols
 
-def compute_derman_coefs(ts_df, s, T, K):
+    return b, alpha
+
+def compute_derman_coefs(raw_ts, s, T, K, atm_vols):
     derman_coefs = {}
     for i, k in enumerate(K):
         for j, t in enumerate(T):
             atm_value = atm_vols[t]
-            b, alpha, derman_ivols = compute_one_derman_coef(ts_df, s, t, K)
-            if b < 0:
-                b = b
-            else:
-                b = 0
+            b, alpha = compute_one_derman_coef(raw_ts, s, t, K, atm_value)
             derman_coefs[t] = [b, alpha, atm_value]
     derman_coefs = pd.DataFrame(derman_coefs)
     derman_coefs['coef'] = ['b','alpha','atm_value']
     derman_coefs.set_index('coef',inplace = True)
     return derman_coefs
 
-derman_coefs = compute_derman_coefs(trimmed_ts, s, T, K)
-derman_maturities = np.sort(derman_coefs.columns)
 
 
-"""
-# =============================================================================
-                                                    applying Derman estimations
-"""
 
-derman_ts_np = np.zeros((len(K),len(derman_maturities)),dtype=float)
-derman_ts = pd.DataFrame(derman_ts_np)
-derman_ts.index = K
-derman_ts.columns = derman_maturities
 
-for i, k in enumerate(K):
-    moneyness = k - s
-    for j, t in enumerate(derman_maturities):
-        k = int(k)
-        t = int(t)
-        derman_ts.loc[k,t] = (
-            derman_coefs.loc['alpha',t] + derman_coefs.loc['atm_value',t] + \
-            derman_coefs.loc['b',t] * moneyness
-        )
 
-negative_dermans = derman_ts.copy().loc[:, (derman_ts < 0).any(axis=0)]
-negative_dermans
-derman_ts = derman_ts.drop(columns=negative_dermans.columns)
+derman_coefs = compute_derman_coefs(raw_ts, s, T, K, atm_vols)
 
-print('term structure approximated')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# derman_ts_np = np.zeros((len(K),len(derman_maturities)),dtype=float)
+# derman_ts = pd.DataFrame(derman_ts_np)
+# derman_ts.index = K
+# derman_ts.columns = derman_maturities
+
+# for i, k in enumerate(K):
+#     moneyness = k - s
+#     for j, t in enumerate(derman_maturities):
+#         k = int(k)
+#         t = int(t)
+#         derman_ts.loc[k,t] = (
+#             derman_coefs.loc['alpha',t] + derman_coefs.loc['atm_value',t] + \
+#             derman_coefs.loc['b',t] * moneyness
+#         )
+
+# print('term structure approximated')

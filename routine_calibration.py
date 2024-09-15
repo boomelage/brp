@@ -124,3 +124,4 @@ for s_idx, s in enumerate(S):
 end_time = time.time()
 runtime = int(end_time-start_time)
 print(f"total model runtime: {runtime} seconds")
+

@@ -13,7 +13,6 @@ import pandas as pd
 import numpy as np
 import QuantLib as ql
 from data_query import dirdata
-from pricing import BS_price_vanillas, heston_price_vanillas, noisyfier
 pd.set_option('display.max_columns', None)
 # pd.set_option('display.max_rows', None)
 pd.reset_option('display.max_rows')

@@ -38,7 +38,7 @@ feature_set = [
 model_scaler = [
     
     # RobustScaler(),
-    QuantileTransformer(),
+    # QuantileTransformer(),
     # MaxAbsScaler(),
     # MinMaxScaler(),
     # Normalizer(),
@@ -46,7 +46,7 @@ model_scaler = [
     # SplineTransformer(),
     # PolynomialFeatures(),
     # KernelCenterer(),
-    # StandardScaler(),
+    StandardScaler(),
     
     ""
     ]
@@ -91,12 +91,7 @@ print(start_tag_format)
 # =============================================================================
                                                                  # loading data
 
-from derman_underlying_initialisation import contract_details, derman_data
-from pricing import BS_price_vanillas, noisyfier
-
-features = contract_details.copy().drop(columns='atm_vol')
-prices = BS_price_vanillas(features)
-dataset = noisyfier(prices)
+from routine_generation import dataset
 # =============================================================================
 model_scaler1 = model_scaler[0]
 model_scaler2 = model_scaler[1]
