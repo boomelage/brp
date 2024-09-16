@@ -27,7 +27,7 @@ class model_settings():
         
         self.lower_maturity     =    0
         self.upper_maturity     =    999999
-        self.s                  =    None
+        self.s                  =    5630
 
         self.lower_moneyness    =    self.s * 0
         self.upper_moneyness    =    self.s * 999999

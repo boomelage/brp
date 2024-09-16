@@ -104,7 +104,7 @@ class mlop:
             max_iter=max_iter,
             random_state=random_state
             )
-        
+            
         nnet_pipeline = Pipeline([
             ("preprocessor", preprocessor),
             ("regressor", nnet_model)

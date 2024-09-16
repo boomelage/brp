@@ -20,7 +20,7 @@ from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 security_settings = settings[0]['security_settings']
-# s = security_settings[5]
+s = security_settings[5]
 # =============================================================================
 """
 computing Derman coefficients
@@ -28,7 +28,6 @@ computing Derman coefficients
 
 from import_files import raw_ts
 
-s = 5625
 atm_volvec = raw_ts.copy().loc[s].dropna()
 T = atm_volvec.index
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
@@ -43,7 +42,7 @@ for t in T:
     K_reg = term_struct.index
     x = np.array(K_reg  - s, dtype=float)
     y = np.array(term_struct  - atm_volvec[t],dtype=float)
-    model = LinearRegression()
+    model = LinearRegression(fit_intercept=False)
     x = x.reshape(-1,1)
     model.fit(x,y)
     b = model.coef_[0]
@@ -94,7 +93,7 @@ plotting vol surface
 
 upper_moneyness = s*1.5
 lower_moneyness = s*0.5
-n_K = 10
+n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
 
 derman_ts = make_derman_surface(K=K)
@@ -112,5 +111,6 @@ implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
 from plot_surface import plot_volatility_surface
+
 
 fig = plot_volatility_surface(black_var_surface, K, T)
