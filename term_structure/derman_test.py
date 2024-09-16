@@ -20,13 +20,15 @@ from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 security_settings = settings[0]['security_settings']
-s = security_settings[5]
+# s = security_settings[5]
 # =============================================================================
 """
 computing Derman coefficients
 """
 
 from import_files import raw_ts
+
+s = 5625
 atm_volvec = raw_ts.copy().loc[s].dropna()
 T = atm_volvec.index
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
@@ -48,9 +50,11 @@ for t in T:
     alpha = model.intercept_
     derman_coefs.loc['alpha',t] = alpha
     derman_coefs.loc['b',t] = b
-    
+
+
 """
 surface maker
+
 """
 
 def make_derman_surface(
@@ -77,20 +81,20 @@ def make_derman_surface(
 testing approximation fit
 """
 
-# K_test = raw_ts.index
-# derman_test_ts = make_derman_surface(K = K_test)
-# raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
-# from plot_derman import plot_derman_fit
-# plot_derman_fit(derman_test_ts, raw_test_ts)
+K_test = raw_ts.index
+derman_test_ts = make_derman_surface(K = K_test)
+raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
+from plot_derman import plot_derman_fit
+plot_derman_fit(derman_test_ts, raw_test_ts)
 
 
 """
 plotting vol surface
 """
 
-upper_moneyness = s*1.2
-lower_moneyness = s*0.8
-n_K = 50
+upper_moneyness = s*1.5
+lower_moneyness = s*0.5
+n_K = 10
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
 
 derman_ts = make_derman_surface(K=K)
@@ -98,9 +102,10 @@ derman_ts = make_derman_surface(K=K)
 T = derman_ts.columns.astype(float)
 K = derman_ts.index
 T = T[(
-        (T>0)&
-        (T<37000)
-        )]
+        ( T > 0 )
+        &
+        ( T < 37000 )
+)]
 
 expiration_dates = ms.compute_ql_maturity_dates(T)
 implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)

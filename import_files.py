@@ -64,9 +64,9 @@ print(f'\n{raw_ts}')
                                                                contract_details
 """
 
-from routine_collection import contract_details
+# from routine_collection import contract_details
 # contract_details.drop_duplicates().to_csv(f"{generic} contract_details.csv")
-print(f'\n{contract_details}')
+# print(f'\n{contract_details}')
 
 
 
