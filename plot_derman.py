@@ -15,7 +15,7 @@ clear_all()
 import os
 pwd = os.path.dirname(os.path.abspath(__file__))
 os.chdir(pwd)
-
+import time
 
 
 from settings import model_settings
@@ -38,6 +38,7 @@ from plot_surface import plot_volatility_surface, plot_term_structure
 def plot_derman_fit():
     T = derman_ts.columns
     for t in T:
+        time.sleep(1)
         plot_ts = trimmed_ts.loc[:,t].dropna()
         plot_derman = derman_ts.loc[:,t]
         plot_derman = plot_derman[plot_ts.index]
