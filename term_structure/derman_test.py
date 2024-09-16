@@ -22,43 +22,39 @@ settings = ms.import_model_settings()
 security_settings = settings[0]['security_settings']
 s = security_settings[5]
 # =============================================================================
+"""
+computing Derman coefficients
+"""
 
 from import_files import raw_ts
-
 atm_volvec = raw_ts.copy().loc[s].dropna()
 T = atm_volvec.index
-
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
 derman_coefs = pd.DataFrame(derman_coefs_np)
 derman_coefs['t days'] = ['alpha','b']
 derman_coefs = derman_coefs.set_index('t days')
 derman_coefs.columns = T
-
 for t in T:
-    
     t = int(t)
     term_struct = raw_ts.copy()
     term_struct = term_struct.loc[:,t].dropna()
     K_reg = term_struct.index
-    
     x = np.array(K_reg  - s, dtype=float)
-    
     y = np.array(term_struct  - atm_volvec[t],dtype=float)
-    
     model = LinearRegression()
     x = x.reshape(-1,1)
     model.fit(x,y)
-
     b = model.coef_[0]
     alpha = model.intercept_
-    
     derman_coefs.loc['alpha',t] = alpha
     derman_coefs.loc['b',t] = b
+    
+"""
+surface maker
+"""
 
 def make_derman_surface(
         K=None, atm_volvec=atm_volvec, derman_coefs=derman_coefs, s = s):
-    
-
     T = derman_coefs.columns
     derman_ts_np = np.zeros((len(K),len(T)),dtype=float)
     derman_ts = pd.DataFrame(derman_ts_np)
@@ -75,32 +71,41 @@ def make_derman_surface(
         derman_ts = derman_ts[~(derman_ts<0)].dropna(how="any",axis=0)
     return derman_ts
 
+
+
+"""
+testing approximation fit
+"""
+
+K_test = raw_ts.index
+derman_test_ts = make_derman_surface(K = K_test)
+raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
+from plot_derman import plot_derman_fit
+plot_derman_fit(derman_test_ts, raw_test_ts)
+
+
+"""
+plotting vol surface
+"""
+
 upper_moneyness = s*1.2
 lower_moneyness = s*0.8
 n_K = 1000
-K = np.linspace(lower_moneyness,upper_moneyness,n_K).astype(int)
+K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
+
 derman_ts = make_derman_surface(K=K)
 
 T = derman_ts.columns.astype(float)
 K = derman_ts.index
 T = T[(
-        (T>30)&
-        (T<400)
+        (T>0)&
+        (T<37000)
         )]
 
 expiration_dates = ms.compute_ql_maturity_dates(T)
 implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
-
-print(f"\n{implied_vols_matrix}\n")
-
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
-
 from plot_surface import plot_volatility_surface
-plot_volatility_surface(black_var_surface, K, T)
 
-K_test = raw_ts.index
-derman_test_ts = make_derman_surface(K = K_test)
-
-raw_test_ts = raw_ts.copy().loc[derman_test_ts.columns]
-
+fig = plot_volatility_surface(black_var_surface, K, T)
