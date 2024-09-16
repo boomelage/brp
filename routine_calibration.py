@@ -60,105 +60,109 @@ for s_idx, s in enumerate(S):
     
     sets_for_maturities = np.empty(len(derT),dtype=object)
     for t_idx, t in enumerate(derT):
-        
-        risk_free_rate = float(rates_dict['risk_free_rate'].loc[t,0])
-        dividend_rate = float(rates_dict['dividend_rate'].loc[t,0])
-        flat_ts = ms.make_ts_object(risk_free_rate)
-        dividend_ts = ms.make_ts_object(dividend_rate)
-        
-        v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
-        process = ql.HestonProcess(
-            flat_ts,                
-            dividend_ts,            
-            S_handle,               
-            v0,                     # Initial volatility
-            kappa,                  # Mean reversion speed
-            theta,                  # Long-run variance (volatility squared)
-            sigma,                  # Volatility of the volatility
-            rho                     # Correlation between asset and volatility
-        )
-        
-        model = ql.HestonModel(process)
-        engine = ql.AnalyticHestonEngine(model)
-        heston_helpers = []
-        date = calculation_date + ql.Period(int(t),ql.Days)
-        dt = (date - calculation_date)
-        p = ql.Period(dt, ql.Days)
+        try:
+            risk_free_rate = float(rates_dict['risk_free_rate'].loc[int(t),0])
+            dividend_rate = float(rates_dict['dividend_rate'].loc[int(t),0])
+            flat_ts = ms.make_ts_object(risk_free_rate)
+            dividend_ts = ms.make_ts_object(dividend_rate)
+            
+            v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
+            process = ql.HestonProcess(
+                flat_ts,                
+                dividend_ts,            
+                S_handle,               
+                v0,                     # Initial volatility
+                kappa,                  # Mean reversion speed
+                theta,                  # Long-run variance (volatility squared)
+                sigma,                  # Volatility of the volatility
+                rho                     # Correlation between asset and volatility
+            )
+            
+            model = ql.HestonModel(process)
+            engine = ql.AnalyticHestonEngine(model)
+            heston_helpers = []
+            date = calculation_date + ql.Period(int(t),ql.Days)
+            dt = (date - calculation_date)
+            p = ql.Period(dt, ql.Days)
+                    
+            for k_idx, k in enumerate(derK):
+                sigma = black_var_surface.blackVol(dt/365.25, k) 
+                helper = ql.HestonModelHelper(
+                    p,
+                    calendar,
+                    float(s),
+                    k,
+                    ql.QuoteHandle(ql.SimpleQuote(sigma)),
+                    flat_ts,
+                    dividend_ts)
+                helper.setPricingEngine(engine)
+                heston_helpers.append(helper)
+            lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
+            model.calibrate(heston_helpers, lm,
+                              ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+            theta, kappa, sigma, rho, v0 = model.params()
+            
+            avg = 0.0
+            time.sleep(0.005)
+            
+            for i in range(min(len(heston_helpers), len(K))):
+                opt = heston_helpers[i]
+                err = (opt.modelValue() / opt.marketValue() - 1.0)
                 
-        for k_idx, k in enumerate(derK):
-            sigma = black_var_surface.blackVol(dt/365.25, k) 
-            helper = ql.HestonModelHelper(
-                p,
-                calendar,
-                float(s),
-                k,
-                ql.QuoteHandle(ql.SimpleQuote(sigma)),
-                flat_ts,
-                dividend_ts)
-            helper.setPricingEngine(engine)
-            heston_helpers.append(helper)
-        lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
-        model.calibrate(heston_helpers, lm,
-                          ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
-        theta, kappa, sigma, rho, v0 = model.params()
-        
-        avg = 0.0
-        time.sleep(0.005)
-        
-        for i in range(min(len(heston_helpers), len(K))):
-            opt = heston_helpers[i]
-            err = (opt.modelValue() / opt.marketValue() - 1.0)
+                avg += abs(err)
+                
+            avg = avg*100.0/len(heston_helpers)
+            heston_df_s.loc['theta',t] = theta
+            heston_df_s.loc['kappa',t] = kappa
+            heston_df_s.loc['sigma',t] = sigma
+            heston_df_s.loc['rho',t] = rho
+            heston_df_s.loc['v0',t] = v0
+            heston_df_s.loc['error',t] = avg/100
             
-            avg += abs(err)
-            
-        avg = avg*100.0/len(heston_helpers)
-        heston_df_s.loc['theta',t] = theta
-        heston_df_s.loc['kappa',t] = kappa
-        heston_df_s.loc['sigma',t] = sigma
-        heston_df_s.loc['rho',t] = rho
-        heston_df_s.loc['v0',t] = v0
-        heston_df_s.loc['error',t] = avg/100
-        
-        heston_params = {
-            'theta':theta, 
-            'kappa':kappa, 
-            'sigma':sigma, 
-            'rho':rho, 
-            'v0':v0,
-            'error': (avg/100,f"{int(t)}D")
-            }
-        sets_for_maturities[t_idx] = heston_params
-        print("-"*40)
-        print("Total Average Abs Error (%%) : %5.3f" % (avg))
-        print(f"for {int(t)} day maturity\n")
-        for key, value in heston_params.items():
-            print(f'{key}: {value}')
-
-        print("-"*40)
-        
+            heston_params = {
+                'theta':theta, 
+                'kappa':kappa, 
+                'sigma':sigma, 
+                'rho':rho, 
+                'v0':v0,
+                'error': (avg/100,f"{int(t)}D")
+                }
+            sets_for_maturities[t_idx] = heston_params
+            print("-"*40)
+            print("Total Average Abs Error (%%) : %5.3f" % (avg))
+            print(f"for {int(t)} day maturity\n")
+            for key, value in heston_params.items():
+                print(f'{key}: {value}')
+    
+            print("-"*40)
+        except Exception:
+            heston_params = None
+            sets_for_maturities[t_idx] = heston_params
+            print(f'{t} day rate not found')
+            pass
     heston_dicts[s_idx] = sets_for_maturities
 
 end_time = time.time()
 runtime = int(end_time-start_time)
 print('\nmaturities under \n1% abs error:')
 
-tolerance = 0.01
-for i, s in enumerate(heston_dicts):
-    for j, t in enumerate(s):
-        error = t['error']
-        if error[0] < tolerance:
-            print("-"*15)
-            print(f'error: {round(error[0]*100,4)}%')
-            print(f"maturity: {error[1]}")
-            print("-"*15)
-        else:
-            pass
+# tolerance = 0.01
+# for i, s in enumerate(heston_dicts):
+#     for j, t in enumerate(s):
+#         error = t['error']
+#         if error[0] < tolerance:
+#             print("-"*15)
+#             print(f'error: {round(error[0]*100,4)}%')
+#             print(f"maturity: {error[1]}")
+#             print("-"*15)
+#         else:
+#             pass
 
 
-mask = heston_df_s.loc['error', :] < tolerance
-heston_df = heston_df_s.loc[:, mask]
+# mask = heston_df_s.loc['error', :] < tolerance
+# heston_df = heston_df_s.loc[:, mask]
 
-from plot_derman import plot_derman_fit
-plot_derman_fit()
+# from plot_derman import plot_derman_fit
+# plot_derman_fit()
 
-print(f'\nparameters with under {int(tolerance*100)}% pricing error:\n{heston_df}')
+# print(f'\nparameters with under {int(tolerance*100)}% pricing error:\n{heston_df}')
