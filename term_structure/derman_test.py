@@ -77,11 +77,11 @@ def make_derman_surface(
 testing approximation fit
 """
 
-K_test = raw_ts.index
-derman_test_ts = make_derman_surface(K = K_test)
-raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
-from plot_derman import plot_derman_fit
-plot_derman_fit(derman_test_ts, raw_test_ts)
+# K_test = raw_ts.index
+# derman_test_ts = make_derman_surface(K = K_test)
+# raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
+# from plot_derman import plot_derman_fit
+# plot_derman_fit(derman_test_ts, raw_test_ts)
 
 
 """
@@ -90,7 +90,7 @@ plotting vol surface
 
 upper_moneyness = s*1.2
 lower_moneyness = s*0.8
-n_K = 1000
+n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
 
 derman_ts = make_derman_surface(K=K)
