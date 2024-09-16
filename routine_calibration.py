@@ -138,14 +138,15 @@ for s_idx, s in enumerate(S):
         except Exception:
             heston_params = None
             sets_for_maturities[t_idx] = heston_params
-            print(f'{t} day rate not found')
+            print(f'{int(t)} day rate not found')
             pass
     heston_dicts[s_idx] = sets_for_maturities
 
 end_time = time.time()
 runtime = int(end_time-start_time)
-print('\nmaturities under \n1% abs error:')
 
+
+# print('\nmaturities under \n1% abs error:')
 # tolerance = 0.01
 # for i, s in enumerate(heston_dicts):
 #     for j, t in enumerate(s):

@@ -5,16 +5,21 @@ Created on Wed Sep 11 19:08:30 2024
 
 """
 import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
-from data_query import dirdata, dirdatacsv
-csvs = dirdatacsv()
-xlsxs = dirdata()
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+os.chdir(current_dir)
+sys.path.append(parent_dir)
+
+from data_query import dirdata
+from settings import model_settings
 import pandas as pd
 import numpy as np
-from settings import model_settings
+
 ms = model_settings()
 settings = ms.import_model_settings()
+xlsxs = dirdata()
+data_files = xlsxs
 
 
 dividend_rate = settings[0]['dividend_rate']
@@ -39,10 +44,11 @@ pd.set_option('display.max_rows',None)
 pd.reset_option('display.max_columns')
 
 
-data_files = xlsxs
+
+
 raw_market_ts = pd.DataFrame()
 for file in data_files:
-    df = pd.read_excel(file)
+    df = pd.read_excel(file, engine= 'openpyxl')
     df.columns = df.loc[1]
     df = df.iloc[2:,:].reset_index(drop=True)
     callvols = df.set_index('Strike')
@@ -115,3 +121,5 @@ raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
 
 print(f'\nterm structure collected:\n\n{raw_ts}\n')
+
+os.chdir(parent_dir)

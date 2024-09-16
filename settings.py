@@ -27,10 +27,10 @@ class model_settings():
         
         self.lower_maturity     =    0
         self.upper_maturity     =    999999
-        self.s                  =    5400
+        self.s                  =    5630
 
         self.lower_moneyness    =    self.s * 0
-        self.upper_moneyness    =    self.s * 999
+        self.upper_moneyness    =    self.s * 999999
         self.security_settings  = (
             self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
@@ -95,7 +95,7 @@ class model_settings():
         implied_vols_matrix = ql.Matrix(len(strikes),len(maturities))
         for i, strike in enumerate(strikes):
             for j, maturity in enumerate(maturities):
-                implied_vols_matrix[i][j] = term_strucutre.loc[strike,maturity]
+                implied_vols_matrix[i][j] = float(term_strucutre.loc[strike,maturity])
         return implied_vols_matrix
     
     def make_black_var_surface(

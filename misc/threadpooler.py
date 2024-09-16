@@ -41,21 +41,9 @@ def threadpooler(functions):
     
     return results
 
-# Example usage
-def test_func_1():
-    return "Function 1 completed"
 
-def test_func_2():
-    raise ValueError("Function 2 error")
 
-def test_func_3():
-    return "Function 3 completed"
+# functions = [test_func_1, test_func_2, test_func_3]
+# results = threadpooler(functions)
 
-functions = [test_func_1, test_func_2, test_func_3]
-results = threadpooler(functions)
-
-for func_name, outcome in results.items():
-    if 'exception' in outcome:
-        print(f"{func_name} raised an exception: {outcome['exception']}")
-    else:
-        print(f"{func_name} returned: {outcome['result']}")
+        

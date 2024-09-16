@@ -5,14 +5,17 @@ Created on Sat Sep  7 13:03:40 2024
 
 """
 import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
+import sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('term_structure')
+sys.path.append('contract_details')
+sys.path.append('misc')
 import numpy as np
 import pandas as pd
 from itertools import product
-# pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', None)
 pd.reset_option('display.max_rows', None)
-pd.reset_option('display.max_columns', None)
+# pd.reset_option('display.max_columns', None)
 
 """
 
@@ -32,149 +35,98 @@ rather sparse information. naturally, there are many assumptions underpinning
 the implied volatility being a functional form of maturity, strike, and spot.
 
 """
-from pricing import BS_price_vanillas, noisyfier
+
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 security_settings = settings[0]['security_settings']
 s = security_settings[5]
+
 """
 # =============================================================================
                                                            generation procedure
+                                                           
+                                                           
+ computing Derman estimation of implied volatilities for available coefficients
+ 
 """
 
-from routine_Derman import derman_coefs
-from routine_collection import collect_directory_market_data
-contract_details = collect_directory_market_data()
+from derman_test import derman_coefs, atm_volvec
 
-"""
-                     generating features based on available Derman coefficients
-"""
-
-k = np.sort(contract_details['strike_price'].unique())
-t = np.sort(derman_coefs.columns)
-s = np.sort(contract_details['spot_price'].unique())
-features = pd.DataFrame(
-    product(
-        s,
-        k,
-        t,
-        ),
-    columns=[
-        "spot_price", 
-        "strike_price",
-        "days_to_maturity",
-              ])
-
-
-"""
-                                getting r and g pivots from current market_data
-"""
-
-details_indexed = contract_details.copy().set_index([
-    'strike_price','days_to_maturity'])
-rfrpivot = contract_details.pivot_table(
-    values = 'risk_free_rate', 
-    index = 'strike_price', 
-    columns = 'days_to_maturity'
-    )
-dvypivot = contract_details.pivot_table(
-    values = 'dividend_rate', 
-    index = 'strike_price', 
-    columns = 'days_to_maturity'
-    )
-
-rfrpivot
-
-rvec = np.zeros(rfrpivot.shape[1],dtype=float)
-rvec = pd.DataFrame(rvec)
-rvec.index = rfrpivot.columns
-for i, k in enumerate(rfrpivot.index):
-    for j, t in enumerate(rfrpivot.columns):
-        rvec.loc[t] = float(np.median(rfrpivot.loc[:, t].dropna().unique()))
-
-gvec = np.zeros(dvypivot.shape[1],dtype=float)
-gvec = pd.DataFrame(gvec)
-gvec.index = dvypivot.columns
-for i, k in enumerate(dvypivot.index):
-    for j, t in enumerate(dvypivot.columns):
-        gvec.loc[t] = float(np.median(dvypivot.loc[:, t].dropna().unique()))
-
-
-rates_dict = {'risk_free_rate':rvec,'dividend_rate':gvec}
-
-    # example
-t = (rvec.index[45],0)
-rt0 = rates_dict['risk_free_rate'].loc[t]
-print(f'\nexample rt0: {rt0}\n')
-
-
-
-"""
-mapping appropriate rates
-"""
-
-
-def map_rate(ratename):
-    for row in features.index:
-        try:
-            t = (int(features.iloc[row]['days_to_maturity']),0)
-            features.loc[row,ratename] = rates_dict[ratename].loc[t]
-        except Exception:
-            features.loc[row,ratename] = np.nan
-    return features
-        
-features = map_rate('risk_free_rate')
-features = map_rate('dividend_rate')
-
-"""
-                              computing Derman estimation of implied volatility
-"""
-from routine_Derman import atm_vols
-
-def compute_derman_volatility_row(row,atm_vols):
+def compute_derman_volatility_row(row,atm_volvec):
     try:
         t = int(row['days_to_maturity'])
         moneyness = row['spot_price'] - row['strike_price']
-        atm_value = atm_vols[t]
+        atm_value = atm_volvec[t]
         alpha = derman_coefs.loc['alpha',t]
         b = derman_coefs.loc['b',t]
         derman_vol = atm_value + alpha + b*moneyness
         row['volatility'] = derman_vol
         return row
     except Exception:
+        print(f'no coefficient for {t} day maturity')
         row['volatility'] = np.nan
         return row
 
+Kitm = np.linspace(int(s+1),int(s*1.5),int(1e3))
+Kotm = np.linspace(int(s*0.5), int(s-1),int(1e3))
+T = np.sort(derman_coefs.columns.unique().astype(int))
+def generate_features(K,T,s):
+    features = pd.DataFrame(
+        product(
+            [s],
+            K,
+            T,
+            ),
+        columns=[
+            "spot_price", 
+            "strike_price",
+            "days_to_maturity",
+                  ])
+    return features
+
+
+from threadpooler import threadpooler
+def generate_otm():
+    otmfeatures = generate_features(Kotm, T, s)
+    return otmfeatures
+def generate_itm():
+    itmfeatures = generate_features(Kitm, T, s)
+    return itmfeatures
+functions = [generate_otm, generate_itm]
+results = threadpooler(functions)
+itmfeatures = results['generate_itm']['outcome']
+otmfeatures = results['generate_otm']['outcome']
+
+features = pd.concat([itmfeatures,otmfeatures])
 features = features.apply(
-    lambda row: compute_derman_volatility_row(row, atm_vols), axis=1)
+    lambda row: compute_derman_volatility_row(row, atm_volvec), axis=1)
 
 features['w'] = 1 # flag for call/put
-features['calculation_date'] = contract_details['calculation_date']
-features['maturity_date'] = contract_details['maturity_date']
 features = features.dropna()
 
-print(f'\n{features}\n')
+dataset = features.copy()
+
+
 
 """
-                                                    generating synthetic dataset
+                                                  generating synthetic dataset
 """
 
+# from pricing import BS_price_vanillas,noisyfier
 
-option_prices = BS_price_vanillas(features)
+# option_prices = BS_price_vanillas(features)
 
-# from routine_calibration import heston_dicts
-# from pricing import heston_price_vanillas
-# # map appropriate parameters
-# option_prices = heston_price_vanillas(option_prices)
+# # from routine_calibration import heston_dicts
+# # from pricing import heston_price_vanillas
+# # # map appropriate parameters
+# # option_prices = heston_price_vanillas(option_prices)
 
-dataset = noisyfier(option_prices)
-dataset = dataset[~(
-    dataset['observed_price']<0.01*dataset['spot_price']
-    )]
-dataset = dataset.dropna()
-dataset
-print(f'\noriginal count: {contract_details.shape[0]}\n')
-print(f'\nnew count: {dataset.shape[0]}')
-print('\n')
-print(f'{dataset.describe()}\n')
+# dataset = noisyfier(option_prices)
+# # dataset = dataset[~(
+# #     dataset['observed_price']<0.01*dataset['spot_price']
+# #     )]
+# # dataset = dataset.dropna()
+# dataset
+
+print(f'\n{dataset}\n')

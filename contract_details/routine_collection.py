@@ -6,13 +6,19 @@ Created on Tue Sep 10 12:40:38 2024
 This class collects market data exported from the 'calls/puts' tab in OMON
 
 """
+
 import os
-pwd = str(os.path.dirname(os.path.abspath(__file__)))
-os.chdir(pwd)
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+os.chdir(current_dir)
+sys.path.append(parent_dir)
+
 import pandas as pd
 import numpy as np
 import QuantLib as ql
 from data_query import dirdata
+
 pd.set_option('display.max_columns', None)
 # pd.set_option('display.max_rows', None)
 pd.reset_option('display.max_rows')
@@ -25,31 +31,39 @@ class routine_collection():
         self.excluded_file = None
         
     def collect_call_data(self,file):
-        df = pd.read_excel(file)
-        df = df.dropna().reset_index(drop=True)
-        df.columns = df.loc[0]
-        df = df.iloc[1:,:]
-        df = df.astype(float)
-        splitter = int(len(df.columns)/2)
-        calls = df.iloc[:,:splitter]
-        calls = calls[~(calls['DyEx'] < 1)]
-        calls['spot_price'] = np.median(calls['Strike'])
-        calls['volatility'] = calls['IVM'] / 100
-        calls['dividend_rate'] = calls['DvYd'] / 100
-        calls['risk_free_rate'] = calls['Rate'] / 100
-        calls['days_to_maturity'] = calls['DyEx'].astype(int)
-        calls['strike_price'] = calls['Strike'].astype(int)
-        calls['w'] = 1
-        calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
-
-        print(f"\nfile: {file}")
-        print(calls['days_to_maturity'].unique())
-        print(f"maturities count: {len(calls['days_to_maturity'].unique())}")
-        print(calls['strike_price'].unique())
-        print(f"strikes count: {len(calls['strike_price'].unique())}")
-
-        return calls
-
+        try:
+            df = pd.read_excel(file)
+            df = df.dropna().reset_index(drop=True)
+            df.columns = df.loc[0]
+            df = df.iloc[1:,:]
+            df = df.astype(float)
+            splitter = int(len(df.columns)/2)
+            calls = df.iloc[:,:splitter]
+            calls = calls[~(calls['DyEx'] < 1)]
+            calls['spot_price'] = np.median(calls['Strike'])
+            calls['volatility'] = calls['IVM'] / 100
+            calls['dividend_rate'] = calls['DvYd'] / 100
+            calls['risk_free_rate'] = calls['Rate'] / 100
+            calls['days_to_maturity'] = calls['DyEx'].astype(int)
+            calls['strike_price'] = calls['Strike'].astype(int)
+            calls['w'] = 1
+            calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
+    
+            print(f"\nfile: {file}")
+            print(calls['days_to_maturity'].unique())
+            print(f"maturities count: {len(calls['days_to_maturity'].unique())}")
+            print(calls['strike_price'].unique())
+            print(f"strikes count: {len(calls['strike_price'].unique())}")
+    
+            return calls
+        except Exception:
+            error_tag = f'file error: {file}'
+            print('\n')
+            print("#"*len(error_tag))
+            print("-"*len(error_tag))
+            print(error_tag)
+            print("-"*len(error_tag))
+            print("#"*len(error_tag))
     def concat_option_data(self):
         market_data = pd.DataFrame()
         for file in self.data_files:
@@ -113,6 +127,9 @@ def collect_directory_market_data():
         print('\nmarket data collected')
         return contract_details
     except Exception:
-        for i in range(100):
-            print('ensure the correct files are in the working directory!')
+        print('ensure the correct files are in the working directory!')
         pass
+
+contract_details = collect_directory_market_data()
+contract_details
+
