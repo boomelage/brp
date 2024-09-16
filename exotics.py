@@ -3,7 +3,6 @@
 """
 Created on Tue Sep 10 17:55:16 2024
 
-@author: doomd
 """
 import QuantLib as ql
 
@@ -129,16 +128,10 @@ print(f'\n{features}\n')
 import numpy as np
 
 from sklearn.compose import ColumnTransformer
-from sklearn.datasets import fetch_openml
-from sklearn.feature_selection import SelectPercentile, chi2
-from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
-from mlop import mlop
 
 
 

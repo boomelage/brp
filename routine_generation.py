@@ -45,7 +45,6 @@ calculation_date = settings[0]['calculation_date']
 
 """
 # =============================================================================
-                                                           generation procedure
                                                            
                                                            
  computing Derman estimation of implied volatilities for available coefficients
@@ -67,11 +66,13 @@ def generate_features(K,T,s):
             [s],
             K,
             T,
+            [1,-1]
             ),
         columns=[
             "spot_price", 
             "strike_price",
             "days_to_maturity",
+            "w"
                   ])
     return features
 
@@ -83,15 +84,15 @@ def generate_itm():
     itmfeatures = generate_features(Kitm, T, s)
     return itmfeatures
 
-from threadpooler import threadpooler
-functions = [generate_otm, generate_itm]
-results = threadpooler(functions)
-itmfeatures = results['generate_itm']['outcome']
-otmfeatures = results['generate_otm']['outcome']
+# from threadpooler import threadpooler
+# functions = [generate_otm, generate_itm]
+# results = threadpooler(functions)
+# itmfeatures = results['generate_itm']['outcome']
+# otmfeatures = results['generate_otm']['outcome']
 
-
+itmfeatures = generate_itm()
+otmfeatures = generate_otm()
 features = pd.concat([itmfeatures,otmfeatures])
-features['w'] = 1 # flag for call/put
 features = features.dropna()
 
 
@@ -136,14 +137,13 @@ dataset = dataset.apply(ms.compute_maturity_date,axis=1)
 
 dataset = heston_price_vanillas(dataset)
 dataset = noisyfier(dataset)
-dataset['error'] = (dataset['heston_price']-dataset['black_scholes'])/dataset['heston_price']
+# dataset['error'] = (dataset['heston_price']-dataset['black_scholes'])/dataset['heston_price']
 
-dataset = dataset[~(
-    (dataset['observed_price']<0.01*dataset['spot_price'])&
-    (abs(dataset['error'])>0.01)
-    )]
-dataset = dataset.dropna()
+# dataset = dataset[~(dataset['observed_price']<0.01*dataset['spot_price'])]
 
+# dataset = dataset[~(abs(dataset['error'])>0.01)]
+
+dataset = dataset.dropna().reset_index(drop=True)
 
 dataset
 

@@ -12,7 +12,6 @@ sys.path.append('term_structure')
 
 from routine_ivol_collection import raw_ts
 # raw_ts.drop_duplicates().to_csv(f"{generic} raw_ts.csv")
-print(f'\n{raw_ts}')
 
 
 print('files processed')
