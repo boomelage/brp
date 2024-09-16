@@ -12,6 +12,7 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import numpy as np
 import pandas as pd
+import QuantLib as ql
 from itertools import product
 pd.set_option('display.max_columns',None)
 pd.reset_option('display.max_rows')
@@ -40,6 +41,7 @@ ms = model_settings()
 settings = ms.import_model_settings()
 security_settings = settings[0]['security_settings']
 s = security_settings[5]
+calculation_date = settings[0]['calculation_date']
 
 """
 # =============================================================================
@@ -49,12 +51,15 @@ s = security_settings[5]
  computing Derman estimation of implied volatilities for available coefficients
  
 """
+from import_files import raw_ts
+from derman_test import derman_coefs, atm_volvec
+from routine_calibration import heston_parameters
+from pricing import BS_price_vanillas, noisyfier, heston_price_vanillas
 
-from derman_test import derman_coefs, atm_volvec, derman_ts
-kUpper = int(max(derman_ts.index))
-kLower = int(min(derman_ts.index))
-Kitm = np.linspace(int(s*1.001),int(kUpper),50)
-Kotm = np.linspace(int(kLower), int(s*0.999),50)
+kUpper = int(max(raw_ts.index))
+kLower = int(min(raw_ts.index))
+Kitm = np.linspace(int(s*1.001),int(kUpper),100000)
+Kotm = np.linspace(int(kLower), int(s*0.999),100000)
 T = np.sort(derman_coefs.columns.unique().astype(int))
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -78,14 +83,12 @@ def generate_itm():
     itmfeatures = generate_features(Kitm, T, s)
     return itmfeatures
 
-# from threadpooler import threadpooler
-# functions = [generate_otm, generate_itm]
-# results = threadpooler(functions)
-# itmfeatures = results['generate_itm']['outcome']
-# otmfeatures = results['generate_otm']['outcome']
+from threadpooler import threadpooler
+functions = [generate_otm, generate_itm]
+results = threadpooler(functions)
+itmfeatures = results['generate_itm']['outcome']
+otmfeatures = results['generate_otm']['outcome']
 
-itmfeatures = generate_itm()
-otmfeatures = generate_otm()
 
 features = pd.concat([itmfeatures,otmfeatures])
 features['w'] = 1 # flag for call/put
@@ -93,7 +96,7 @@ features = features.dropna()
 
 
 features['risk_free_rate'] = 0.05
-features['dividend_rate'] = 0.05
+features['dividend_rate'] = 0.00
 
 def compute_derman_volatility_row(row):
     s = row['spot_price']  # Assuming s is spot_price (not defined in your function, but seems to be required)
@@ -107,28 +110,41 @@ def compute_derman_volatility_row(row):
     return row
 
 features = features.apply(compute_derman_volatility_row, axis=1)
-features = features[~(features['volatility']<0)]
+features = features[~(features['volatility']<0)].reset_index(drop=True)
 
 """
                                                   generating synthetic dataset
 """
-
 dataset = features.copy()
-# from pricing import BS_price_vanillas,noisyfier
 
-# option_prices = BS_price_vanillas(features)
 
-# # from routine_calibration import heston_dicts
-# # from pricing import heston_price_vanillas
-# # # map appropriate parameters
-# # option_prices = heston_price_vanillas(option_prices)
+def map_heston_param(dataset):
+    dataset['theta'] = dataset['days_to_maturity'].map(heston_parameters['theta'])
+    dataset['kappa'] = dataset['days_to_maturity'].map(heston_parameters['kappa'])
+    dataset['sigma'] = dataset['days_to_maturity'].map(heston_parameters['sigma'])
+    dataset['rho'] = dataset['days_to_maturity'].map(heston_parameters['rho'])
+    dataset['v0'] = dataset['days_to_maturity'].map(heston_parameters['v0'])
+    return dataset
 
-# dataset = noisyfier(option_prices)
-# # dataset = dataset[~(
-# #     dataset['observed_price']<0.01*dataset['spot_price']
-# #     )]
-# # dataset = dataset.dropna()
-# dataset
-# 
+dataset = map_heston_param(features).dropna()
 
-print('\ndata generated\n')
+dataset = BS_price_vanillas(dataset)
+
+dataset['calculation_date'] = calculation_date
+
+dataset = dataset.apply(ms.compute_maturity_date,axis=1)
+
+dataset = heston_price_vanillas(dataset)
+dataset = noisyfier(dataset)
+dataset['error'] = (dataset['heston_price']-dataset['black_scholes'])/dataset['heston_price']
+
+dataset = dataset[~(
+    (dataset['observed_price']<0.01*dataset['spot_price'])&
+    (abs(dataset['error'])>0.01)
+    )]
+dataset = dataset.dropna()
+
+
+dataset
+
+print(f'\ndata generated:\n{dataset}')

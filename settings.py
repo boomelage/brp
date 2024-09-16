@@ -15,8 +15,8 @@ class model_settings():
             day_count          =    ql.Actual365Fixed(), 
             calendar           =    ql.UnitedStates(m=1),
             calculation_date   =    ql.Date.todaysDate(),
-            dividend_rate      =    9999999,
-            risk_free_rate     =    9999999
+            dividend_rate      =    0,
+            risk_free_rate     =    0.05
             ):
         self.csvs               = dirdatacsv()
         self.day_count          = day_count
@@ -110,3 +110,28 @@ class model_settings():
         ts_object = ql.YieldTermStructureHandle(ql.FlatForward(
             self.calculation_date, rate, self.day_count))
         return ts_object
+
+    def compute_maturity_date(self,row):
+        row['maturity_date'] = self.calculation_date + ql.Period(
+            int(row['days_to_maturity']),ql.Days)
+        return row
+    
+    def heston_price_one_vanilla(
+            self,s,k,t,v0,kappa,theta,sigma,rho,w):
+        
+        call, put = ql.Option.Call, ql.Option.Put
+        option_type = call if w == 1 else put
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        exercise = ql.EuropeanExercise(t)
+        european_option = ql.VanillaOption(payoff, exercise)
+        flat_ts = self.make_ts_object(self.risk_free_rate)
+        dividend_ts = self.make_ts_object(self.dividend_rate)
+        heston_process = ql.HestonProcess(
+            flat_ts,dividend_ts, 
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            v0, kappa, theta, sigma, rho)
+        engine = ql.AnalyticHestonEngine(
+            ql.HestonModel(heston_process), 0.01, 1000)
+        european_option.setPricingEngine(engine)
+        h_price_vanilla = european_option.NPV()
+        return h_price_vanilla

@@ -43,9 +43,6 @@ pd.set_option('display.max_rows',None)
 # pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
 
-
-
-
 raw_market_ts = pd.DataFrame()
 for file in data_files:
     df = pd.read_excel(file, engine= 'openpyxl')
