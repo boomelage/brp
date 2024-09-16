@@ -38,20 +38,19 @@ start_time = time.time()
 
 S = [s]
 
-heston_dicts = np.empty(len(S),dtype=object)
 
 for s_idx, s in enumerate(S):
-    
     ts_df = derman_ts
     K = ts_df.index
     T = ts_df.columns
     
-    heston_np_s = np.zeros((6,len(T)),dtype=float)
+    heston_np_s = np.zeros((len(T),6),dtype=float)
     heston_df_s = pd.DataFrame(heston_np_s)
-    df_s_name = str(f"S = {int(s)}")
-    heston_df_s[df_s_name] = ['v0','kappa','theta','rho','sigma','error']
-    heston_df_s = heston_df_s.set_index(df_s_name)
-    heston_df_s.columns = T
+    df_tag = str(f"s = {int(s)}")
+    heston_df_s[df_tag] = T
+    heston_df_s = heston_df_s.set_index(df_tag)
+    heston_df_s.columns = ['v0','kappa','theta','rho','sigma','error']
+
     
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     derK = np.sort(ts_df.index).astype(float)
@@ -114,53 +113,24 @@ for s_idx, s in enumerate(S):
             avg += abs(err)
             
         avg = avg*100.0/len(heston_helpers)
-        heston_df_s.loc['theta',t] = theta
-        heston_df_s.loc['kappa',t] = kappa
-        heston_df_s.loc['sigma',t] = sigma
-        heston_df_s.loc['rho',t] = rho
-        heston_df_s.loc['v0',t] = v0
-        heston_df_s.loc['error',t] = avg/100
+        heston_df_s.loc[t,'theta'] = theta
+        heston_df_s.loc[t,'kappa'] = kappa
+        heston_df_s.loc[t,'sigma'] = sigma
+        heston_df_s.loc[t,'rho'] = rho
+        heston_df_s.loc[t,'v0'] = v0
+        heston_df_s.loc[t,'error'] = avg/100
         
-        heston_params = {
-            'theta':theta, 
-            'kappa':kappa, 
-            'sigma':sigma, 
-            'rho':rho, 
-            'v0':v0,
-            'error': (avg/100,f"{int(t)}D")
-            }
-        sets_for_maturities[t_idx] = heston_params
         
         print("-"*40)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
-        print(f"for {int(t)} day maturity\n")
-        for key, value in heston_params.items():
-            print(f'{key}: {value}')
-
+        print(f"for {int(t)} day maturity")
         print("-"*40)
 
-    heston_dicts[s_idx] = sets_for_maturities
 
 end_time = time.time()
 runtime = int(end_time-start_time)
 
+heston_parameters = heston_df_s[~(heston_df_s['error']>0.05)]
 
-print('\nmaturities under \n1% abs error:')
-tolerance = 0.01
-for i, s in enumerate(heston_dicts):
-    for j, t in enumerate(s):
-        error = t['error']
-        if error[0] < tolerance:
-            print("-"*15)
-            print(f'error: {round(error[0]*100,4)}%')
-            print(f"maturity: {error[1]}")
-            print("-"*15)
-        else:
-            pass
-
-
-mask = heston_df_s.loc['error', :] < tolerance
-heston_df = heston_df_s.loc[:, mask]
-
-print(f"\n{heston_df}")
+print(f"\n{heston_parameters}")
 

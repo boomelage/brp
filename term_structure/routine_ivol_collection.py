@@ -92,9 +92,7 @@ df_melted_dyex = pd.melt(raw_market_ts,
                          value_name='DyEx')
 df_combined = pd.concat(
     [df_melted[['Strike', 'IVM']], df_melted_dyex['DyEx']], axis=1)
-# Step 2: Drop rows where DyEx or IVM is NaN
 df_combined = df_combined.dropna()
-# Step 3: Set Strike and DyEx as the MultiIndex
 df_indexed = df_combined.set_index(['Strike', 'DyEx'])
 df_indexed = df_indexed.sort_index()
 df_indexed

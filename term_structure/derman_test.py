@@ -89,10 +89,11 @@ plot_derman_fit(derman_test_ts, raw_test_ts)
 
 """
 creating vol surface
+
 """
 
 upper_moneyness = s*1.5
-lower_moneyness = s*0.5
+lower_moneyness = s*0.85
 
 n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
@@ -112,13 +113,13 @@ expiration_dates = ms.compute_ql_maturity_dates(T)
 implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
-from plot_surface import plot_volatility_surface
 
 
 """
 plotting vol surface
-"""
 
+"""
+from plot_surface import plot_volatility_surface
 fig = plot_volatility_surface(black_var_surface, K, T)
 
 

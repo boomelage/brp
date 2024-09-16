@@ -27,10 +27,8 @@ s = security_settings[5]
 
 from derman_test import derman_coefs, atm_volvec
 
-
-
 T = np.sort(derman_coefs.columns.unique().astype(int))
-K = np.linspace(s*0.5,s*1.5,20)
+K = np.linspace(s*0.9,s*1.1,70)
 def generate_features(K,T,s):
     features = pd.DataFrame(
         product(

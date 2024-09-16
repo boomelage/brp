@@ -54,11 +54,11 @@ dividend_ts = ms.make_ts_object(dividend_rate)
 grouped = dataset.groupby(by='days_to_maturity')
 T = dataset['days_to_maturity'].unique()
 
-heston_parameters_np = np.zeros((len(T),6),dtype=object)
-heston_parameters = pd.DataFrame(heston_parameters_np)
-heston_parameters[f's = {int(s)}'] = T.astype(int)
-heston_parameters = heston_parameters.set_index(f's = {int(s)}')
-heston_parameters.columns = ['theta', 'kappa', 'sigma', 'rho', 'v0', 'error']
+heston_parameters_alt_np = np.zeros((len(T),6),dtype=object)
+heston_parameters_alt = pd.DataFrame(heston_parameters_alt_np)
+heston_parameters_alt[f's = {int(s)}'] = T.astype(int)
+heston_parameters_alt = heston_parameters_alt.set_index(f's = {int(s)}')
+heston_parameters_alt.columns = ['theta', 'kappa', 'sigma', 'rho', 'v0', 'error']
 
 
 for t_idx, t in enumerate(T):
@@ -116,21 +116,20 @@ for t_idx, t in enumerate(T):
         
     avg = avg*100/len(heston_helpers)
     
-    heston_parameters.loc[t,'theta'] = theta
-    heston_parameters.loc[t,'kappa'] = kappa
-    heston_parameters.loc[t,'sigma'] = sigma
-    heston_parameters.loc[t,'rho'] = rho
-    heston_parameters.loc[t,'v0'] = v0
-    heston_parameters.loc[t,'error'] = avg/100
+    heston_parameters_alt.loc[t,'theta'] = theta
+    heston_parameters_alt.loc[t,'kappa'] = kappa
+    heston_parameters_alt.loc[t,'sigma'] = sigma
+    heston_parameters_alt.loc[t,'rho'] = rho
+    heston_parameters_alt.loc[t,'v0'] = v0
+    heston_parameters_alt.loc[t,'error'] = avg/100
     
-    error_string = "Total Average Abs Error (%%) : %5.3f" % (avg)
-    print("-"*len(error_string))
-    print(error_string)
+    print("-"*40)
+    print("Total Average Abs Error (%%) : %5.3f" % (avg))
     print(f"for {int(t)} day maturity")
-    print("-"*len(error_string))
+    print("-"*40)
 
-heston_parameters = heston_parameters[~(heston_parameters['error']>5)]
-print(f"\n{heston_parameters}")
+heston_parameters_alt = heston_parameters_alt[~(heston_parameters_alt['error']>5)]
+print(f"\n{heston_parameters_alt}")
 
 
 end_time = time.time()
