@@ -50,7 +50,6 @@ for t in T:
     derman_coefs.loc['alpha',t] = alpha
     derman_coefs.loc['b',t] = b
 
-
 """
 surface maker
 
@@ -82,17 +81,19 @@ testing approximation fit
 
 K_test = raw_ts.index
 derman_test_ts = make_derman_surface(K = K_test)
+
 raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
 from plot_derman import plot_derman_fit
 plot_derman_fit(derman_test_ts, raw_test_ts)
 
 
 """
-plotting vol surface
+creating vol surface
 """
 
 upper_moneyness = s*1.5
 lower_moneyness = s*0.5
+
 n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
 
@@ -107,10 +108,18 @@ T = T[(
 )]
 
 expiration_dates = ms.compute_ql_maturity_dates(T)
+
 implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
 from plot_surface import plot_volatility_surface
 
 
+"""
+plotting vol surface
+"""
+
 fig = plot_volatility_surface(black_var_surface, K, T)
+
+
+

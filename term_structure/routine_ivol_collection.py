@@ -78,7 +78,6 @@ for col in raw_market_ts.columns:
 raw_market_ts.columns = ts_columns
 
 
-
 # Step 1: Reshape the DataFrame using pd.melt
 df_melted = pd.melt(raw_market_ts, 
                     id_vars=['Strike'], 
@@ -114,9 +113,9 @@ for i, k in enumerate(Ks):
         
 raw_ts_df = pd.DataFrame(raw_ts_np)
 raw_ts_df.columns = Ts
-raw_ts_df = raw_ts_df.set_index(Ks)
+raw_ts = raw_ts_df.set_index(Ks)
 
-raw_ts = raw_ts_df.dropna(how = 'all', axis = 0)
+raw_ts = raw_ts.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
 

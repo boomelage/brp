@@ -13,9 +13,8 @@ sys.path.append('misc')
 import numpy as np
 import pandas as pd
 from itertools import product
-pd.set_option('display.max_columns', None)
-pd.reset_option('display.max_rows', None)
-# pd.reset_option('display.max_columns', None)
+pd.set_option('display.max_columns',None)
+pd.reset_option('display.max_rows')
 
 """
 
@@ -51,25 +50,11 @@ s = security_settings[5]
  
 """
 
-from derman_test import derman_coefs, atm_volvec
-
-def compute_derman_volatility_row(row,atm_volvec):
-    try:
-        t = int(row['days_to_maturity'])
-        moneyness = row['spot_price'] - row['strike_price']
-        atm_value = atm_volvec[t]
-        alpha = derman_coefs.loc['alpha',t]
-        b = derman_coefs.loc['b',t]
-        derman_vol = atm_value + alpha + b*moneyness
-        row['volatility'] = derman_vol
-        return row
-    except Exception:
-        print(f'no coefficient for {t} day maturity')
-        row['volatility'] = np.nan
-        return row
-
-Kitm = np.linspace(int(s+1),int(s*1.5),int(1e3))
-Kotm = np.linspace(int(s*0.5), int(s-1),int(1e3))
+from derman_test import derman_coefs, atm_volvec, derman_ts
+kUpper = int(max(derman_ts.index))
+kLower = int(min(derman_ts.index))
+Kitm = np.linspace(int(s*1.001),int(kUpper),50)
+Kotm = np.linspace(int(kLower), int(s*0.999),50)
 T = np.sort(derman_coefs.columns.unique().astype(int))
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -86,33 +71,49 @@ def generate_features(K,T,s):
     return features
 
 
-from threadpooler import threadpooler
 def generate_otm():
     otmfeatures = generate_features(Kotm, T, s)
     return otmfeatures
 def generate_itm():
     itmfeatures = generate_features(Kitm, T, s)
     return itmfeatures
-functions = [generate_otm, generate_itm]
-results = threadpooler(functions)
-itmfeatures = results['generate_itm']['outcome']
-otmfeatures = results['generate_otm']['outcome']
+
+# from threadpooler import threadpooler
+# functions = [generate_otm, generate_itm]
+# results = threadpooler(functions)
+# itmfeatures = results['generate_itm']['outcome']
+# otmfeatures = results['generate_otm']['outcome']
+
+itmfeatures = generate_itm()
+otmfeatures = generate_otm()
 
 features = pd.concat([itmfeatures,otmfeatures])
-features = features.apply(
-    lambda row: compute_derman_volatility_row(row, atm_volvec), axis=1)
-
 features['w'] = 1 # flag for call/put
 features = features.dropna()
 
-dataset = features.copy()
 
+features['risk_free_rate'] = 0.05
+features['dividend_rate'] = 0.05
 
+def compute_derman_volatility_row(row):
+    s = row['spot_price']  # Assuming s is spot_price (not defined in your function, but seems to be required)
+    k = row['strike_price']  # Accessing strike_price directly
+    t = row['days_to_maturity']  # Accessing days_to_maturity directly
+    moneyness = s - k  # Calculate moneyness
+    atm_value = atm_volvec[t]  # Look up ATM volatility for the given maturity
+    b = derman_coefs.loc['b', t]  # Look up the coefficient for t
+    volatility = atm_value + b * moneyness  # Compute volatility
+    row['volatility'] = volatility
+    return row
+
+features = features.apply(compute_derman_volatility_row, axis=1)
+features = features[~(features['volatility']<0)]
 
 """
                                                   generating synthetic dataset
 """
 
+dataset = features.copy()
 # from pricing import BS_price_vanillas,noisyfier
 
 # option_prices = BS_price_vanillas(features)
@@ -128,5 +129,6 @@ dataset = features.copy()
 # #     )]
 # # dataset = dataset.dropna()
 # dataset
+# 
 
-print(f'\n{dataset}\n')
+print('\ndata generated\n')

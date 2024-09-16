@@ -2,10 +2,6 @@
 """
 Created on Fri Sep 13 21:45:51 2024
 
-
-from plot_derman import plot_derman_fit
-plot_derman_fit()
-
 """
 def clear_all():
     globals_ = globals().copy()
@@ -24,6 +20,8 @@ import time
 import QuantLib as ql
 import numpy as np
 import pandas as pd
+
+
 
 from settings import model_settings
 ms = model_settings()
@@ -111,7 +109,7 @@ for s_idx, s in enumerate(S):
         
         for i in range(min(len(heston_helpers), len(K))):
             opt = heston_helpers[i]
-            err = (opt.modelValue() / opt.marketValue() - 1.0)
+            err = (opt.modelValue() / max(opt.marketValue(),0.001) - 1.0)
             
             avg += abs(err)
             
@@ -165,3 +163,4 @@ mask = heston_df_s.loc['error', :] < tolerance
 heston_df = heston_df_s.loc[:, mask]
 
 print(f"\n{heston_df}")
+
