@@ -13,16 +13,14 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import numpy as np
 import pandas as pd
-import QuantLib as ql
 from itertools import product
 pd.set_option('display.max_columns',None)
 # pd.set_option('display.max_rows',None)
 pd.reset_option('display.max_rows')
 
 
-from derman_test import derman_coefs, atm_volvec
-from pricing import BS_price_vanillas, noisyfier, heston_price_vanillas
-from routine_calibration_makret import all_heston_parameters
+from pricing import noisyfier
+from routine_calibration_market import all_heston_parameters
 S = all_heston_parameters['spot_price'].unique()
 
 
@@ -42,13 +40,11 @@ def generate_features(K,T,s):
             [s],
             K,
             T,
-            [1,-1]
             ),
         columns=[
             "spot_price", 
             "strike_price",
             "days_to_maturity",
-            "w"
                   ])
     return features
 

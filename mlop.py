@@ -7,7 +7,7 @@ Created on Mon Sep  2 16:24:36 2024
 
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPRegressor
+from sklearn.neural_network import MLPRegressor, RandomForestRegressor
 from sklearn.pipeline import Pipeline
 import pandas as pd
 import numpy as np
@@ -143,6 +143,19 @@ class mlop:
         print(f"Deep Neural Network estimated in {str(dnn_runtime)} seconds!")
         return dnn_fit, dnn_runtime
     
+    def run_rf(self):
+        rf_model = RandomForestRegressor(
+        n_estimators=self.rf_n_estimators, 
+        min_samples_leaf=self.rf_min_samples_leaf, 
+        random_state=self.random_state)
+        
+        rf_pipeline = Pipeline([
+            ("preprocessor", self.preprocessor),
+            ("regressor", rf_model)])
+
+        rf_fit = rf_pipeline.fit(
+          train_data.drop(columns=["observed_price"]), 
+          train_data.get("observed_price"))
 # =============================================================================
                                                                 # Model Testing
                                                                 

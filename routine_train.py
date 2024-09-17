@@ -32,14 +32,18 @@ feature_set = [
     # 'dividend_rate', 
     # 'risk_free_rate',
     'days_to_maturity', 
-    'strike_price'
-    
+    'strike_price',
+    'rho',
+    'sigma',
+    'theta',
+    'kappa',
+    'v0',
     ]
 
 model_scaler = [
     
     # RobustScaler(),
-    QuantileTransformer(),
+    # QuantileTransformer(),
     # MaxAbsScaler(),
     # MinMaxScaler(),
     # Normalizer(),
@@ -54,7 +58,7 @@ model_scaler = [
 
 transformers=[
     ("transformation_1",model_scaler[0],feature_set),
-    ("transformation_2", model_scaler[1],feature_set)
+    # ("transformation_2", model_scaler[1],feature_set)
     ]     
 
 random_state = None
@@ -64,9 +68,9 @@ test_size = 0.20
 max_iter = 10000
 activation_function = [        
     # 'identity',
-    # 'logistic',
+    'logistic',
     # 'tanh',
-    'relu',
+    # 'relu',
     ]
 hidden_layer_sizes=(10, 10, 10)
 solver= [
@@ -94,6 +98,8 @@ print(start_tag_format)
 
 # from routine_generation import dataset
 from routine_generation_market import dataset
+
+print(f'training on {dataset.shape[0]} combinations')
 
 # =============================================================================
 model_scaler1 = model_scaler[0]
@@ -149,22 +155,22 @@ model_fit, model_runtime = mlop.run_nnet(
     preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
     activation_function, max_iter, random_state)
 
-model_name = f"{hidden_layer_sizes} Deep Neural Network "\
-f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
-ml_settings = (
-    f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
-    f"\nScaler: {scaler1name}{scaler2name}"
-    f"\nActivation function: {activation_function}"
-    f"\nMaximum iterations: {max_iter}"
-    f"\nHidden Layer Sizes: {hidden_layer_sizes}"
-    f"\nSolver: {solver}"
-    f"\nLearning Rate: {learning_rate}"
-    f"\nAlpha: {alpha}\n")
-print(ml_settings)
-model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
-                                        hidden_layer_sizes, solver, alpha, 
-                                        learning_rate, model_name,
-                                        activation_function,max_iter)
+# model_name = f"{hidden_layer_sizes} Deep Neural Network "\
+# f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"
+# ml_settings = (
+#     f"\n{datetime.fromtimestamp(time.time())}\n\nSelected Parameters:\n"
+#     f"\nScaler: {scaler1name}{scaler2name}"
+#     f"\nActivation function: {activation_function}"
+#     f"\nMaximum iterations: {max_iter}"
+#     f"\nHidden Layer Sizes: {hidden_layer_sizes}"
+#     f"\nSolver: {solver}"
+#     f"\nLearning Rate: {learning_rate}"
+#     f"\nAlpha: {alpha}\n")
+# print(ml_settings)
+# model_fit, model_runtime = mlop.run_dnn(preprocessor, train_X, train_y, 
+#                                         hidden_layer_sizes, solver, alpha, 
+#                                         learning_rate, model_name,
+#                                         activation_function,max_iter)
 
 # =============================================================================
                                                                 # Model Testing

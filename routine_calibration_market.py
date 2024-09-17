@@ -161,7 +161,7 @@ for s_idx, s in enumerate(Svec):
         [all_heston_parameters,heston_parameters])
 
 all_heston_parameters = all_heston_parameters[~(
-    all_heston_parameters['error']>0.0999999999)]
+    all_heston_parameters['error']>0.00999999999)]
 all_heston_parameters = all_heston_parameters.sort_values(
     'error').reset_index(drop=True)
 
