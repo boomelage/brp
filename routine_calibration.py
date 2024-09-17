@@ -14,8 +14,6 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.append('term_structure')
-
-
 import time
 import QuantLib as ql
 import numpy as np
@@ -32,15 +30,17 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-from no_interpolation_test import trimmed_market_ts
+# from no_interpolation_test import trimmed_market_ts
+# ts_df = trimmed_market_ts
 
+from derman_test import derman_ts
+ts_df = derman_ts
 start_time = time.time()
 
 S = [s]
 
 
 for s_idx, s in enumerate(S):
-    ts_df = trimmed_market_ts
     K = ts_df.index
     T = ts_df.columns
     
@@ -138,6 +138,6 @@ end_time = time.time()
 runtime = int(end_time-start_time)
 heston_parameters = heston_df_s.copy()
 # heston_parameters = heston_df_s[~(heston_df_s['error']>0.05)]
-
+pd.set_option("display.max_columns",None)
 print(f"\n{heston_parameters}")
 
