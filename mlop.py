@@ -7,10 +7,17 @@ Created on Mon Sep  2 16:24:36 2024
 
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPRegressor, RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
+    MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
+        SplineTransformer, PolynomialFeatures, KernelCenterer, \
+            QuantileTransformer
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, facet_wrap, labs, theme
 from time import time
 import matplotlib.pyplot as plt
@@ -20,52 +27,73 @@ class mlop:
     '''
     Machine Learning Option Pricing with sklearn
     
-    Parameters:
-        model_scaler1
-        random_state
-        activation_function
-        max_iter
-        test_size
-        rf_n_estimators
-        rf_min_samples_leaf
-        target_name
-        security_tag
-        feature_set
-        user_dataset
     '''
-    def __init__(self,
-                 random_state,
-                 max_iter,
-                 test_size,
-                 hidden_layer_sizes,
-                 solver,
-                 alpha,
-                 learning_rate,
-                 rf_n_estimators,
-                 rf_min_samples_leaf,
-                 target_name,
-                 security_tag,
-                 feature_set,
-                 user_dataset,
-                 transformers,
-                 model_scaler1,
-                 model_scaler2):
-        self.random_state = random_state
-        self.max_iter = max_iter
-        self.hidden_layer_sizes = hidden_layer_sizes
-        self.solver = solver
-        self.alpha = alpha
-        self.learning_rate = learning_rate
-        self.test_size = test_size
-        self.rf_n_estimators = rf_n_estimators
-        self.rf_min_samples_leaf = rf_min_samples_leaf
-        self.target_name = target_name
-        self.security_tag = security_tag
-        self.feature_set = feature_set
+    def __init__(self,user_dataset):
+        self.random_state = 42
+        self.max_iter = 1000
+        self.hidden_layer_sizes = (10,10,10)
+        self.solver = [
+                    # "lbfgs",
+                    "sgd",
+                    # "adam"
+                    ]
+        self.alpha = 0.0001
+        self.learning_rate = [
+            
+            'adaptive',
+            # 'constant'
+            
+            ]
+        self.test_size = 0.10
+        
+        
+        self.rf_n_estimators = 100
+        self.rf_min_samples_leaf = 2000
+        
+        
+        self.target_name = 'observed_price'
+        self.security_tag = 'vanilla options'
+        self.activation_function = [  
+            
+            # 'identity',
+            'logistic',
+            # 'tanh',
+            # 'relu',
+            
+            ]
+        
+        self.feature_set = [
+            
+            'spot_price', 
+            # 'dividend_rate', 
+            # 'risk_free_rate',
+            'days_to_maturity', 
+            'strike_price',
+            'rho',
+            'sigma',
+            'theta',
+            'kappa',
+            'v0',
+            
+            ]
         self.user_dataset = user_dataset
-        self.transformers = transformers
-        self.model_scaler1 = model_scaler1
-        self.model_scaler2 = model_scaler2
+        self.transformers = [
+            ("scale",StandardScaler(),self.feature_set),
+            # ("scale", QuantileTransformer(),self.feature_set)
+            ]    
+        self.model_scaler = StandardScaler()
+        self.preprocessor = None
+        self.train_X = None
+        self.train_data = None
+        self.train_X = None
+        self.train_y = None
+        self.test_date = None
+        self.test_X = None
+        self.test_y = None
+        self.activation_function = self.activation_function[0]
+        self.learning_rate = self.learning_rate[0]
+        self.solver = self.solver[0]
+
 # =============================================================================
                                                                 # Preprocessing
 
@@ -86,23 +114,19 @@ class mlop:
             
     def preprocess(self):
         preprocessor = ColumnTransformer(transformers=self.transformers)
-        print(f"Data Processed with the {str(self.model_scaler1)[:-2]}"
-              f"{str(self.model_scaler2)}")
         return preprocessor
+    
 # =============================================================================
                                                              # Model Estimation
 
-    def run_nnet(
-            self, preprocessor, train_X, train_y, model_name, solver, 
-            hidden_layer_sizes, activation_function, max_iter, random_state):
-        print(model_name)
+    def run_nnet(self, preprocessor, train_X, train_y):
         nnet_start = time()
         nnet_model = MLPRegressor(
-            hidden_layer_sizes=hidden_layer_sizes[0],
-            activation=activation_function, 
-            solver=solver, 
-            max_iter=max_iter,
-            random_state=random_state
+            hidden_layer_sizes=self.hidden_layer_sizes,
+            activation=self.activation_function, 
+            solver=self.solver, 
+            max_iter=self.max_iter,
+            random_state=self.random_state
             )
             
         nnet_pipeline = Pipeline([
@@ -113,22 +137,17 @@ class mlop:
         model_fit = nnet_pipeline.fit(train_X, train_y)
         nnet_end = time()
         nnet_runtime = int(nnet_end - nnet_start)
-        print(f"Single Layer Network estimated in {str(nnet_runtime)} "
-              "seconds!")
         return model_fit, nnet_runtime
     
-    def run_dnn(self, preprocessor, train_X, train_y, hidden_layer_sizes,
-                solver, alpha, learning_rate, model_name, activation_function, 
-                max_iter):
-        print(f"{str(model_name)} ({activation_function} activation)")
+    def run_dnn(self, preprocessor,train_X,train_y):
         dnn_start = time()
         deepnnet_model = MLPRegressor(
-            hidden_layer_sizes= hidden_layer_sizes,
-            activation = activation_function, 
-            solver= solver,
-            alpha = alpha,
-            learning_rate = learning_rate,
-            max_iter = max_iter, 
+            hidden_layer_sizes= self.hidden_layer_sizes,
+            activation = self.activation_function, 
+            solver= self.solver,
+            alpha = self.alpha,
+            learning_rate = self.learning_rate,
+            max_iter = self.max_iter, 
             random_state = self.random_state
             )
                                   
@@ -143,27 +162,37 @@ class mlop:
         print(f"Deep Neural Network estimated in {str(dnn_runtime)} seconds!")
         return dnn_fit, dnn_runtime
     
-    def run_rf(self):
+    def run_rf(self, preprocessor, train_X, train_y):
         rf_model = RandomForestRegressor(
         n_estimators=self.rf_n_estimators, 
         min_samples_leaf=self.rf_min_samples_leaf, 
         random_state=self.random_state)
         
         rf_pipeline = Pipeline([
-            ("preprocessor", self.preprocessor),
+            ("preprocessor", preprocessor),
             ("regressor", rf_model)])
+        rf_fit = rf_pipeline.fit(train_X, train_y)
+        return rf_fit
+    
+    def run_lm(self, train_X, train_y):
+        
+        lm_pipeline = Pipeline([
+            ("polynomial", PolynomialFeatures(degree=5, 
+                                    interaction_only=False, 
+                                    include_bias=True)),
+            ("scaler", self.model_scaler),
+            ("regressor", Lasso(alpha=0.01))])
 
-        rf_fit = rf_pipeline.fit(
-          train_data.drop(columns=["observed_price"]), 
-          train_data.get("observed_price"))
+        lm_fit = lm_pipeline.fit(train_X, train_y)
+        return lm_fit
+
 # =============================================================================
                                                                 # Model Testing
                                                                 
-    def compute_predictive_performance(self, test_data, test_X, model_fit, 
-                                       model_name):
+    def compute_predictive_performance(self,test_data,test_X,model_fit):
         predictive_performance = (pd.concat(
             [test_data.reset_index(drop=True), 
-             pd.DataFrame({model_name: model_fit.predict(test_X)})
+             pd.DataFrame({"model_name": model_fit.predict(test_X)})
             ], axis=1)
           .melt(
             id_vars=self.user_dataset.columns,
@@ -180,16 +209,15 @@ class mlop:
         predictive_performance = predictive_performance.iloc[:,1:]
         return predictive_performance
     
-    def plot_model_performance(self, predictive_performance, runtime, 
-                               security_tag):
+    def plot_model_performance(self,predictive_performance):
         predictive_performance_plot = (
             ggplot(predictive_performance, 
                    aes(x="moneyness", y="pricing_error")) + 
             geom_point(alpha=0.05) + 
             facet_wrap("Model") + 
             labs(x="Percentage moneyness (S/K)", 
-                 y=f"Absolute percentage error ({runtime} second runtime)",
-                 title=f'Prediction error for {security_tag} under Heston') + 
+                 y="Absolute percentage error (addruntimeyo second runtime)",
+                 title=f'Prediction error for {self.security_tag} under Heston') + 
             theme(legend_position="")
             )
         predictive_performance_plot.show()

@@ -30,8 +30,8 @@ df = byS.loc[s,:]
 
 
 kUpper = s*1.2
-kLower = s*0.8
-K = np.linspace(kLower,kUpper,10000)
+kLower = s*0.5
+K = np.linspace(kLower,kUpper,int(1e5))
 T = np.sort(all_heston_parameters['days_to_maturity'].unique().astype(int))
 
 def generate_features(K,T,s):
@@ -66,4 +66,4 @@ dataset = features.merge(parameters[columns_to_map],
                            how='left')
 dataset = noisyfier(dataset)
 
-dataset
+dataset = dataset.dropna()
