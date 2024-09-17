@@ -22,6 +22,8 @@ def black_scholes_price(row):
     d1 = (np.log(S/K)+(r+sigma**2/2)*T/365)/(sigma*np.sqrt(T/365))
     d2 = d1-sigma*np.sqrt(T/365)
     price = w*(S*norm.cdf(w*d1)-K*np.exp(-r*T/365)*norm.cdf(w*d2))
+    
+    
     return price
 
 def heston_price_vanilla_row(row):
