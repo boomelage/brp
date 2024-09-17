@@ -22,7 +22,7 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.append('term_structure')
-
+sys.path.append('contract_details')
 
 
 import QuantLib as ql
@@ -39,9 +39,11 @@ calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
 
-from calibration_generation import features
+# from calibration_generation import features
+# dataset = features.copy()
 
-dataset = features.copy()
+from routine_collection import contract_details
+dataset = contract_details.copy()
 
 s = float(dataset['spot_price'].unique()[0])
 S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
@@ -54,11 +56,14 @@ dividend_ts = ms.make_ts_object(dividend_rate)
 grouped = dataset.groupby(by='days_to_maturity')
 T = dataset['days_to_maturity'].unique()
 
-heston_parameters_alt_np = np.zeros((len(T),6),dtype=object)
-heston_parameters_alt = pd.DataFrame(heston_parameters_alt_np)
-heston_parameters_alt[f's = {int(s)}'] = T.astype(int)
-heston_parameters_alt = heston_parameters_alt.set_index(f's = {int(s)}')
-heston_parameters_alt.columns = ['theta', 'kappa', 'sigma', 'rho', 'v0', 'error']
+heston_np_s = np.zeros((len(T),10),dtype=float)
+heston_df_s = pd.DataFrame(heston_np_s)
+df_tag = str(f"s = {int(s)}")
+heston_df_s[df_tag] = T
+heston_df_s = heston_df_s.set_index(df_tag)
+heston_df_s.columns = [
+    'spot_price', 'volatility',
+    'v0','kappa','theta','rho','sigma','error','black_scholes','heston',]
 
 
 for t_idx, t in enumerate(T):
@@ -114,23 +119,32 @@ for t_idx, t in enumerate(T):
         err = (opt.modelValue() / max(opt.marketValue(),0.0000000000001)) - 1.0
         avg += abs(err)
         
-    avg = avg*100/len(heston_helpers)
-    
-    heston_parameters_alt.loc[t,'theta'] = theta
-    heston_parameters_alt.loc[t,'kappa'] = kappa
-    heston_parameters_alt.loc[t,'sigma'] = sigma
-    heston_parameters_alt.loc[t,'rho'] = rho
-    heston_parameters_alt.loc[t,'v0'] = v0
-    heston_parameters_alt.loc[t,'error'] = avg/100
+        avg += abs(err)
+    avg = avg*100.0/len(heston_helpers)
+        
+    heston_df_s.loc[t,'spot_price'] = s
+    heston_df_s.loc[t,'volatility'] = sigma
+    heston_df_s.loc[t,'theta'] = theta
+    heston_df_s.loc[t,'kappa'] = kappa
+    heston_df_s.loc[t,'sigma'] = sigma
+    heston_df_s.loc[t,'rho'] = rho
+    heston_df_s.loc[t,'v0'] = v0
+    heston_df_s.loc[t,'error'] = avg/100
+    heston_df_s.loc[t,'black_scholes'] = opt.marketValue()
+    heston_df_s.loc[t,'heston'] = opt.modelValue()
     
     print("-"*40)
     print("Total Average Abs Error (%%) : %5.3f" % (avg))
     print(f"for {int(t)} day maturity")
     print("-"*40)
 
-heston_parameters_alt = heston_parameters_alt[~(heston_parameters_alt['error']>5)]
-print(f"\n{heston_parameters_alt}")
 
+heston_parameters = heston_df_s.copy()
+pd.set_option('display.max_rows',None)
+heston_parameters = heston_parameters[~(heston_parameters['error']>0.05)]
+heston_parameters = heston_parameters.sort_values('error')
+print(f"\n{heston_parameters}")
+pd.reset_option('display.max_rows')
 
 end_time = time.time()
 end_datetime = datetime.fromtimestamp(end_time)

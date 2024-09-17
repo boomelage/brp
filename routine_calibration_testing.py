@@ -27,7 +27,8 @@ def compute_bs_ivols(T):
     ivol_col = np.empty(len(T),dtype=float)
     for i, t in enumerate(T):
         t = t
-        S = heston_parameters.loc[t,'spot_price']
+        # S = heston_parameters.loc[t,'spot_price']
+        S = 5630
         sigma = heston_parameters.loc[t,'volatility']
         r = 0.05
         K = 5615

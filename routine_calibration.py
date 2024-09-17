@@ -115,8 +115,8 @@ for s_idx, s in enumerate(S):
             err = (opt.modelValue() / max(opt.marketValue(),0.001) - 1.0)
             
             avg += abs(err)
-            
         avg = avg*100.0/len(heston_helpers)
+        
         heston_df_s.loc[t,'spot_price'] = s
         heston_df_s.loc[t,'volatility'] = sigma
         heston_df_s.loc[t,'theta'] = theta
