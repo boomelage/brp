@@ -32,7 +32,7 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-from derman_test import derman_ts
+from no_interpolation_test import trimmed_market_ts
 
 start_time = time.time()
 
@@ -40,7 +40,7 @@ S = [s]
 
 
 for s_idx, s in enumerate(S):
-    ts_df = derman_ts
+    ts_df = trimmed_market_ts
     K = ts_df.index
     T = ts_df.columns
     

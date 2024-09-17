@@ -16,5 +16,5 @@ K = complete_market_ts.iloc[:,1].dropna().index
 trimmed_market_ts = complete_market_ts.loc[K,:]
 
 
- = trimmed_market_ts.dropna(how='any',axis=1)
+trimmed_market_ts = trimmed_market_ts.dropna(how='any',axis=1)
 
