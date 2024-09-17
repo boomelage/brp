@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
@@ -29,7 +30,9 @@ class mlop:
     
     '''
     def __init__(self,user_dataset):
+        
         self.random_state = 42
+        self.test_size = 0.10
         self.max_iter = 1000
         self.hidden_layer_sizes = (10,10,10)
         self.solver = [
@@ -37,6 +40,7 @@ class mlop:
                     "sgd",
                     # "adam"
                     ]
+        
         self.alpha = 0.0001
         self.learning_rate = [
             
@@ -44,52 +48,64 @@ class mlop:
             # 'constant'
             
             ]
-        self.test_size = 0.10
         
-        
-        self.rf_n_estimators = 100
-        self.rf_min_samples_leaf = 2000
-        
-        
-        self.target_name = 'observed_price'
-        self.security_tag = 'vanilla options'
         self.activation_function = [  
             
             # 'identity',
-            'logistic',
-            # 'tanh',
+            # 'logistic',
+            'tanh',
             # 'relu',
             
             ]
         
+
+        
+        self.rf_n_estimators = 50
+        self.rf_min_samples_leaf = 2000
+        
+        self.target_name = 'observed_price'
         self.feature_set = [
             
             'spot_price', 
-            # 'dividend_rate', 
-            # 'risk_free_rate',
+            'strike_price', 
             'days_to_maturity', 
-            'strike_price',
-            'rho',
-            'sigma',
-            'theta',
-            'kappa',
+            'w',
             'v0',
+            'kappa', 
+            'theta', 
+            'rho', 
+            'sigma', 
             
             ]
-        self.user_dataset = user_dataset
+        
+        self.numerical_features = [
+            
+            'spot_price', 
+            'strike_price', 
+            'days_to_maturity', 
+            'v0',
+            'kappa', 
+            'theta', 
+            'rho', 
+            'sigma', 
+            
+            ]
+        
+        self.categorical_features = [
+            
+            'w'
+            
+            ]
+        
         self.transformers = [
-            ("scale",StandardScaler(),self.feature_set),
-            # ("scale", QuantileTransformer(),self.feature_set)
-            ]    
+            ("scale1",StandardScaler(),self.numerical_features),
+            ("scale2",QuantileTransformer(),self.numerical_features),
+            ("encode", OneHotEncoder(),self.categorical_features)
+            ]   
+        
+        self.security_tag = 'vanilla options'
+        self.user_dataset = user_dataset
         self.model_scaler = StandardScaler()
-        self.preprocessor = None
-        self.train_X = None
-        self.train_data = None
-        self.train_X = None
-        self.train_y = None
-        self.test_date = None
-        self.test_X = None
-        self.test_y = None
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
@@ -155,11 +171,9 @@ class mlop:
             ("preprocessor", preprocessor),
             ("regressor", deepnnet_model)
         ])
-
         dnn_fit = deepnnet_pipeline.fit(train_X,train_y)
         dnn_end = time()
         dnn_runtime = int(dnn_end - dnn_start)
-        print(f"Deep Neural Network estimated in {str(dnn_runtime)} seconds!")
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
@@ -175,7 +189,6 @@ class mlop:
         return rf_fit
     
     def run_lm(self, train_X, train_y):
-        
         lm_pipeline = Pipeline([
             ("polynomial", PolynomialFeatures(degree=5, 
                                     interaction_only=False, 
@@ -208,6 +221,7 @@ class mlop:
         )
         predictive_performance = predictive_performance.iloc[:,1:]
         return predictive_performance
+    
     
     def plot_model_performance(self,predictive_performance):
         predictive_performance_plot = (

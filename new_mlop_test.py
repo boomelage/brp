@@ -11,10 +11,10 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 
 
-from routine_generation_market import dataset
-dataset
+
+from routine_generation_market import features_dataset
 from mlop import mlop
-mlop = mlop(user_dataset=dataset)
+mlop = mlop(user_dataset=features_dataset)
 
 
 train_data, train_X, train_y, \
@@ -26,18 +26,13 @@ preprocessor = mlop.preprocess()
 
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
-
 # model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
-
 
 model_fit = mlop.run_rf(preprocessor,train_X,train_y)
 
-
 # model_fit = mlop.run_lm(train_X,train_y)
-
 
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit)
 
 predictive_performance_plot = mlop.plot_model_performance(df)
-
 
