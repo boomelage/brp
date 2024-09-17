@@ -44,17 +44,21 @@ for s_idx, s in enumerate(S):
     K = ts_df.index
     T = ts_df.columns
     
-    heston_np_s = np.zeros((len(T),6),dtype=float)
+    heston_np_s = np.zeros((len(T),10),dtype=float)
     heston_df_s = pd.DataFrame(heston_np_s)
     df_tag = str(f"s = {int(s)}")
     heston_df_s[df_tag] = T
     heston_df_s = heston_df_s.set_index(df_tag)
-    heston_df_s.columns = ['v0','kappa','theta','rho','sigma','error']
+    heston_df_s.columns = [
+        'spot_price', 'volatility',
+        'v0','kappa','theta','rho','sigma','error','black_scholes','heston',]
 
     
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     derK = np.sort(ts_df.index).astype(float)
     derT = np.sort(ts_df.columns).astype(float)
+    
+    
     implied_vols_matrix = ms.make_implied_vols_matrix(derK, derT, ts_df)
     expiration_dates = ms.compute_ql_maturity_dates(derT)
     black_var_surface = ms.make_black_var_surface(
@@ -72,11 +76,11 @@ for s_idx, s in enumerate(S):
             flat_ts,                
             dividend_ts,            
             S_handle,               
-            v0,                # Initial volatility
-            kappa,             # Mean reversion speed
-            theta,             # Long-run variance (volatility squared)
-            sigma,             # Volatility of the volatility
-            rho                # Correlation between asset and volatility
+            v0,                
+            kappa,             
+            theta,             
+            sigma,            
+            rho                
         )
         
         model = ql.HestonModel(process)
@@ -113,13 +117,16 @@ for s_idx, s in enumerate(S):
             avg += abs(err)
             
         avg = avg*100.0/len(heston_helpers)
+        heston_df_s.loc[t,'spot_price'] = s
+        heston_df_s.loc[t,'volatility'] = sigma
         heston_df_s.loc[t,'theta'] = theta
         heston_df_s.loc[t,'kappa'] = kappa
         heston_df_s.loc[t,'sigma'] = sigma
         heston_df_s.loc[t,'rho'] = rho
         heston_df_s.loc[t,'v0'] = v0
         heston_df_s.loc[t,'error'] = avg/100
-        
+        heston_df_s.loc[t,'black_scholes'] = opt.marketValue()
+        heston_df_s.loc[t,'heston'] = opt.modelValue()
         
         print("-"*40)
         print("Total Average Abs Error (%%) : %5.3f" % (avg))
@@ -129,8 +136,8 @@ for s_idx, s in enumerate(S):
 
 end_time = time.time()
 runtime = int(end_time-start_time)
-
-heston_parameters = heston_df_s[~(heston_df_s['error']>0.05)]
+heston_parameters = heston_df_s.copy()
+# heston_parameters = heston_df_s[~(heston_df_s['error']>0.05)]
 
 print(f"\n{heston_parameters}")
 
