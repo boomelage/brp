@@ -29,8 +29,8 @@ security_tag = 'vanilla options'
 feature_set = [
     
     'spot_price', 
-    'dividend_rate', 
-    'risk_free_rate',
+    # 'dividend_rate', 
+    # 'risk_free_rate',
     'days_to_maturity', 
     'strike_price'
     
@@ -39,7 +39,7 @@ feature_set = [
 model_scaler = [
     
     # RobustScaler(),
-    # QuantileTransformer(),
+    QuantileTransformer(),
     # MaxAbsScaler(),
     # MinMaxScaler(),
     # Normalizer(),
@@ -54,7 +54,7 @@ model_scaler = [
 
 transformers=[
     ("transformation_1",model_scaler[0],feature_set),
-    # ("transformation_2", model_scaler[1],feature_set)
+    ("transformation_2", model_scaler[1],feature_set)
     ]     
 
 random_state = None
@@ -65,10 +65,10 @@ max_iter = 10000
 activation_function = [        
     # 'identity',
     # 'logistic',
-    'tanh',
-    # 'relu',
+    # 'tanh',
+    'relu',
     ]
-hidden_layer_sizes=(100, 100, 100)
+hidden_layer_sizes=(10, 10, 10)
 solver= [
             # "lbfgs",
             "sgd",
@@ -92,7 +92,8 @@ print(start_tag_format)
 # =============================================================================
                                                                  # loading data
 
-from routine_generation import dataset
+# from routine_generation import dataset
+from routine_generation_market import dataset
 
 # =============================================================================
 model_scaler1 = model_scaler[0]
@@ -139,14 +140,14 @@ preprocessor = mlop.preprocess()
 # =============================================================================
                                                               # Model Selection
 
-# activation_function_tag = f'\nActivation function: {activation_function}'
-# print(activation_function_tag)
-# max_iter_tag = f'\nMaximum iterations: {max_iter}'
-# print(max_iter_tag)      
-# model_name = f"Single Layer Network ({scaler1name}{scaler2name})"                           
-# model_fit, model_runtime = mlop.run_nnet(
-#     preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
-#     activation_function, max_iter, random_state)
+activation_function_tag = f'\nActivation function: {activation_function}'
+print(activation_function_tag)
+max_iter_tag = f'\nMaximum iterations: {max_iter}'
+print(max_iter_tag)      
+model_name = f"Single Layer Network ({scaler1name}{scaler2name})"                           
+model_fit, model_runtime = mlop.run_nnet(
+    preprocessor, train_X, train_y, model_name, solver, hidden_layer_sizes, 
+    activation_function, max_iter, random_state)
 
 model_name = f"{hidden_layer_sizes} Deep Neural Network "\
 f"({activation_function}) ({scaler1name}{scaler2name}) ({solver})"

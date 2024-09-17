@@ -152,5 +152,4 @@ dataset = dataset[~(dataset['observed_price']<0.01*dataset['spot_price'])]
 dataset = dataset[~(abs(dataset['error'])>0.01)]
 dataset = dataset.dropna().reset_index(drop=True)
 
-pd.reset_option('display.max_rows')
 print(f'\ndata generated:\n{dataset}')
