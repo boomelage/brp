@@ -20,6 +20,7 @@ from datetime import datetime
 from mlop import mlop
 import matplotlib.pyplot as plt
 
+
 # =============================================================================
                                                              # General Settings
                                                           
@@ -64,8 +65,8 @@ max_iter = 10000
 activation_function = [        
     # 'identity',
     # 'logistic',
-    # 'tanh',
-    'relu',
+    'tanh',
+    # 'relu',
     ]
 hidden_layer_sizes=(100, 100, 100)
 solver= [

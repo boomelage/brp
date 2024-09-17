@@ -17,6 +17,7 @@ from itertools import product
 pd.set_option('display.max_columns',None)
 pd.reset_option('display.max_rows')
 
+
 """
 
 below is a routine which can take a dataset of spots, strikes, atm implied
@@ -59,7 +60,11 @@ kUpper = int(max(raw_ts.index))
 kLower = int(min(raw_ts.index))
 Kitm = np.linspace(int(s*1.001),int(kUpper),100000)
 Kotm = np.linspace(int(kLower), int(s*0.999),100000)
-T = np.sort(derman_coefs.columns.unique().astype(int))
+
+
+# T = np.sort(derman_coefs.columns.unique().astype(int))
+T = np.sort(heston_parameters.index)
+
 def generate_features(K,T,s):
     features = pd.DataFrame(
         product(
@@ -126,25 +131,26 @@ def map_heston_param(dataset):
     dataset['rho'] = dataset['days_to_maturity'].map(heston_parameters['rho'])
     dataset['v0'] = dataset['days_to_maturity'].map(heston_parameters['v0'])
     return dataset
-
 dataset = map_heston_param(features).dropna()
+
+
 
 dataset = BS_price_vanillas(dataset)
 
-dataset['calculation_date'] = calculation_date
 
-dataset = dataset.apply(ms.compute_maturity_date,axis=1)
 
-dataset = heston_price_vanillas(dataset)
+
+
+# dataset['calculation_date'] = calculation_date
+# dataset = dataset.apply(ms.compute_maturity_date,axis=1)
+# dataset = heston_price_vanillas(dataset)
+
+
 dataset = noisyfier(dataset)
-# dataset['error'] = (dataset['heston_price']-dataset['black_scholes'])/dataset['heston_price']
-
-# dataset = dataset[~(dataset['observed_price']<0.01*dataset['spot_price'])]
-
-# dataset = dataset[~(abs(dataset['error'])>0.01)]
-
+dataset['error'] = (dataset['heston_price']-dataset['black_scholes'])/dataset['heston_price']
+dataset = dataset[~(dataset['observed_price']<0.01*dataset['spot_price'])]
+dataset = dataset[~(abs(dataset['error'])>0.01)]
 dataset = dataset.dropna().reset_index(drop=True)
 
-dataset
-
+pd.reset_option('display.max_rows')
 print(f'\ndata generated:\n{dataset}')
