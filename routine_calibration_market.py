@@ -45,11 +45,6 @@ def calibrate_heston_model(contracts):
     
         S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
         
-        risk_free_rate = 0.055
-        dividend_rate = 0.01312
-        flat_ts = ms.make_ts_object(risk_free_rate)
-        dividend_ts = ms.make_ts_object(dividend_rate)
-        
         grouped = dataset.groupby(by='days_to_maturity')
         T = dataset['days_to_maturity'].unique()
         
@@ -64,7 +59,13 @@ def calibrate_heston_model(contracts):
         
         
         for t_idx, t in enumerate(T):
+            
             calibration_dataset = grouped.get_group(t).reset_index(drop=True)
+            
+            risk_free_rate = float(calibration_dataset['risk_free_rate'].loc[0])
+            dividend_rate = float(calibration_dataset['dividend_rate'].loc[0])
+            flat_ts = ms.make_ts_object(risk_free_rate)
+            dividend_ts = ms.make_ts_object(dividend_rate)
             
             v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
             process = ql.HestonProcess(
@@ -86,10 +87,6 @@ def calibrate_heston_model(contracts):
             p = ql.Period(dt, ql.Days)
             
             for row_idx, row in calibration_dataset.iterrows():
-                risk_free_rate = row['risk_free_rate']
-                dividend_rate = row['dividend_rate']
-                flat_ts = ms.make_ts_object(risk_free_rate)
-                dividend_ts = ms.make_ts_object(dividend_rate)
                 volatility = row['volatility']
                 k = row['strike_price']
                 helper = ql.HestonModelHelper(
@@ -114,12 +111,13 @@ def calibrate_heston_model(contracts):
             for i in range(min(len(heston_helpers), calibration_dataset.shape[0])):
                 opt = heston_helpers[i]
                 err = (opt.modelValue() / max(
-                    opt.marketValue(),0.0000000000001)) - 1.0
+                            opt.marketValue(),0.0000000000001)
+                                                                ) - 1.
                 avg += abs(err)
                 
                 avg += abs(err)
             avg = avg*100.0/len(heston_helpers)
-                
+
             heston_df_s.loc[t,'spot_price'] = s
             heston_df_s.loc[t,'volatility'] = volatility
             heston_df_s.loc[t,'sigma'] = sigma
@@ -141,8 +139,6 @@ def calibrate_heston_model(contracts):
         
         heston_parameters = heston_df_s.copy()
         pd.set_option('display.max_rows',None)
-        # heston_parameters = heston_parameters[~(heston_parameters['error']>0.05)]
-        heston_parameters = heston_parameters.sort_values('error')
         print(f"\n{heston_parameters}")
     
         
@@ -155,7 +151,7 @@ def calibrate_heston_model(contracts):
             [all_heston_parameters,heston_parameters])
     
     all_heston_parameters = all_heston_parameters[~(
-        all_heston_parameters['error']>0.00999999999)]
+        all_heston_parameters['error']>0.02999999999)]
     all_heston_parameters = all_heston_parameters.sort_values(
         'error').reset_index(drop=True)
     

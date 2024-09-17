@@ -19,10 +19,12 @@ pd.set_option('display.max_columns',None)
 pd.reset_option('display.max_rows')
 
 from routine_collection import contract_details
-from pricing import noisyfier
+from pricing import noisyfier, heston_price_vanillas
 from routine_calibration_market import \
     put_heston_parameters, call_heston_parameters
-
+from settings import model_settings
+ms = model_settings()
+settings = ms.import_model_settings()
 
 def generate_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -49,7 +51,7 @@ def map_features(df,parameters,flag):
     for s_idx, s in enumerate(S):
         
         dfs = byS.get_group(s)
-        K = np.linspace(s*0.5,s*1.5,int(1e5))
+        K = np.linspace(s*0.5,s*1.5,int(1e4))
         T = np.sort(np.array(dfs['days_to_maturity'].unique()))
         
         initial_features = generate_features(K,T,s,flag)
@@ -57,12 +59,25 @@ def map_features(df,parameters,flag):
         
         feature_params = parameters.copy().set_index(
             ['spot_price','days_to_maturity'])
-        columns_to_map = ['v0', 'kappa', 'theta','rho',
-            'sigma','black_scholes','heston']
+        
+        columns_to_map = [
+            
+            'volatility',
+            
+            'v0', 'kappa', 'theta','rho','sigma',
+            
+            # 'black_scholes',
+            
+            'heston'
+            
+            ]
+        
         mapped_features = option_features.merge(
             feature_params[columns_to_map], 
             left_on=['spot_price', 'days_to_maturity'], 
             right_index=True, how='left')
+        mapped_features = mapped_features.dropna()
+        
     return mapped_features
     
 calls = contract_details['calls']
@@ -76,4 +91,4 @@ mapped_puts = noisyfier(mapped_puts)
 features_dataset = pd.concat([mapped_calls,mapped_puts]).dropna(
     ).reset_index(drop=True)
 
-features_dataset 
+features_dataset

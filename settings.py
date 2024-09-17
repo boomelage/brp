@@ -11,17 +11,13 @@ import numpy as np
 from data_query import dirdatacsv
 class model_settings():
     
-    def __init__(self,
-            day_count          =    ql.Actual365Fixed(), 
-            calendar           =    ql.UnitedStates(m=1),
-            calculation_date   =    ql.Date.todaysDate(),
-            dividend_rate      =    0,
-            risk_free_rate     =    0.05
-            ):
-        self.csvs               = dirdatacsv()
-        self.day_count          = day_count
-        self.calendar           = calendar
-        self.calculation_date   = calculation_date
+    def __init__(self):
+        self.day_count          =    ql.Actual365Fixed()
+        self.calendar           =    ql.UnitedStates(m=1)
+        self.calculation_date   =    ql.Date.todaysDate()
+        self.dividend_rate      =    0.00
+        self.risk_free_rate     =    0.05
+        self.csvs               =    dirdatacsv()
         
         self.ticker             =    'SPX'
         
@@ -35,9 +31,7 @@ class model_settings():
             self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
             )
-        self.risk_free_rate = ql.QuoteHandle(ql.SimpleQuote(risk_free_rate))
-        self.dividend_rate = ql.QuoteHandle(ql.SimpleQuote(dividend_rate))
-        ql.Settings.instance().evaluationDate = calculation_date
+        ql.Settings.instance().evaluationDate = self.calculation_date
         
     def import_model_settings(self):
         dividend_rate = self.dividend_rate
@@ -108,24 +102,26 @@ class model_settings():
 
     def make_ts_object(self,rate):
         ts_object = ql.YieldTermStructureHandle(ql.FlatForward(
-            self.calculation_date, rate, self.day_count))
+            self.calculation_date, ql.QuoteHandle(ql.SimpleQuote(rate)), self.day_count))
         return ts_object
 
     def compute_maturity_date(self,row):
+        row['calculation_date'] = self.calculation_date
         row['maturity_date'] = self.calculation_date + ql.Period(
             int(row['days_to_maturity']),ql.Days)
         return row
     
     def heston_price_one_vanilla(
-            self,s,k,t,v0,kappa,theta,sigma,rho,w):
+            self,s,k,t,r,g,v0,kappa,theta,sigma,rho,w):
         
         call, put = ql.Option.Call, ql.Option.Put
-        option_type = call if w == 1 else put
+        option_type = call if w == 'call' else put
+        
         payoff = ql.PlainVanillaPayoff(option_type, k)
         exercise = ql.EuropeanExercise(t)
         european_option = ql.VanillaOption(payoff, exercise)
-        flat_ts = self.make_ts_object(self.risk_free_rate)
-        dividend_ts = self.make_ts_object(self.dividend_rate)
+        flat_ts = self.make_ts_object(r)
+        dividend_ts = self.make_ts_object(g)
         heston_process = ql.HestonProcess(
             flat_ts,dividend_ts, 
             ql.QuoteHandle(ql.SimpleQuote(s)), 
@@ -133,5 +129,40 @@ class model_settings():
         engine = ql.AnalyticHestonEngine(
             ql.HestonModel(heston_process), 0.01, 1000)
         european_option.setPricingEngine(engine)
-        h_price_vanilla = european_option.NPV()
-        return h_price_vanilla
+        h_price = european_option.NPV()
+        return h_price
+    
+    def heston_price_vanilla_row(self,row):
+        s = row['spot_price']
+        k = row['strike_price']
+        t = row['days_to_maturity']
+        r = row['risk_free_rate']
+        g = row['dividend_rate']
+        v0 = row['v0']
+        kappa = row['kappa']
+        theta = row['theta']
+        sigma = row['sigma']
+        rho = row['rho']
+        w = row['w']
+        
+        date = self.calculation_date + ql.Period(t,ql.Days)
+        call, put = ql.Option.Call, ql.Option.Put
+        option_type = call if w == 'call' else put
+        
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        exercise = ql.EuropeanExercise(date)
+        european_option = ql.VanillaOption(payoff, exercise)
+        flat_ts = self.make_ts_object(r)
+        dividend_ts = self.make_ts_object(g)
+        heston_process = ql.HestonProcess(
+            flat_ts,dividend_ts, 
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            v0, kappa, theta, sigma, rho)
+        engine = ql.AnalyticHestonEngine(
+            ql.HestonModel(heston_process), 0.01, 1000)
+        european_option.setPricingEngine(engine)
+        h_price = european_option.NPV()
+        row['heston'] = h_price
+        return row
+        
+        
