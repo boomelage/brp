@@ -67,7 +67,7 @@ def calibrate_heston_model(
             'dividend_rate','v0','kappa','theta','rho','sigma','error',
             'black_scholes','heston',]
         
-        
+        avg_t = 0.00
         for t_idx, t in enumerate(T):
             
             calibration_dataset = grouped.get_group(t).reset_index(drop=True)
@@ -145,8 +145,8 @@ def calibrate_heston_model(
             # tqdm.write("Total Average Abs Error (%%) : %5.3f" % (avg))
             # tqdm.write(f"for spot = {int(s)}, {int(t)} day maturity")
             # tqdm.write("-"*40)
-            
-            progress_bar.set_postfix({"averae error for t": f"{avg:.2f}%"})
+            avg_t += np.mean(heston_df_s['error'])
+            progress_bar.set_postfix({"AccumulatedAbsError": f"{avg_t:.2f}%"})
             progress_bar.update(1)
             
         
