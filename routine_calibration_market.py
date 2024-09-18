@@ -15,9 +15,11 @@ from datetime import datetime
 start_time = time.time()
 start_datetime = datetime.fromtimestamp(start_time)
 start_tag = start_datetime.strftime("%c")
-print(f"\n{start_tag}")
+# print(f"\n{start_tag}")
 import os
 import sys
+from tqdm import tqdm
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.append('term_structure')
@@ -36,6 +38,7 @@ calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
 
+
 def calibrate_heston_model(
         contracts, 
         pricing_error_tolerance = 0.02999999999
@@ -43,13 +46,16 @@ def calibrate_heston_model(
     dataset = contracts.copy()
     Svec = dataset['spot_price'].unique()
     all_heston_parameters = pd.DataFrame()
+    
     for s_idx, s in enumerate(Svec):
         
-        print(f"calibrating for spot = {int(s)}")
+
         
         S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
         grouped = dataset.groupby(by='days_to_maturity')
         T = dataset['days_to_maturity'].unique()
+        
+        progress_bar = tqdm(total=len(T), desc=f"calibrating spot = {int(s)}", unit="calibration",leave=True)
         
         heston_np_s = np.zeros((len(T),13),dtype=float)
         heston_df_s = pd.DataFrame(heston_np_s)
@@ -63,6 +69,7 @@ def calibrate_heston_model(
         
         
         for t_idx, t in enumerate(T):
+            
             calibration_dataset = grouped.get_group(t).reset_index(drop=True)
             
             risk_free_rate = float(calibration_dataset['risk_free_rate'].loc[0])
@@ -115,6 +122,7 @@ def calibrate_heston_model(
                 avg += abs(err)
                 
                 avg += abs(err)
+            
             avg = avg*100.0/len(heston_helpers)
 
             heston_df_s.loc[t,'spot_price'] = s
@@ -132,17 +140,24 @@ def calibrate_heston_model(
             heston_df_s.loc[t,'heston'] = opt.modelValue()
             heston_df_s.loc[t,'days_to_maturity']  = t
             
-            print("-"*40)
-            print("Total Average Abs Error (%%) : %5.3f" % (avg))
-            print(f"for spot = {int(s)}, {int(t)} day maturity")
-            print("-"*40)
-        
+            
+            # tqdm.write("-"*40)
+            # tqdm.write("Total Average Abs Error (%%) : %5.3f" % (avg))
+            # tqdm.write(f"for spot = {int(s)}, {int(t)} day maturity")
+            # tqdm.write("-"*40)
+            
+            progress_bar.set_postfix({"averae error for t": f"{avg:.2f}%"})
+            progress_bar.update(1)
+            
         
         heston_parameters = heston_df_s.copy()
-        end_time = time.time()
-        end_datetime = datetime.fromtimestamp(end_time)
-        end_tag = end_datetime.strftime("%c")
-        print(f"\n{end_tag}")
+        
+        progress_bar.close()
+        
+        # end_time = time.time()
+        # end_datetime = datetime.fromtimestamp(end_time)
+        # end_tag = end_datetime.strftime("%c")
+        # tqdm.write(f"\n{end_tag}")
         
         all_heston_parameters = pd.concat(
             [all_heston_parameters,heston_parameters])
@@ -151,27 +166,29 @@ def calibrate_heston_model(
         all_heston_parameters['error']>pricing_error_tolerance)]
     all_heston_parameters = all_heston_parameters.sort_values(
         'error').reset_index(drop=True)
-
-    # print(f'\n{all_heston_parameters}')
+    
+    
+    
+    # tqdm.write(f'\n{all_heston_parameters}')
     # runtime = end_time - start_time
-    # print(f"\ntotal time elapsed: {int(runtime)} seconds")
+    # tqdm.write(f"\ntotal time elapsed: {int(runtime)} seconds")
     
     return all_heston_parameters
 
 from routine_collection import contract_details  
 
-print('\n\ncalibrating calls...\n')
+# tqdm.write('\n\ncalibrating calls...\n')
 call_heston_parameters = calibrate_heston_model(contract_details['calls'])
 
-print('\n\ncalibrating puts...\n')
+# tqdm.write('\n\ncalibrating puts...\n')
 put_heston_parameters = calibrate_heston_model(contract_details['puts'])
 
-print(f"\nputs:\n{put_heston_parameters}")
-print(f"\ncalls:\n{call_heston_parameters}")
+# tqdm.write(f"\nputs:\n{put_heston_parameters}")
+# tqdm.write(f"\ncalls:\n{call_heston_parameters}")
 
 calibration_end = time.time()
 calibration_end_datetime = datetime.fromtimestamp(calibration_end)
 calibration_end_tag = calibration_end_datetime.strftime("%c")
-print(f"\n{calibration_end_datetime}")
+# print(f"\n{calibration_end_datetime}")
 runtime = calibration_end-start_time
-print(f"calibration runtime: {int(runtime)} seconds")
+# print(f"calibration runtime: {int(runtime)} seconds")
