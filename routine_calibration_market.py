@@ -55,7 +55,7 @@ def calibrate_heston_model(
         grouped = dataset.groupby(by='days_to_maturity')
         T = dataset['days_to_maturity'].unique()
         
-        progress_bar = tqdm(total=len(T), desc=f"calibrating spot = {int(s)}", unit="calibration",leave=True)
+        progress_bar = tqdm(total=len(T), desc=f"calibrating spot = {int(s)}", unit="calibrations",leave=True)
         
         heston_np_s = np.zeros((len(T),13),dtype=float)
         heston_df_s = pd.DataFrame(heston_np_s)
@@ -95,10 +95,13 @@ def calibrate_heston_model(
             date = calculation_date + ql.Period(int(t),ql.Days)
             dt = (date - calculation_date)
             p = ql.Period(dt, ql.Days)
+            print(f'\n{calibration_dataset}')
             
             for row_idx, row in calibration_dataset.iterrows():
                 volatility = row['volatility']
                 k = row['strike_price']
+                t = row['days_to_maturity']
+                
                 helper = ql.HestonModelHelper(
                     p, calendar, float(s), k, ql.QuoteHandle(ql.SimpleQuote(
                         volatility)), flat_ts, dividend_ts)
@@ -118,7 +121,7 @@ def calibrate_heston_model(
                 opt = heston_helpers[i]
                 err = (opt.modelValue() / max(
                             opt.marketValue(),0.0000000000001)
-                                                                ) - 1.
+                                                                ) - 1
                 avg += abs(err)
                 
                 avg += abs(err)
@@ -126,8 +129,8 @@ def calibrate_heston_model(
             avg = avg*100.0/len(heston_helpers)
 
             heston_df_s.loc[t,'spot_price'] = s
-            heston_df_s.loc[t,'dividend_rate'] = s
-            heston_df_s.loc[t,'risk_free_rate'] = s
+            heston_df_s.loc[t,'dividend_rate'] = dividend_rate
+            heston_df_s.loc[t,'risk_free_rate'] = risk_free_rate
             heston_df_s.loc[t,'volatility'] = volatility
             heston_df_s.loc[t,'sigma'] = sigma
             heston_df_s.loc[t,'theta'] = theta
@@ -138,8 +141,7 @@ def calibrate_heston_model(
             heston_df_s.loc[t,'error'] = avg/100
             heston_df_s.loc[t,'black_scholes'] = opt.marketValue()
             heston_df_s.loc[t,'heston'] = opt.modelValue()
-            heston_df_s.loc[t,'days_to_maturity']  = t
-            
+            heston_df_s.loc[t,'days_to_maturity']  = int(t)
             
             # tqdm.write("-"*40)
             # tqdm.write("Total Average Abs Error (%%) : %5.3f" % (avg))
@@ -148,16 +150,11 @@ def calibrate_heston_model(
             avg_t += np.mean(heston_df_s['error'])
             progress_bar.set_postfix({"AccumulatedAbsError": f"{avg_t:.2f}%"})
             progress_bar.update(1)
-            
         
         heston_parameters = heston_df_s.copy()
         
         progress_bar.close()
         
-        # end_time = time.time()
-        # end_datetime = datetime.fromtimestamp(end_time)
-        # end_tag = end_datetime.strftime("%c")
-        # tqdm.write(f"\n{end_tag}")
         
         all_heston_parameters = pd.concat(
             [all_heston_parameters,heston_parameters])
@@ -167,28 +164,40 @@ def calibrate_heston_model(
     all_heston_parameters = all_heston_parameters.sort_values(
         'error').reset_index(drop=True)
     
-    
-    
-    # tqdm.write(f'\n{all_heston_parameters}')
-    # runtime = end_time - start_time
-    # tqdm.write(f"\ntotal time elapsed: {int(runtime)} seconds")
-    
     return all_heston_parameters
 
+
+
 from routine_collection import contract_details  
+puts = contract_details['puts']
+puts['moneyness'] = \
+    puts['strike_price'] - puts['spot_price']
+puts = puts[puts['moneyness']<0]
 
-tqdm.write('#####CalibratingCalls#####')
-call_heston_parameters = calibrate_heston_model(contract_details['calls'])
 
-tqdm.write('#####CalibratingPuts#####')
-put_heston_parameters = calibrate_heston_model(contract_details['puts'])
+calls = contract_details['calls']
+calls['moneyness'] = \
+    calls['spot_price'] - calls['strike_price'] 
+calls = calls[calls['moneyness']<0]
 
-# tqdm.write(f"\nputs:\n{put_heston_parameters}")
-# tqdm.write(f"\ncalls:\n{call_heston_parameters}")
+features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
+features
 
-calibration_end = time.time()
-calibration_end_datetime = datetime.fromtimestamp(calibration_end)
-calibration_end_tag = calibration_end_datetime.strftime("%c")
-# print(f"\n{calibration_end_datetime}")
-runtime = calibration_end-start_time
+# tqdm.write('#####CalibratingCalls#####')
+# call_heston_parameters = calibrate_heston_model(contract_details['calls'])
+
+# tqdm.write('#####CalibratingPuts#####')
+# put_heston_parameters = calibrate_heston_model(contract_details['puts'])
+
+tqdm.write('#####Calibrating#####')
+params = calibrate_heston_model(features)
+
+# calibration_end = time.time()
+# calibration_end_datetime = datetime.fromtimestamp(calibration_end)
+# calibration_end_tag = calibration_end_datetime.strftime("%c")
+# runtime = calibration_end-start_time
+
+# print(f"\n\n#####calls#####\n{call_heston_parameters}")
+# print(f"\n#####puts#####\n{put_heston_parameters}")
+# print(f"\n{calibration_end_tag}")
 # print(f"calibration runtime: {int(runtime)} seconds")

@@ -30,39 +30,6 @@ class routine_collection():
         self.data_files = xlsxs
         self.market_data = pd.DataFrame()
         self.excluded_file = None
-        
-    def collect_call_data(self,file):
-        try:
-            df = pd.read_excel(file)
-            df = df.dropna().reset_index(drop=True)
-            df.columns = df.loc[0]
-            df = df.iloc[1:,:]
-            df = df.astype(float)
-            splitter = int(len(df.columns)/2)
-            calls = df.iloc[:,:splitter]
-            calls = calls[~(calls['DyEx'] < 1)]
-            calls['spot_price'] = np.median(calls['Strike'])
-            calls['volatility'] = calls['IVM'] / 100
-            calls['dividend_rate'] = calls['DvYd'] / 100
-            calls['risk_free_rate'] = calls['Rate'] / 100
-            calls['days_to_maturity'] = calls['DyEx'].astype(int)
-            calls['strike_price'] = calls['Strike'].astype(int)
-            calls['w'] = 1
-            calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
-            print(f"\nfile: {file}")
-            print(calls['days_to_maturity'].unique())
-            print(f"maturities count: {len(calls['days_to_maturity'].unique())}")
-            print(calls['strike_price'].unique())
-            print(f"strikes count: {len(calls['strike_price'].unique())}")
-            return calls
-        except Exception:
-            error_tag = f'file error: {file}'
-            print('\n')
-            print("#"*len(error_tag))
-            print("-"*len(error_tag))
-            print(error_tag)
-            print("-"*len(error_tag))
-            print("#"*len(error_tag))
 
     def collect_data(self,file):
         try:
@@ -75,10 +42,10 @@ class routine_collection():
             calls = df.iloc[:,:splitter]
             calls = calls[~(calls['DyEx'] < 1)]
             calls['spot_price'] = np.median(calls['Strike'])
+            calls['days_to_maturity'] = calls['DyEx'].astype(int)
             calls['volatility'] = calls['IVM'] / 100
             calls['dividend_rate'] = calls['DvYd'] / 100
             calls['risk_free_rate'] = calls['Rate'] / 100
-            calls['days_to_maturity'] = calls['DyEx'].astype(int)
             calls['strike_price'] = calls['Strike'].astype(int)
             calls['w'] = 'call'
             calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
@@ -90,10 +57,10 @@ class routine_collection():
             puts = df.iloc[:,splitter:]
             puts = puts[~(puts['DyEx'] < 1)]
             puts['spot_price'] = np.median(puts['Strike'])
+            puts['days_to_maturity'] = puts['DyEx'].astype(int)
             puts['volatility'] = puts['IVM'] / 100
             puts['dividend_rate'] = puts['DvYd'] / 100
             puts['risk_free_rate'] = puts['Rate'] / 100
-            puts['days_to_maturity'] = puts['DyEx'].astype(int)
             puts['strike_price'] = puts['Strike'].astype(int)
             puts['w'] = 'put'
             puts = puts.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])

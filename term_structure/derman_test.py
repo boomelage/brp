@@ -28,13 +28,17 @@ computing Derman coefficients
 
 from import_files import raw_ts
 
-atm_volvec = raw_ts.copy().loc[s].dropna()
+atm_volvec = raw_ts.loc[s].dropna()
+
+raw_ts = raw_ts.loc[:,atm_volvec.index].replace(0,np.nan)
+
 T = atm_volvec.index
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
 derman_coefs = pd.DataFrame(derman_coefs_np)
 derman_coefs['t days'] = ['alpha','b']
 derman_coefs = derman_coefs.set_index('t days')
 derman_coefs.columns = T
+
 for t in T:
     t = int(t)
     term_struct = raw_ts.copy()
@@ -114,13 +118,15 @@ implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
 
-
-"""
-plotting vol surface
-
-"""
-from plot_surface import plot_volatility_surface
-fig = plot_volatility_surface(black_var_surface, K, T)
-
+derman_ts
+# =============================================================================
+# """
+# plotting vol surface
+# 
+# """
+# from plot_surface import plot_volatility_surface
+# fig = plot_volatility_surface(black_var_surface, K, T)
+# 
+# =============================================================================
 
 

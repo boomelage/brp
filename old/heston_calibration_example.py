@@ -73,6 +73,7 @@ implied_vols = ql.Matrix(len(strikes), len(expiration_dates))
 for i in range(implied_vols.rows()):
     for j in range(implied_vols.columns()):
         implied_vols[i][j] = data[j][i]
+        
 black_var_surface = ql.BlackVarianceSurface(
     calculation_date, calendar,
     expiration_dates, strikes,
