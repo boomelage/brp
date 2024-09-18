@@ -51,7 +51,7 @@ def map_features(df,parameters,flag):
     for s_idx, s in enumerate(S):
         
         dfs = byS.get_group(s)
-        K = np.linspace(s*0.5,s*1.5,int(1e4))
+        K = np.linspace(s*0.5,s*1.5,int(1e1))
         T = np.sort(np.array(dfs['days_to_maturity'].unique()))
         
         initial_features = generate_features(K,T,s,flag)
@@ -66,9 +66,9 @@ def map_features(df,parameters,flag):
             
             'v0', 'kappa', 'theta','rho','sigma',
             
-            # 'black_scholes',
+            'black_scholes',
             
-            'heston'
+            # 'heston'
             
             ]
         
@@ -80,15 +80,21 @@ def map_features(df,parameters,flag):
         
     return mapped_features
     
+
+
 calls = contract_details['calls']
 mapped_calls = map_features(calls, call_heston_parameters,"call")
-mapped_calls = noisyfier(mapped_calls)
 
-puts = contract_details['puts']  
-mapped_puts = map_features(puts, put_heston_parameters,"put")
-mapped_puts = noisyfier(mapped_puts)
+mapped_calls
 
-features_dataset = pd.concat([mapped_calls,mapped_puts]).dropna(
-    ).reset_index(drop=True)
+# mapped_calls = noisyfier(mapped_calls)
 
-features_dataset
+# puts = contract_details['puts']  
+# mapped_puts = map_features(puts, put_heston_parameters,"put")
+# mapped_puts = noisyfier(mapped_puts)
+
+# features_dataset = pd.concat([mapped_calls,mapped_puts]).dropna(
+#     ).reset_index(drop=True)
+
+# print(f"\n{features_dataset}")
+# print(f"\n{features_dataset.describe().round(4)}") 

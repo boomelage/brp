@@ -2,7 +2,6 @@
 """
 Created on Mon Sep 16 19:47:34 2024
 
-@author: boomelage
 """
 
 def clear_all():
@@ -37,29 +36,33 @@ calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
 
-def calibrate_heston_model(contracts):
+def calibrate_heston_model(
+        contracts, 
+        pricing_error_tolerance = 0.02999999999
+        ):
     dataset = contracts.copy()
     Svec = dataset['spot_price'].unique()
     all_heston_parameters = pd.DataFrame()
     for s_idx, s in enumerate(Svec):
-    
-        S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
         
+        print(f"calibrating for spot = {int(s)}")
+        
+        S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
         grouped = dataset.groupby(by='days_to_maturity')
         T = dataset['days_to_maturity'].unique()
         
-        heston_np_s = np.zeros((len(T),11),dtype=float)
+        heston_np_s = np.zeros((len(T),13),dtype=float)
         heston_df_s = pd.DataFrame(heston_np_s)
         df_tag = str(f"s = {int(s)}")
         heston_df_s[df_tag] = T
         heston_df_s = heston_df_s.set_index(df_tag)
         heston_df_s.columns = [
-            'spot_price', 'volatility', 'days_to_maturity',
-            'v0','kappa','theta','rho','sigma','error','black_scholes','heston',]
+            'spot_price', 'volatility', 'days_to_maturity', 'risk_free_rate',
+            'dividend_rate','v0','kappa','theta','rho','sigma','error',
+            'black_scholes','heston',]
         
         
         for t_idx, t in enumerate(T):
-            
             calibration_dataset = grouped.get_group(t).reset_index(drop=True)
             
             risk_free_rate = float(calibration_dataset['risk_free_rate'].loc[0])
@@ -90,13 +93,8 @@ def calibrate_heston_model(contracts):
                 volatility = row['volatility']
                 k = row['strike_price']
                 helper = ql.HestonModelHelper(
-                    p,
-                    calendar,
-                    float(s),
-                    k,
-                    ql.QuoteHandle(ql.SimpleQuote(volatility)),
-                    flat_ts,
-                    dividend_ts)
+                    p, calendar, float(s), k, ql.QuoteHandle(ql.SimpleQuote(
+                        volatility)), flat_ts, dividend_ts)
                 helper.setPricingEngine(engine)
                 heston_helpers.append(helper)
             
@@ -108,7 +106,8 @@ def calibrate_heston_model(contracts):
             
             avg = 0.0
             
-            for i in range(min(len(heston_helpers), calibration_dataset.shape[0])):
+            for i in range(
+                    min(len(heston_helpers), calibration_dataset.shape[0])):
                 opt = heston_helpers[i]
                 err = (opt.modelValue() / max(
                             opt.marketValue(),0.0000000000001)
@@ -119,6 +118,8 @@ def calibrate_heston_model(contracts):
             avg = avg*100.0/len(heston_helpers)
 
             heston_df_s.loc[t,'spot_price'] = s
+            heston_df_s.loc[t,'dividend_rate'] = s
+            heston_df_s.loc[t,'risk_free_rate'] = s
             heston_df_s.loc[t,'volatility'] = volatility
             heston_df_s.loc[t,'sigma'] = sigma
             heston_df_s.loc[t,'theta'] = theta
@@ -133,40 +134,44 @@ def calibrate_heston_model(contracts):
             
             print("-"*40)
             print("Total Average Abs Error (%%) : %5.3f" % (avg))
-            print(f"for {int(t)} day maturity")
+            print(f"for spot = {int(s)}, {int(t)} day maturity")
             print("-"*40)
         
         
         heston_parameters = heston_df_s.copy()
-        pd.set_option('display.max_rows',None)
-        print(f"\n{heston_parameters}")
-    
-        
         end_time = time.time()
         end_datetime = datetime.fromtimestamp(end_time)
         end_tag = end_datetime.strftime("%c")
         print(f"\n{end_tag}")
-    
+        
         all_heston_parameters = pd.concat(
             [all_heston_parameters,heston_parameters])
-    
+        
     all_heston_parameters = all_heston_parameters[~(
-        all_heston_parameters['error']>0.02999999999)]
+        all_heston_parameters['error']>pricing_error_tolerance)]
     all_heston_parameters = all_heston_parameters.sort_values(
         'error').reset_index(drop=True)
+
+    # print(f'\n{all_heston_parameters}')
+    # runtime = end_time - start_time
+    # print(f"\ntotal time elapsed: {int(runtime)} seconds")
     
-    print(f'\n{all_heston_parameters}')
-    runtime = end_time - start_time
-    print(f"\ntotal time elapsed: {int(runtime)} seconds")
-    pd.reset_option('display.max_rows')
     return all_heston_parameters
-    
+
 from routine_collection import contract_details  
-put_heston_parameters = calibrate_heston_model(contract_details['puts'])
+
+print('\n\ncalibrating calls...\n')
 call_heston_parameters = calibrate_heston_model(contract_details['calls'])
 
-print(f"\nputs:\n{put_heston_parameters}")
+print('\n\ncalibrating puts...\n')
+put_heston_parameters = calibrate_heston_model(contract_details['puts'])
 
+print(f"\nputs:\n{put_heston_parameters}")
 print(f"\ncalls:\n{call_heston_parameters}")
 
-
+calibration_end = time.time()
+calibration_end_datetime = datetime.fromtimestamp(calibration_end)
+calibration_end_tag = calibration_end_datetime.strftime("%c")
+print(f"\n{calibration_end_datetime}")
+runtime = calibration_end-start_time
+print(f"calibration runtime: {int(runtime)} seconds")

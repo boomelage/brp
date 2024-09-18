@@ -49,13 +49,11 @@ class routine_collection():
             calls['strike_price'] = calls['Strike'].astype(int)
             calls['w'] = 1
             calls = calls.drop(columns = ['IVM','DvYd','Rate','DyEx','Strike'])
-    
             print(f"\nfile: {file}")
             print(calls['days_to_maturity'].unique())
             print(f"maturities count: {len(calls['days_to_maturity'].unique())}")
             print(calls['strike_price'].unique())
             print(f"strikes count: {len(calls['strike_price'].unique())}")
-    
             return calls
         except Exception:
             error_tag = f'file error: {file}'
@@ -105,8 +103,7 @@ class routine_collection():
             print(puts['strike_price'].unique())
             print(f"strikes count: {len(puts['strike_price'].unique())}")
             return calls, puts
-        
-        except Exception:
+        except Exception as e:
             error_tag = f'file error: {file}'
             print('\n')
             print("#"*len(error_tag))
@@ -114,8 +111,8 @@ class routine_collection():
             print(error_tag)
             print("-"*len(error_tag))
             print("#"*len(error_tag))
-
-
+            print(f"code: {e}")
+            
     def concat_option_data(self):
         market_data = pd.DataFrame()
         for file in self.data_files:
@@ -133,21 +130,11 @@ class routine_collection():
                 calls, puts = self.collect_data(file)
                 market_calls = pd.concat([market_calls,calls])
                 market_puts = pd.concat([market_puts,puts])
-                
-                # market_data = market_data.sort_values(by='days_to_maturity')
-                # market_data = market_data.reset_index(drop=True)
             except Exception:
-                error_tag = f'file error: {file}'
-                print('\n')
-                print("#"*len(error_tag))
-                print("-"*len(error_tag))
-                print(error_tag)
-                print("-"*len(error_tag))
-                print("#"*len(error_tag))
+                print('error')
         market_calls = market_calls.reset_index(drop=True)
         market_puts = market_puts.reset_index(drop=True)
         return {'calls':market_calls,'puts':market_puts}
-    
 
 rc = routine_collection()
 
