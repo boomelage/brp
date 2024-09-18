@@ -13,7 +13,7 @@ sys.path.append('misc')
 
 train_start = time.time()
 
-from routine_generation_market import features_dataset
+from generation_market import ml_data
 from mlop import mlop
 mlop = mlop(user_dataset=features_dataset)
 
@@ -41,4 +41,4 @@ train_end = time.time()
 
 train_time = train_end - train_start
 
-print(f"\ntraining runtime: {int(train_time)} seconds")
+print(f"\nruntime: {int(train_time)} seconds")

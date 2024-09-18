@@ -48,7 +48,6 @@ def calibrate_heston_model(
     all_heston_parameters = pd.DataFrame()
     
     for s_idx, s in enumerate(Svec):
-        
 
         
         S_handle = ql.QuoteHandle(ql.SimpleQuote(s))

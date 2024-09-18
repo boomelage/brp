@@ -47,56 +47,59 @@ def black_scholes_price(row):
         return price
     
 def heston_price_vanilla_row(row):
-    try:
-        call, put = ql.Option.Call, ql.Option.Put
-        option_type = call if row['w'] == 'call' else put
-        
-        flat_ts = ms.make_ts_object(ms.risk_free_rate)
-        dividend_ts = ms.make_ts_object(ms.dividend_rate)
     
-        s = row['spot_price']
-        k = row['strike_price']
-        t = row['days_to_maturity']
-        v0 = row['v0']
-        theta = row['theta']
-        sigma = row['volatility']
-        kappa = row['kappa']
-        rho = row['rho']
-        
-        spot_handle = ql.QuoteHandle(ql.SimpleQuote(float(s)))
-        
-        maturity_date = calculation_date + ql.Period(int(t),ql.Days)
-        
-        payoff = ql.PlainVanillaPayoff(option_type, k)
-        
-        exercise = ql.EuropeanExercise(maturity_date)
-        
-        european_option = ql.VanillaOption(payoff, exercise)
-        
-        heston_process = ql.HestonProcess(
-            flat_ts,                
-            dividend_ts,            
-            spot_handle,               
-            v0,
-            kappa,
-            theta,        
-            sigma,            
-            rho                
-        )
-        
-        engine = ql.AnalyticHestonEngine(ql.HestonModel(heston_process), 
-                                         0.01, 
-                                         1000)
-        european_option.setPricingEngine(engine)
-        
-        h_price_vanilla = european_option.NPV()
-        
-        row['heston'] = h_price_vanilla
-        return row
+    call, put = ql.Option.Call, ql.Option.Put
     
-    except Exception:
-        row['heston'] = np.nan
-        return row
+    if row['w'] == 'call':
+        option_type = call
+    elif row['w'] == 'put':
+        option_type = put
+    else:
+        print("flag error")
+        
+    flat_ts = ms.make_ts_object(ms.risk_free_rate)
+    dividend_ts = ms.make_ts_object(ms.dividend_rate)
+    
+    s = row['spot_price']
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    v0 = row['v0']
+    theta = row['theta']
+    sigma = row['volatility']
+    kappa = row['kappa']
+    rho = row['rho']
+    
+    spot_handle = ql.QuoteHandle(ql.SimpleQuote(float(s)))
+    
+    maturity_date = calculation_date + ql.Period(int(t),ql.Days)
+    
+    payoff = ql.PlainVanillaPayoff(option_type, k)
+    
+    exercise = ql.EuropeanExercise(maturity_date)
+    
+    european_option = ql.VanillaOption(payoff, exercise)
+    
+    heston_process = ql.HestonProcess(
+        flat_ts,                
+        dividend_ts,            
+        spot_handle,               
+        v0,
+        kappa,
+        theta,        
+        sigma,            
+        rho                
+    )
+    
+    engine = ql.AnalyticHestonEngine(ql.HestonModel(heston_process), 
+                                      0.01, 
+                                      1000)
+    european_option.setPricingEngine(engine)
+    
+    h_price_vanilla = european_option.NPV()
+    
+    row['heston'] = h_price_vanilla
+    
+    return row
 
 
 def heston_price_one_vanilla(w,calculation_date,strike_price,maturity_date,

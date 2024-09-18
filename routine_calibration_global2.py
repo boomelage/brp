@@ -40,24 +40,19 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-
-
-def calibrate_heston_model(
-        contracts, 
-        pricing_error_tolerance = 0.02999999999
-        ):
-    dataset = contracts.copy()
+def calibrate_heston_model(contracts):
     
+    dataset = contracts.copy()
     Svec = dataset['spot_price'].unique()
     
     output_columns = [
-        'dividend_rate', 'risk_free_rate','volatility','sigma',
+        'dividend_rate', 'risk_free_rate','sigma',
         'theta','kappa','rho','v0','error','black_scholes','heston']
     
     output_np = np.zeros((len(Svec),len(output_columns)),dtype=float)
     output_df = pd.DataFrame(output_np)
     output_df.columns = output_columns
-    output_df.index = Svec
+    output_df.index = Svec.astype(int)
     
     progress_bar = tqdm(
         total=len(Svec), 
@@ -71,8 +66,10 @@ def calibrate_heston_model(
         
         S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
         
-        risk_free_rate = ms.risk_free_rate
-        dividend_rate = ms.risk_free_rate
+        risk_free_rate = np.mean(calibration_dataset['risk_free_rate'])
+        dividend_rate = np.mean(calibration_dataset['dividend_rate'])
+        ###################### temporary averages ######################
+        
         flat_ts = ms.make_ts_object(risk_free_rate)
         dividend_ts = ms.make_ts_object(dividend_rate)
         
@@ -117,9 +114,7 @@ def calibrate_heston_model(
         for i in range(
                 min(len(heston_helpers), calibration_dataset.shape[0])):
             opt = heston_helpers[i]
-            err = (opt.modelValue() / max(
-                        opt.marketValue(),0.0000000000001)
-                                                            ) - 1
+            err = opt.modelValue() / opt.marketValue() - 1
             avg += abs(err)
             
             avg += abs(err)
@@ -128,7 +123,6 @@ def calibrate_heston_model(
 
         output_df.loc[s,'dividend_rate'] = dividend_rate
         output_df.loc[s,'risk_free_rate'] = risk_free_rate
-        output_df.loc[s,'volatility'] = volatility
         output_df.loc[s,'sigma'] = sigma
         output_df.loc[s,'theta'] = theta
         output_df.loc[s,'kappa'] = kappa
@@ -143,20 +137,50 @@ def calibrate_heston_model(
     progress_bar.close()
     return output_df
 
-from routine_collection import contract_details  
-puts = contract_details['puts']
-puts['moneyness'] = \
-    puts['strike_price'] - puts['spot_price']
-puts = puts[puts['moneyness']<0]
+from routine_collection import contract_details
+from derman_test import derman_coefs, atm_volvec
+
+def apply_derman_vols(row):
+    t = row['days_to_maturity']
+    moneyness = row['moneyness']
+    b = derman_coefs.loc['b',t]
+    atm_vol = atm_volvec[t]
+    
+    volatility = atm_vol + b*moneyness
+    row['volatility'] = volatility
+    
+    return row
+
 
 calls = contract_details['calls']
+calls = calls[calls['days_to_maturity'].isin(atm_volvec.index)]
 calls['moneyness'] = \
     calls['spot_price'] - calls['strike_price'] 
+
+
 calls = calls[calls['moneyness']<0]
 
-features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
-features
 
-params = calibrate_heston_model(features)
-print(f'\n{params}')
+calls = calls.apply(apply_derman_vols,axis=1)
+
+puts = contract_details['puts']
+puts = puts[puts['days_to_maturity'].isin(atm_volvec.index)]
+puts['moneyness'] = \
+    puts['strike_price'] - puts['spot_price']
+    
+    
+puts = puts[puts['moneyness']<0]
+
+
+puts = puts.apply(apply_derman_vols,axis=1)
+
+features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
+
+
+heston_by_s = calibrate_heston_model(features)
+
+pd.set_option("display.max_columns",None)
+print(f'\n\n{heston_by_s}')
+pd.reset_option("display.max_columns")
+
 
