@@ -28,31 +28,39 @@ computing Derman coefficients
 
 from import_files import raw_ts
 
+raw_ts = raw_ts.replace(0,np.nan)
 atm_volvec = raw_ts.loc[s].dropna()
-
-raw_ts = raw_ts.loc[:,atm_volvec.index].replace(0,np.nan)
+raw_ts = raw_ts.loc[:,atm_volvec.index]
 
 T = atm_volvec.index
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
 derman_coefs = pd.DataFrame(derman_coefs_np)
-derman_coefs['t days'] = ['alpha','b']
+derman_coefs['t days'] = ['b','atm_vol']
 derman_coefs = derman_coefs.set_index('t days')
 derman_coefs.columns = T
 
+
 for t in T:
-    t = int(t)
-    term_struct = raw_ts.copy()
-    term_struct = term_struct.loc[:,t].dropna()
-    K_reg = term_struct.index
-    x = np.array(K_reg  - s, dtype=float)
-    y = np.array(term_struct  - atm_volvec[t],dtype=float)
-    model = LinearRegression(fit_intercept=False)
-    x = x.reshape(-1,1)
-    model.fit(x,y)
-    b = model.coef_[0]
-    alpha = model.intercept_
-    derman_coefs.loc['alpha',t] = alpha
-    derman_coefs.loc['b',t] = b
+    try:
+        t = int(t)
+        term_struct = raw_ts.loc[:,t].dropna()
+        
+        K_reg = term_struct.index
+        x = np.array(K_reg  - s, dtype=float)
+        y = np.array(term_struct - atm_volvec[t],dtype=float)
+    
+        model = LinearRegression(fit_intercept=False)
+        x = x.reshape(-1,1)
+        model.fit(x,y)
+        b = model.coef_[0]
+
+        derman_coefs.loc['b',t] = b
+        derman_coefs.loc['atm_vol',t] = atm_volvec[t]
+    except Exception:
+        print(f'error: t = {t}')
+
+
+print(f'\n{derman_coefs}')
 
 """
 surface maker
@@ -71,7 +79,7 @@ def make_derman_surface(
         moneyness = k-s
         for j, t in enumerate(T):
             derman_ts.loc[k,t] = (
-                derman_coefs.loc['alpha',t] + atm_volvec[t] + \
+                derman_coefs.loc['atm_vol',t] + \
                 derman_coefs.loc['b',t] * moneyness
             )
         derman_ts = derman_ts[~(derman_ts<0)].dropna(how="any",axis=0)
@@ -96,8 +104,8 @@ creating vol surface
 
 """
 
-upper_moneyness = s*1.5
-lower_moneyness = s*0.85
+upper_moneyness = s*1.2
+lower_moneyness = s*0.8
 
 n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
@@ -119,14 +127,13 @@ black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
 
 derman_ts
-# =============================================================================
-# """
-# plotting vol surface
-# 
-# """
-# from plot_surface import plot_volatility_surface
-# fig = plot_volatility_surface(black_var_surface, K, T)
-# 
-# =============================================================================
+"""
+plotting vol surface
+
+"""
+from plot_surface import plot_volatility_surface
+fig = plot_volatility_surface(black_var_surface, K, T)
+
+
 
 

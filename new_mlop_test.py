@@ -15,13 +15,12 @@ train_start = time.time()
 
 from generation_market import ml_data
 from mlop import mlop
-mlop = mlop(user_dataset=features_dataset)
+mlop = mlop(user_dataset=ml_data)
 
 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
 
-   
 preprocessor = mlop.preprocess()
 
 
@@ -32,6 +31,7 @@ preprocessor = mlop.preprocess()
 model_fit = mlop.run_rf(preprocessor,train_X,train_y)
 
 # model_fit = mlop.run_lm(train_X,train_y)
+
 
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit)
 

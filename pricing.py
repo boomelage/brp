@@ -55,6 +55,7 @@ def heston_price_vanilla_row(row):
     elif row['w'] == 'put':
         option_type = put
     else:
+        raise 
         print("flag error")
         
     flat_ts = ms.make_ts_object(ms.risk_free_rate)
@@ -97,7 +98,7 @@ def heston_price_vanilla_row(row):
     
     h_price_vanilla = european_option.NPV()
     
-    row['heston'] = h_price_vanilla
+    row['heston_price'] = h_price_vanilla
     
     return row
 

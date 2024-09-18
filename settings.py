@@ -15,7 +15,7 @@ class model_settings():
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
-        self.dividend_rate      =    0.00
+        self.dividend_rate      =    0.02
         self.risk_free_rate     =    0.05
         self.csvs               =    dirdatacsv()
         
@@ -23,16 +23,19 @@ class model_settings():
         
         self.lower_maturity     =    0
         self.upper_maturity     =    999999
-        self.s                  =    5625
+        
+        self.s                  =    5630
 
-        self.lower_moneyness    =    self.s * 0
-        self.upper_moneyness    =    self.s * 999999
+        self.lower_moneyness    =    self.s * 0.99
+        self.upper_moneyness    =    self.s * 1.01
+        
+        self.n_k                =    int(1e2)
+        
         self.security_settings  = (
             self.ticker, self.lower_moneyness, self.upper_moneyness, 
             self.lower_maturity, self.upper_maturity, self.s
             )
         ql.Settings.instance().evaluationDate = self.calculation_date
-        
     def import_model_settings(self):
         dividend_rate = self.dividend_rate
         risk_free_rate = self.risk_free_rate

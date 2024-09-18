@@ -33,7 +33,7 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-from derman_test import atm_volvec, derman_coefs
+from derman_test import derman_coefs
 
 def generate_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -57,7 +57,7 @@ def apply_derman_vols(row):
     k = row['strike_price']
     t = row['days_to_maturity']
     b = derman_coefs.loc['b',t]
-    atm_vol = atm_volvec[t]
+    atm_vol = derman_coefs.loc['atm_vol',t]
     
     if row['w'] == 'call':
         moneyness = k-s
@@ -75,18 +75,18 @@ def apply_derman_vols(row):
 
 from routine_calibration_global2 import heston_by_s
 S = heston_by_s.index
-
+# S = [S[0]] 
 
 features_dataset = pd.DataFrame()
+flag = ['call','put']
+T = derman_coefs.columns
+n_k = int(1e4)
+print(f'\ngenerating {len(S)*n_k*len(flag)*len(T)} contract features')
 
 for s in S:
     
     hestons = heston_by_s.loc[s]
-    T = atm_volvec.index
-    
-    
-    K = np.linspace(s*0.50,s*1.5,int(1e1))
-    flag = ['call']
+    K = np.linspace(s*0.995,s*1.005,n_k)
     features = generate_features(K,T,s,flag)
     
     features['dividend_rate'] = hestons.loc['dividend_rate']
@@ -105,18 +105,20 @@ for s in S:
     
 features_dataset = features_dataset.reset_index(drop=True)
 
+features_dataset.describe()
 
 pd.set_option("display.max_columns",None)
 features_dataset
 
+from pricing import heston_price_vanilla_row, noisyfier
 
-# from pricing import heston_price_vanilla_row, noisyfier
+priced_features = features_dataset.apply(heston_price_vanilla_row,axis=1)
 
-# priced_features = features_dataset.apply(heston_price_vanilla_row,axis=1)
+priced_features = priced_features[priced_features['heston_price']>0]
 
-# ml_data = noisyfier(priced_features)
+ml_data = noisyfier(priced_features)
 
 
-# pd.set_option("display.max_columns",None)
-# print(f"\n{ml_data.describe()}")
-# pd.reset_option("display.max_columns")
+pd.set_option("display.max_columns",None)
+print(f"\n{ml_data.describe()}")
+pd.reset_option("display.max_columns")
