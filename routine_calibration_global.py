@@ -152,10 +152,10 @@ calls = calls[calls['moneyness']<0]
 
 features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
 
+features
+calibrate_heston_model(features)
 
-parameters = calibrate_heston_model(features)
-
-print(f'{parameters}')
+# print(f'{parameters}')
 
 
 # tqdm.write('#####CalibratingCalls#####')

@@ -12,10 +12,11 @@ def clear_all():
 clear_all()
 import time
 from datetime import datetime
+
 start_time = time.time()
 start_datetime = datetime.fromtimestamp(start_time)
 start_tag = start_datetime.strftime("%c")
-# print(f"\n{start_tag}")
+
 import os
 import sys
 from tqdm import tqdm
@@ -32,7 +33,9 @@ import pandas as pd
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-security_settings = settings[0]['security_settings']
+
+
+
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
@@ -56,7 +59,13 @@ def calibrate_heston_model(
     output_df.columns = output_columns
     output_df.index = Svec
     
+    progress_bar = tqdm(
+        total=len(Svec), 
+        desc="CalibratingBySpot", 
+        unit="calibrations",
+        leave=True)
     for s_idx, s in enumerate(Svec):
+        
         
         calibration_dataset = dataset.groupby('spot_price').get_group(s)
         
@@ -130,37 +139,15 @@ def calibrate_heston_model(
         output_df.loc[s,'black_scholes'] = opt.marketValue()
         output_df.loc[s,'heston'] = opt.modelValue()
         
-        # tqdm.write("-"*40)
-        # tqdm.write("Total Average Abs Error (%%) : %5.3f" % (avg))
-        # tqdm.write(f"for spot = {int(s)}, {int(t)} day maturity")
-        # tqdm.write("-"*40)
-        # avg_t += np.mean(output_df['error'])
-        # progress_bar.set_postfix({"AccumulatedAbsError": f"{avg_t:.2f}%"})
-        # progress_bar.update(1)
-        
-        # heston_parameters = output_df.copy()
-        
-        # progress_bar.close()
-        
-        
-        # all_heston_parameters = pd.concat(
-        #     [all_heston_parameters,heston_parameters])
-        
-    # all_heston_parameters = all_heston_parameters[~(
-    #     all_heston_parameters['error']>pricing_error_tolerance)]
-    # all_heston_parameters = all_heston_parameters.sort_values(
-    #     'error').reset_index(drop=True)
-    
+        progress_bar.update(1)
+    progress_bar.close()
     return output_df
-
-
 
 from routine_collection import contract_details  
 puts = contract_details['puts']
 puts['moneyness'] = \
     puts['strike_price'] - puts['spot_price']
 puts = puts[puts['moneyness']<0]
-
 
 calls = contract_details['calls']
 calls['moneyness'] = \
@@ -170,21 +157,6 @@ calls = calls[calls['moneyness']<0]
 features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
 features
 
-# tqdm.write('#####CalibratingCalls#####')
-# call_heston_parameters = calibrate_heston_model(contract_details['calls'])
-
-# tqdm.write('#####CalibratingPuts#####')
-# put_heston_parameters = calibrate_heston_model(contract_details['puts'])
-
-# tqdm.write('#####Calibrating#####')
 params = calibrate_heston_model(features)
-print(params)
-# calibration_end = time.time()
-# calibration_end_datetime = datetime.fromtimestamp(calibration_end)
-# calibration_end_tag = calibration_end_datetime.strftime("%c")
-# runtime = calibration_end-start_time
+print(f'\n{params}')
 
-# print(f"\n\n#####calls#####\n{call_heston_parameters}")
-# print(f"\n#####puts#####\n{put_heston_parameters}")
-# print(f"\n{calibration_end_tag}")
-# print(f"calibration runtime: {int(runtime)} seconds")
