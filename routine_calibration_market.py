@@ -177,10 +177,10 @@ def calibrate_heston_model(
 
 from routine_collection import contract_details  
 
-# tqdm.write('\n\ncalibrating calls...\n')
+tqdm.write('#####CalibratingCalls#####')
 call_heston_parameters = calibrate_heston_model(contract_details['calls'])
 
-# tqdm.write('\n\ncalibrating puts...\n')
+tqdm.write('#####CalibratingPuts#####')
 put_heston_parameters = calibrate_heston_model(contract_details['puts'])
 
 # tqdm.write(f"\nputs:\n{put_heston_parameters}")

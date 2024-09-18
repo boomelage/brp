@@ -63,7 +63,7 @@ class routine_collection():
             print(error_tag)
             print("-"*len(error_tag))
             print("#"*len(error_tag))
-            
+
     def collect_data(self,file):
         try:
             df = pd.read_excel(file)
@@ -102,6 +102,7 @@ class routine_collection():
             print(f"maturities count: {len(puts['days_to_maturity'].unique())}")
             print(puts['strike_price'].unique())
             print(f"strikes count: {len(puts['strike_price'].unique())}")
+            
             return calls, puts
         except Exception as e:
             error_tag = f'file error: {file}'
