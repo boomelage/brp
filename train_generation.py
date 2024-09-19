@@ -22,8 +22,6 @@ day_count = ms.day_count
 calendar = ms.day_count
 calculation_date = ms.day_count
 
-from derman_test import derman_coefs
-
 def generate_features(K,T,s):
     features = pd.DataFrame(
         product(
@@ -38,18 +36,20 @@ def generate_features(K,T,s):
                   ])
     return features
 
-        
+from derman_test import call_dermans, put_dermans
+
 def apply_derman_vols(row):
-    s = row['spot_price']
-    k = row['strike_price']
     t = row['days_to_maturity']
-    b = derman_coefs.loc['b',t]
-    atm_vol = derman_coefs.loc['atm_vol',t]
+    moneyness = row['moneyness']
     
     if row['w'] == 'call':
-        moneyness = k-s
+        b = call_dermans.loc['b',t]
+        atm_vol = call_dermans.loc['atm_vol',t]
+        
     elif row['w'] == 'put':
-        moneyness = s-k
+        b = put_dermans.loc['b',t]
+        atm_vol = put_dermans.loc['atm_vol',t]
+        
     else:
         print('flag error')
     
@@ -60,32 +60,40 @@ def apply_derman_vols(row):
 
 
 
-from routine_calibration_global import heston_parameters
 
-from routine_calibration_generation import T, call_K, put_K
+
+call_T = ms.call_T
+put_T = ms.put_T 
+call_K = ms.call_K[:4]
+put_K = ms.put_K[-4:]
+
 S = [ms.s]
 
-features_dataset = pd.DataFrame()
 
-n_k = int(1e3) #ms.n_k
-print(f'\n\ngenerating {int(2*n_k*len(T))} contract features\n')
+n_k = int(1e5) #ms.n_k
 
 import numpy as np
-call_K_train = np.linspace(min(call_K),min(call_K),n_k)
-call_features = generate_features(call_K_train,T,s)
-call_features['w'] = 'call'
-call_features['moneyness'] = call_features['strike_price']-call_features['spot_price']
-call_features
 
-put_K_train = np.linspace(min(put_K),max(put_K),n_k)
-put_features = generate_features(put_K_train,T,s)
+call_K_train = np.linspace(s*0.99,s-1,n_k)
+
+call_features = generate_features(call_K_train,call_T,s)
+call_features['w'] = 'call'
+call_features['moneyness'] = call_features['spot_price'] - call_features['strike_price']
+
+put_K_train = np.linspace(s+1,s*1.01,n_k)
+put_features = generate_features(put_K_train,put_T,s)
 put_features['w'] = 'put'
-put_features['moneyness'] = put_features['spot_price']-put_features['strike_price']
-put_features
+put_features['moneyness'] = put_features['strike_price'] - put_features['spot_price']
 
 features = pd.concat([put_features,call_features])
+
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
+
+
+
+
+from routine_calibration_global import heston_parameters
 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
@@ -93,25 +101,36 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-features
-features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
-features
+# features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
+# features.describe()
 
 
-from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
+from bivariate_interpolation import ql_vols, ql_T
+import QuantLib as ql
+
+ql_K_gen = ql.Array(list(np.array([put_K,call_K],dtype=float).flatten()))
+
+import QuantLib as ql
+i = ql.BilinearInterpolation(ql_T, ql_K_gen, ql_vols)
+def apply_interpolated_vol_row(row):
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    atm_vol =i(t,k, True)
+    row['volatility'] = atm_vol
+    return row
+
+features = features.apply(apply_interpolated_vol_row,axis=1)
+
+from pricing import black_scholes_price, noisyfier, heston_price_vanilla_row
 bs_features = features.apply(black_scholes_price,axis=1)
 
-bs_features
-heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
+pd.set_option('display.max_rows',None)
+pd.set_option('display.max_columns',None)
+pd.reset_option('display.max_rows')
+pd.reset_option('display.max_columns')
 
+heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
 ml_data = noisyfier(heston_features)
 
-pd.set_option("display.max_columns",None)
-print(f"\n{ml_data.describe()}")
-pd.reset_option("display.max_columns")
-pd.reset_option("display.max_rows")
-
-print(f"\nheston priced vanillas: {ml_data}")
-
-
+print(f"\n\ntraining dataset:\n{ml_data}")

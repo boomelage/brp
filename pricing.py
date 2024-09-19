@@ -9,13 +9,12 @@ import QuantLib as ql
 from scipy.stats import norm
 from settings import model_settings
 ms = model_settings()
-settings = ms.import_model_settings()
 
 s = ms.s
 
-day_count = settings[0]['day_count']
-calendar = settings[0]['calendar']
-calculation_date = settings[0]['calculation_date']
+day_count = ms.day_count
+calendar = ms.calendar
+calculation_date = ms.calculation_date
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
@@ -40,12 +39,10 @@ def black_scholes_price(row):
     
 def heston_price_vanilla_row(row):
     
-    call, put = ql.Option.Call, ql.Option.Put
-    
     if row['w'] == 'call':
-        option_type = call
+        option_type = ql.Option.Call
     elif row['w'] == 'put':
-        option_type = put
+        option_type = ql.Option.Put
     else:
         raise ValueError("flag error")
         

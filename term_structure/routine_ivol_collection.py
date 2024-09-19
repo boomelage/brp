@@ -22,6 +22,7 @@ pd.set_option('display.max_columns',None)
 
 raw_call_ts = pd.DataFrame()
 raw_put_ts = pd.DataFrame()
+
 for file in data_files:
     df = pd.read_excel(file, engine= 'openpyxl')
     df.columns = df.loc[1]
@@ -49,9 +50,9 @@ for file in data_files:
     
     
     
-raw_put_ts
+# raw_put_ts
 
-raw_market_ts = raw_put_ts.copy()
+# raw_market_ts = raw_put_ts.copy()
 def clean_raw_ts(raw_market_ts):
     ts_columns = []
     ivm_count = 1
@@ -69,8 +70,6 @@ def clean_raw_ts(raw_market_ts):
     
     raw_market_ts.columns = ts_columns
     
-    
-    # Step 1: Reshape the DataFrame using pd.melt
     df_melted = pd.melt(raw_market_ts, 
                         id_vars=['Strike'], 
                         value_vars=['IVM_1', 'IVM_2', 'IVM_3', 'IVM_4'],
@@ -123,3 +122,12 @@ def clean_raw_ts(raw_market_ts):
 
 raw_calls = clean_raw_ts(raw_call_ts)
 raw_puts = clean_raw_ts(raw_put_ts)
+
+
+
+
+
+
+
+
+

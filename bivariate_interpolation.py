@@ -30,7 +30,7 @@ T = ms.call_T
 
 s = ms.s
 
-raw_ts = ms.raw_vols
+raw_ts = ms.otm_ts
 
 
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)

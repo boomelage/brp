@@ -20,8 +20,8 @@ from settings import model_settings
 ms = model_settings()
 s = ms.s
 
-call_K = ms.call_K[0:3]
-put_K = ms.put_K[-3:]
+calibration_call_K = ms.call_K[0:3]
+calibration_put_K = ms.put_K[-3:]
 
 call_T = ms.call_T
 put_T = ms.put_T
@@ -47,14 +47,14 @@ def generate_features(K,T,s):
 """
 
 
-calls = generate_features(call_K, call_T, s)
+calls = generate_features(calibration_call_K, call_T, s)
 calls = calls[calls['days_to_maturity'].isin(call_T)].copy()
 calls['w'] = 'call'
 calls['moneyness'] = calls['spot_price'] - calls['strike_price']
 
 
 
-puts = generate_features(put_K, put_T, s)
+puts = generate_features(calibration_put_K, put_T, s)
 puts = puts[puts['days_to_maturity'].isin(put_T)].copy()
 puts['w'] = 'put'
 puts['moneyness'] = puts['strike_price'] - puts['spot_price']
@@ -79,8 +79,6 @@ def apply_interpolated_vol_row(row):
 
 calls = calls.apply(apply_interpolated_vol_row,axis=1)
 puts = puts.apply(apply_interpolated_vol_row,axis=1)
-
-
 surf = plot_bicubic_rotate()
 
 
@@ -109,9 +107,6 @@ Derman approximation
 # surf = plot_derman_rotate()
 
 
-# """
-# wip
-# """
 
 
 features = pd.concat([calls,puts],ignore_index=True)
@@ -120,11 +115,13 @@ contract_details['risk_free_rate'] = 0.04
 contract_details['dividend_rate'] = 0.001
 
 
-# pd.set_option('display.max_rows',None)
+pd.set_option('display.max_rows',None)
 # pd.set_option('display.max_columns',None)
+
+print(f"\ncalibration dataset:\n{contract_details}")
 
 pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
 
-print(f"\ncontract details:\n{contract_details}")
+
 

@@ -49,7 +49,7 @@ class model_settings():
         self.call_ts = raw_calls.loc[self.call_K,self.call_T]
         self.put_ts = raw_puts.loc[self.put_K,self.call_T]
         
-        self.raw_vols = pd.concat([self.raw_puts,self.raw_calls])
+        self.otm_ts = pd.concat([self.put_ts,self.call_ts])
         
         ql.Settings.instance().evaluationDate = self.calculation_date
         
@@ -127,8 +127,7 @@ class model_settings():
         w = row['w']
         
         date = self.calculation_date + ql.Period(t,ql.Days)
-        call, put = ql.Option.Call, ql.Option.Put
-        option_type = call if w == 'call' else put
+        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
         
         payoff = ql.PlainVanillaPayoff(option_type, k)
         exercise = ql.EuropeanExercise(date)
@@ -143,7 +142,7 @@ class model_settings():
             ql.HestonModel(heston_process), 0.01, 1000)
         european_option.setPricingEngine(engine)
         h_price = european_option.NPV()
-        row['heston'] = h_price
+        row['heston_price'] = h_price
         return row
         
         

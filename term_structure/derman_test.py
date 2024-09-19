@@ -146,4 +146,3 @@ def plot_derman_rotate():
     return fig
 
 
-fig = plot_derman_rotate()
