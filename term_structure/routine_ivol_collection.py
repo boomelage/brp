@@ -105,6 +105,8 @@ raw_ts = raw_ts.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
 
+raw_ks = raw_ts.iloc[:,0].dropna().index
+
 print(f'\nterm structure collected:\n\n{raw_ts}\n')
 
 os.chdir(parent_dir)

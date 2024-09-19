@@ -30,8 +30,11 @@ from import_files import raw_ts
 raw_ts = raw_ts.replace(0,np.nan)
 atm_volvec = raw_ts.loc[s].dropna()
 raw_ts = raw_ts.loc[:,atm_volvec.index]
+raw_ks = raw_ts.iloc[:,0].dropna().index
 
 T = atm_volvec.index
+
+
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
 derman_coefs = pd.DataFrame(derman_coefs_np)
 derman_coefs['t days'] = ['b','atm_vol']
@@ -108,7 +111,7 @@ lower_moneyness = s*0.8
 
 n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
-# K = raw_ts.loc[:0].dropna().index
+
 derman_ts = make_derman_surface(K=K)
 
 T = derman_ts.columns.astype(float)
@@ -125,7 +128,7 @@ implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
 black_var_surface = ms.make_black_var_surface(
     expiration_dates, K, implied_vols_matrix)
 
-derman_ts
+
 """
 plotting vol surface
 
