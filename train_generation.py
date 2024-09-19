@@ -67,7 +67,7 @@ S = [ms.s]
 
 features_dataset = pd.DataFrame()
 
-n_k = int(1e5) #ms.n_k
+n_k = int(1e3) #ms.n_k
 print(f'\n\ngenerating {int(2*n_k*len(T))} contract features\n')
 
 import numpy as np

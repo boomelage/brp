@@ -15,6 +15,13 @@ from data_query import dirdatacsv, dirdata
 class model_settings():
     
     def __init__(self):
+        
+        
+        """
+        from settings import model_settings
+        ms = model_settings()
+        """
+        
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
@@ -28,18 +35,24 @@ class model_settings():
         
         self.raw_ts = raw_ts
         
-        self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
-        self.raw_T = self.atm_volvec.index.astype(int)
         
-        self.raw_T              = [
-                                    3, 7, 14, 28, 42, 63, 109, 168
-                                    ]
+        
+        self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
+        
+        self.raw_T = self.atm_volvec.index.astype(int)
+        self.raw_K = raw_ts.iloc[:,1].dropna().index
+        self.s = np.median(self.raw_K)
+        
+        # self.raw_T              = [
+        #                             3, 7, 14, 28, 42, 63, 109, 168
+        #                             ]
         
         self.raw_K              = [
-            5615, 5620, 5625, 5630, 5635, 5640, 5645, 5650
+            5620, 5625, 5630, 5635,5640
             ]
         
-        self.model_vol_ts = raw_ts.loc[self.raw_K,self.raw_T]
+        print(f"\nnumber of strikes detected: {len(self.raw_K)}")
+        print(5*f"\nspot price: {self.s}")
         
         ql.Settings.instance().evaluationDate = self.calculation_date
         

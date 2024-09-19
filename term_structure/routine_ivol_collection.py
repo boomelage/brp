@@ -89,7 +89,6 @@ raw_ts = raw_ts.replace(0,np.nan)
 raw_ts = raw_ts.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
-clean_market_ts = raw_ts.copy()
 
 
 pd.set_option('display.max_rows',None)
