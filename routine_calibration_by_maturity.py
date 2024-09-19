@@ -91,7 +91,7 @@ T_parameters.index = T
 performance = pd.DataFrame()
 
 progress_bar = tqdm(
-    total=len(T), desc="calibrating", unit="calirations", leave=True)
+    total=len(T), desc="calibrating", unit="parameterSets", leave=True)
 
 for t in T:
     group_t = groupedby_t.get_group(t)
@@ -159,7 +159,6 @@ for t in T:
         performance_df.loc[i,'relative_error'] = \
             opt.modelValue() / opt.marketValue() - 1
         performance_df.loc[i,'t'] = int(t)
-        # print(f"\n{performance_df}")
     
     T_parameters.loc[t,'theta'] = theta
     T_parameters.loc[t,'rho'] = rho
@@ -171,13 +170,22 @@ for t in T:
     
 progress_bar.close()    
 performance = performance.replace(0,np.nan).dropna()
-    
-pd.set_option("display.max_columns",None)
-pd.set_option("display.max_rows",None)
-print(f"\n{T_parameters}")
-pd.reset_option("display.max_columns")
-pd.reset_option("display.max_rows")
-print(f"\n{performance}")
+
+grouped_performance = performance.groupby('t')
+
+for t_idx, t in enumerate(T):
+    group = grouped_performance.get_group(int(t))
+    print('-'*31)
+    print(f"average absolute relative error\nfor {int(t)} day "
+          f"maturity: {round(np.mean(abs(100*group['relative_error'])),5)}%")
+    print('-'*31)
+     
+# pd.set_option("display.max_columns",None)
+# pd.set_option("display.max_rows",None)
+# print(f"\n{T_parameters}")
+# pd.reset_option("display.max_columns")
+# pd.reset_option("display.max_rows")
+# print(f"\n{performance}")
 
 
 

@@ -33,7 +33,7 @@ class mlop:
         
         self.random_state = 42
         self.test_size = 0.10
-        self.max_iter = 1000
+        self.max_iter = 10000
         self.hidden_layer_sizes = (10,10,10)
         self.solver = [
                     # "lbfgs",
@@ -97,11 +97,13 @@ class mlop:
             
             ]
         
+        
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
             ("encode", OneHotEncoder(),self.categorical_features)
             ]   
+        
         
         self.security_tag = 'vanilla options'
         self.user_dataset = user_dataset

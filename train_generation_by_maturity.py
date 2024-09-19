@@ -69,24 +69,23 @@ S = [ms.s]
 
 features_dataset = pd.DataFrame()
 T = derman_coefs.columns
-n_k = int(1e2/2)
 
-print(f'generating {int(2*n_k*len(T))} contract_features')
+print(f'generating {int(2*ms.n_k*len(T))} contract features')
 
 from routine_ivol_collection import raw_ts
 
 raw_ks = raw_ts.iloc[:,0].dropna().index
 ub_k = max(raw_ks)
 lb_k = min(raw_ks)
+n_k = 5 #ms.n_k
 
-
-K_calls = np.linspace(lb_k,s*0.9999,n_k)
+K_calls = np.linspace(lb_k,s,n_k)
 call_features = generate_features(K_calls,T,s)
 call_features['w'] = 'call'
 call_features['moneyness'] = call_features['strike_price']-call_features['spot_price']
 call_features
 
-K_puts = np.linspace(s*1.0001,ub_k,n_k)
+K_puts = np.linspace(s,ub_k,n_k)
 put_features = generate_features(K_puts,T,s)
 put_features['w'] = 'put'
 put_features['moneyness'] = put_features['spot_price']-put_features['strike_price']
@@ -109,8 +108,6 @@ def apply_hestons(row):
     return row
 
 features = features.apply(apply_hestons,axis=1)
-features
-
 
 from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
 bs_features = features.apply(black_scholes_price,axis=1)
@@ -121,5 +118,5 @@ ml_data = noisyfier(heston_features)
 
 pd.set_option("display.max_columns",None)
 print(f"\n{ml_data.describe()}")
-
 pd.reset_option("display.max_columns")
+

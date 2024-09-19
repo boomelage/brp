@@ -19,7 +19,7 @@ class model_settings():
         self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
         self.s                  =    5630
-        
+        self.n_k                =    int(1e4/2)
         self.security_settings  = (self.ticker, self.s)
         ql.Settings.instance().evaluationDate = self.calculation_date
     def import_model_settings(self):
