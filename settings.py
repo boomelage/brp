@@ -8,54 +8,30 @@ pwd = os.path.dirname(os.path.abspath(__file__))
 os.chdir(pwd)
 import QuantLib as ql
 import numpy as np
-from data_query import dirdatacsv
+from data_query import dirdatacsv, dirdata
 class model_settings():
     
     def __init__(self):
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
-        self.dividend_rate      =    0.02
-        self.risk_free_rate     =    0.05
         self.csvs               =    dirdatacsv()
-        
+        self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
-        
-        self.lower_maturity     =    0
-        self.upper_maturity     =    999999
-        
         self.s                  =    5630
-
-        self.lower_moneyness    =    self.s * 0.99
-        self.upper_moneyness    =    self.s * 1.01
         
-        self.n_k                =    int(1e2)
-        
-        self.security_settings  = (
-            self.ticker, self.lower_moneyness, self.upper_moneyness, 
-            self.lower_maturity, self.upper_maturity, self.s
-            )
+        self.security_settings  = (self.ticker, self.s)
         ql.Settings.instance().evaluationDate = self.calculation_date
     def import_model_settings(self):
-        dividend_rate = self.dividend_rate
-        risk_free_rate = self.risk_free_rate
         calculation_date = self.calculation_date
         day_count = self.day_count
         calendar = self.calendar
-        security_settings = self.security_settings
+        s = self.s
+        ticker = self.ticker
         ezimport = [
             "",
-            "dividend_rate = settings[0]['dividend_rate']",
-            "risk_free_rate = settings[0]['risk_free_rate']",
-            "",
-            "security_settings = settings[0]['security_settings']",
             "s = security_settings[5]",
-            "",
             "ticker = security_settings[0]",
-            "lower_moneyness = security_settings[1]",
-            "upper_moneyness = security_settings[2]",
-            "lower_maturity = security_settings[3]",
-            "upper_maturity = security_settings[4]",
             "",
             "day_count = settings[0]['day_count']",
             "calendar = settings[0]['calendar']",
@@ -67,12 +43,11 @@ class model_settings():
             for ez in ezimport:
                 print(ez)
         return [{
-            "dividend_rate": dividend_rate, 
-            "risk_free_rate": risk_free_rate, 
             "calculation_date": calculation_date, 
             "day_count": day_count, 
             "calendar": calendar,
-            "security_settings": security_settings
+            "spot_price": s,
+            "ticker" : ticker
             }, ezprint]
             
     def make_ql_array(self,nparr):

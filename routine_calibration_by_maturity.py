@@ -81,7 +81,6 @@ calibration_dataset
 
 
 
-
 s = ms.s
 S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
 
@@ -99,7 +98,7 @@ T_parameters.index = T
 
 for t in T:
     group_t = groupedby_t.get_group(t)
-    # print(group_t)
+    
     risk_free_rate = 0.05
     dividend_rate = 0.02
     flat_ts = ms.make_ts_object(risk_free_rate)
@@ -159,24 +158,16 @@ for t in T:
         opt = heston_helpers[i]
         performance_df.loc[i,'black_scholes'] = opt.marketValue()
         performance_df.loc[i,'heston'] = opt.modelValue()
-        performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
-        print(performance_df)
-    
-    parameters = {
-        'theta' : theta,
-        'rho' : rho,
-        'kappa' : kappa,
-        'sigma' : sigma,
-        'v0' : v0
-        }
+        performance_df.loc[i,'relative_error'] = \
+            opt.modelValue() / opt.marketValue() - 1
+        print(f"\n{performance_df}")
     
     T_parameters.loc[t,'theta'] = theta
     T_parameters.loc[t,'rho'] = rho
     T_parameters.loc[t,'kappa'] = kappa
     T_parameters.loc[t,'sigma'] = sigma
     T_parameters.loc[t,'v0'] = v0
-    
-    
+
 pd.set_option("display.max_columns",None)
 pd.set_option("display.max_rows",None)
 print(f"\n{T_parameters}")

@@ -35,19 +35,17 @@ calculation_date = settings[0]['calculation_date']
 
 from derman_test import derman_coefs
 
-def generate_features(K,T,s,flag):
+def generate_features(K,T,s):
     features = pd.DataFrame(
         product(
             [s],
             K,
             T,
-            flag
             ),
         columns=[
             "spot_price", 
             "strike_price",
             "days_to_maturity",
-            "w"
                   ])
     return features
 
@@ -79,47 +77,55 @@ from routine_calibration_global import parameters
 S = [ms.s]
 
 features_dataset = pd.DataFrame()
-flag = ['call','put']
 T = derman_coefs.columns
-n_k = int(1e5)
-print(f'\ngenerating {len(S)*n_k*len(flag)*len(T)} contract features')
+n_k = int(1e4/2)
+
+print(f'generating {int(2*n_k*len(T))} contract_features')
 
 
 from routine_ivol_collection import raw_ts
 
-for s in S:
-    raw_ks = raw_ts.iloc[:,0].dropna().index
-    u_k = max(raw_ks)
-    l_k = min(raw_ks)
-    K = np.linspace(l_k,u_k,n_k)
-    features = generate_features(K,T,s,flag)
-    
-    features['dividend_rate'] = 0.02
-    features['risk_free_rate'] = 0.04
-    
-    
-    features['sigma'] = parameters['sigma']
-    features['theta'] = parameters['theta']
-    features['kappa'] = parameters['kappa']
-    features['rho'] = parameters['rho']
-    features['v0'] = parameters['v0']
-    
-    features = features.apply(apply_derman_vols,axis=1)
-    
-    features_dataset = pd.concat(
-        [features_dataset, features],ignore_index=True)
-    
-features_dataset = features_dataset.reset_index(drop=True)
+
+raw_ks = raw_ts.iloc[:,0].dropna().index
+ub_k = max(raw_ks)
+lb_k = min(raw_ks)
+
+
+K_calls = np.linspace(lb_k,s*0.9999,n_k)
+call_features = generate_features(K_calls,T,s)
+call_features['w'] = 'call'
+call_features['moneyness'] = call_features['strike_price']-call_features['spot_price']
+call_features
+
+K_puts = np.linspace(s*1.0001,ub_k,n_k)
+put_features = generate_features(K_puts,T,s)
+put_features['w'] = 'put'
+put_features['moneyness'] = put_features['spot_price']-put_features['strike_price']
+put_features
+
+features = pd.concat([put_features,call_features])
+features['dividend_rate'] = 0.02
+features['risk_free_rate'] = 0.04
+
+features['sigma'] = parameters['sigma']
+features['theta'] = parameters['theta']
+features['kappa'] = parameters['kappa']
+features['rho'] = parameters['rho']
+features['v0'] = parameters['v0']
+
+
+
+
+
+features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
+features
+
 
 from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
+bs_features = features.apply(black_scholes_price,axis=1)
+heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
-priced_features = features_dataset.apply(black_scholes_price,axis=1)
-
-priced_features = priced_features.apply(heston_price_vanilla_row,axis=1)
-
-# priced_features['error'] = priced_features['heston_price']/priced_features['black_scholes']-1
-
-ml_data = noisyfier(priced_features)
+ml_data = noisyfier(heston_features)
 
 
 pd.set_option("display.max_columns",None)
