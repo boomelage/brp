@@ -11,7 +11,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
-import numpy as np
 import pandas as pd
 from itertools import product
 from settings import model_settings
@@ -24,6 +23,7 @@ ticker = ms.ticker
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
+
 from derman_test import derman_coefs
 
 def generate_features(K,T,s):
@@ -62,33 +62,26 @@ def apply_derman_vols(row):
 
 
 
-from routine_calibration_global import parameters
+from routine_calibration_global import heston_parameters
 
-
+from routine_calibration_generation import T, call_ks, put_ks
 S = [ms.s]
 
 features_dataset = pd.DataFrame()
-T = derman_coefs.columns
 
-print(f'generating {int(2*ms.n_k*len(T))} contract_features')
+n_k = int(1e1) #ms.n_k
+print(f'generating {int(2*n_k*len(T))} contract_features')
 
+import numpy as np
 
-from routine_ivol_collection import raw_ts
-
-
-raw_ks = raw_ts.iloc[:,0].dropna().index
-ub_k = max(raw_ks)
-lb_k = min(raw_ks)
-
-
-K_calls = np.linspace(lb_k,s*0.9999,ms.n_k)
-call_features = generate_features(K_calls,T,s)
+# call_ks = np.linspace(0.99*s,s,n_k)
+call_features = generate_features(call_ks,T,s)
 call_features['w'] = 'call'
 call_features['moneyness'] = call_features['strike_price']-call_features['spot_price']
 call_features
 
-K_puts = np.linspace(s*1.0001,ub_k,ms.n_k)
-put_features = generate_features(K_puts,T,s)
+# put_ks = np.linspace(s,1.01*s,n_k)
+put_features = generate_features(put_ks,T,s)
 put_features['w'] = 'put'
 put_features['moneyness'] = put_features['spot_price']-put_features['strike_price']
 put_features
@@ -97,24 +90,36 @@ features = pd.concat([put_features,call_features])
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
-features['sigma'] = parameters['sigma']
-features['theta'] = parameters['theta']
-features['kappa'] = parameters['kappa']
-features['rho'] = parameters['rho']
-features['v0'] = parameters['v0']
+features['sigma'] = heston_parameters['sigma'].iloc[0]
+features['theta'] = heston_parameters['theta'].iloc[0]
+features['kappa'] = heston_parameters['kappa'].iloc[0]
+features['rho'] = heston_parameters['rho'].iloc[0]
+features['v0'] = heston_parameters['v0'].iloc[0]
 
 
 features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
 features
 
 
+
 from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
 bs_features = features.apply(black_scholes_price,axis=1)
+
+# bs_features
 heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
-ml_data = noisyfier(heston_features)
+
+
+# ml_data = noisyfier(heston_features)
 
 
 pd.set_option("display.max_columns",None)
-print(f"\n{ml_data.describe()}")
-pd.reset_option("display.max_columns")
+# ml_data[ml_data['heston_price']<0]
+# print(f"\n{ml_data.describe()}")
+# pd.reset_option("display.max_columns")
+pd.reset_option("display.max_rows")
+
+
+heston_features[heston_features['heston_price']<0]
+
+

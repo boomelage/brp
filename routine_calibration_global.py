@@ -121,6 +121,7 @@ heston_parameters['spot'] = s
 heston_parameters['theta'] = theta
 heston_parameters['rho'] = rho
 heston_parameters['kappa'] = kappa
+heston_parameters['sigma'] = sigma
 heston_parameters['v0'] = v0
 heston_parameters['avgAbsRelErr'] = avgAbsRelErr
 heston_parameters = heston_parameters.set_index('spot',drop=True)
@@ -128,7 +129,7 @@ heston_parameters = heston_parameters.set_index('spot',drop=True)
 pd.set_option("display.max_columns",None)
 # pd.set_option("display.max_rows",None)
 print(f'\n\n{performance_df}')
-print(f"     average abs relative error: {round(100*avgAbsRelErr,4)}%")
+print(f"average abs relative error: {round(100*avgAbsRelErr,4)}%")
 print(f"\n{heston_parameters}")
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
