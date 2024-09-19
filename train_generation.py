@@ -70,7 +70,7 @@ S = [ms.s]
 features_dataset = pd.DataFrame()
 
 n_k = int(1e5) #ms.n_k
-print(f'\n\ngenerating {int(2*n_k*len(T))} contract_features\n')
+print(f'\n\ngenerating {int(2*n_k*len(T))} contract features\n')
 
 import numpy as np
 call_K_train = np.linspace(min(call_K),min(call_K),n_k)

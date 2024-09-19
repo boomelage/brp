@@ -12,27 +12,11 @@ os.chdir(current_dir)
 sys.path.append(parent_dir)
 
 from data_query import dirdata
-from settings import model_settings
 import pandas as pd
 import numpy as np
 
-ms = model_settings()
-settings = ms.import_model_settings()
 xlsxs = dirdata()
 data_files = xlsxs
-
-s = ms.s
-ticker = ms.ticker
-
-
-day_count = settings[0]['day_count']
-calendar = settings[0]['calendar']
-calculation_date = settings[0]['calculation_date']
-
-pd.set_option('display.max_rows',None)
-# pd.set_option('display.max_columns',None)
-# pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')
 
 raw_market_ts = pd.DataFrame()
 for file in data_files:
@@ -85,39 +69,33 @@ df_indexed = df_combined.set_index(['Strike', 'DyEx'])
 df_indexed = df_indexed.sort_index()
 df_indexed
 
-Ts = np.sort(df_combined["DyEx"].unique())  
-Ts = Ts[Ts > 0]
+T = np.sort(df_combined["DyEx"].unique())  
+T = T[T > 0]
 Ks = np.sort(df_combined["Strike"].unique())
-raw_ts_np = np.zeros((len(Ks) , len(Ts)), dtype=float)
+raw_ts_np = np.zeros((len(Ks) , len(T)), dtype=float)
 
 for i, k in enumerate(Ks):
-    for j, t in enumerate(Ts):
+    for j, t in enumerate(T):
         try:
             raw_ts_np[i][j] = df_indexed.loc[(k, t), 'IVM'].iloc[0]
         except Exception:
             raw_ts_np[i][j] = np.nan
         
 raw_ts_df = pd.DataFrame(raw_ts_np)
-raw_ts_df.columns = Ts
+raw_ts_df.columns = T
 raw_ts = raw_ts_df.set_index(Ks)
 
 raw_ts = raw_ts.replace(0,np.nan)
 raw_ts = raw_ts.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
+clean_market_ts = raw_ts.copy()
 
 
-atm_volvec = raw_ts.loc[s,:].replace(0,np.nan).dropna()
-
-
-raw_T = atm_volvec.index.astype(int)
-raw_T = [
-    3,7,14,28,42,63,109,168
-    ]
-
-raw_K = raw_ts.iloc[:,0].dropna().index
-raw_ts = raw_ts.loc[raw_K,raw_T]
-
+pd.set_option('display.max_rows',None)
+pd.set_option('display.max_columns',None)
 print(f'\nterm structure collected:\n\n{raw_ts}\n')
+pd.reset_option('display.max_rows')
+pd.reset_option('display.max_columns')
 
 os.chdir(parent_dir)

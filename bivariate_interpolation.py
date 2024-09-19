@@ -23,10 +23,7 @@ ms = model_settings()
 
 
 from routine_ivol_collection import atm_volvec, raw_K, raw_T
-K= raw_K
-
-K = [5615, 5620, 5625, 5630, 5635,
-       5640, 5645, 5650]
+K = raw_K
 
 T  = raw_T
 

@@ -4,8 +4,11 @@ Created on Mon Sep  9 13:54:57 2024
 
 """
 import os
-pwd = os.path.dirname(os.path.abspath(__file__))
-os.chdir(pwd)
+import sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('term_structure')
+sys.path.append('contract_details')
+sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 from data_query import dirdatacsv, dirdata
@@ -19,37 +22,28 @@ class model_settings():
         self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
         self.s                  =    5630
-        self.n_k                =    int(1e4/2)
+        self.n_k                =    int(1e3)
+
+        from routine_ivol_collection import raw_ts
+        self.raw_ts = raw_ts
+        
+        
+        # self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
+        # self.raw_T = self.atm_volvec.index.astype(int)
+        
+        # self.raw_T              = [
+        #                             3, 7, 14, 28, 42, 63, 109, 168
+        #                             ]
+        
+        # self.raw_K              = [
+        #     5615, 5620, 5625, 5630, 5635, 5640, 5645, 5650
+        #     ]
+        
+        # self.model_vol_ts = raw_ts.loc[self.raw_K,self.raw_T]
+        
         self.security_settings  = (self.ticker, self.s)
         ql.Settings.instance().evaluationDate = self.calculation_date
-    def import_model_settings(self):
-        calculation_date = self.calculation_date
-        day_count = self.day_count
-        calendar = self.calendar
-        s = self.s
-        ticker = self.ticker
-        ezimport = [
-            "",
-            "s = security_settings[5]",
-            "ticker = security_settings[0]",
-            "",
-            "day_count = settings[0]['day_count']",
-            "calendar = settings[0]['calendar']",
-            "calculation_date = settings[0]['calculation_date']",
-            "",
-            ]
         
-        def ezprint():
-            for ez in ezimport:
-                print(ez)
-        return [{
-            "calculation_date": calculation_date, 
-            "day_count": day_count, 
-            "calendar": calendar,
-            "spot_price": s,
-            "ticker" : ticker
-            }, ezprint]
-            
     def make_ql_array(self,nparr):
         qlarr = ql.Array(len(nparr),1)
         for i in range(len(nparr)):
