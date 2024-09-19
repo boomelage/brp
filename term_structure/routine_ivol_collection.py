@@ -101,11 +101,17 @@ raw_ts_df = pd.DataFrame(raw_ts_np)
 raw_ts_df.columns = Ts
 raw_ts = raw_ts_df.set_index(Ks)
 
+raw_ts = raw_ts.replace(0,np.nan)
 raw_ts = raw_ts.dropna(how = 'all', axis = 0)
 raw_ts = raw_ts.dropna(how = 'all', axis = 1)
 raw_ts = raw_ts/100
 
-raw_ks = raw_ts.iloc[:,0].dropna().index
+
+atm_volvec = raw_ts.loc[s,:].replace(0,np.nan).dropna()
+atm_volvec = atm_volvec[~(atm_volvec.index == 35)]
+raw_T = atm_volvec.index.astype(int)
+raw_K = raw_ts.iloc[:,0].dropna().index
+
 
 print(f'\nterm structure collected:\n\n{raw_ts}\n')
 

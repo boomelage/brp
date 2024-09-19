@@ -20,15 +20,12 @@ import pandas as pd
 
 
 ms = model_settings()
-from derman_test import atm_volvec
-from routine_calibration_generation import T, call_ks, put_ks
 
 
-K = np.array((call_ks, put_ks), dtype=float)
-K = np.unique(K.flatten())
-
+from routine_ivol_collection import atm_volvec, raw_T, raw_K
+T = raw_T
+K= raw_K
 atm_volvec = atm_volvec.loc[T]
-
 
 s = ms.s
 
@@ -59,15 +56,15 @@ for t in T:
     except Exception:
         print(f'error: t = {t}')
     
-    
+
 
 vols_vector = [
-       [ 
-       derman_coefs.loc['atm_vol',t] + \
-           derman_coefs.loc['b',t] * (ms.s-k) \
-               for t in T
+        [ 
+        derman_coefs.loc['atm_vol',t] + \
+            derman_coefs.loc['b',t] * (ms.s-k) \
+                for t in T
         ] for k in K
-       ]
+        ]
 df = pd.DataFrame(vols_vector, columns=T, index=K)
 
 
@@ -82,11 +79,12 @@ for i, k in enumerate(ql_K):
         ql_vols[i][j] = df.loc[k,t]
      
 
-
-i = ql.BicubicSpline(ql_T, ql_K, ql_vols)
+i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
+# i = ql.BicubicSpline(ql_T, ql_K, ql_vols)
 
 TT = T
-KK = np.linspace(s*0.6,s*1.5,len(TT))
+# KK = K
+KK = np.linspace(min(K)*0.8,max(K)*1.2,100)
 
 bilinear_ts = pd.DataFrame(
     [[i(t,k, True) for t in TT] for k in KK],
@@ -106,9 +104,9 @@ from plot_surface import plot_volatility_surface
 expiration_dates = ms.compute_ql_maturity_dates(TT)
 black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bilinear)
 
-azims = np.arange(0,720,1)
-import time
+azims = np.arange(0,360,15)
 for a in azims:
-    # time.sleep()
-    a
     fig = plot_volatility_surface(black_var_surface, KK, TT, elev=30, azim=a)
+
+pd.reset_option("display.max_rows")
+print(f"\n{bilinear_ts}")

@@ -36,18 +36,15 @@ import pandas as pd
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-
-day_count = settings[0]['day_count']
-calendar = settings[0]['calendar']
-calculation_date = settings[0]['calculation_date']
-
-
-from routine_calibration_generation import calls, puts
-
-features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
-
-calibration_dataset = features
+day_count = ms.day_count
 s = ms.s
+calculation_date = ms.calculation_date
+calendar = ms.calendar
+
+from routine_calibration_generation import contract_details
+
+
+calibration_dataset = contract_details
 S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
 
 risk_free_rate = 0.05
