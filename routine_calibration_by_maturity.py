@@ -180,12 +180,14 @@ for t_idx, t in enumerate(T):
           f"maturity: {round(np.mean(abs(100*group['relative_error'])),5)}%")
     print('-'*31)
      
-# pd.set_option("display.max_columns",None)
-# pd.set_option("display.max_rows",None)
-# print(f"\n{T_parameters}")
-# pd.reset_option("display.max_columns")
-# pd.reset_option("display.max_rows")
-# print(f"\n{performance}")
+pd.set_option("display.max_columns",None)
+pd.set_option("display.max_rows",None)
+print(f"\n{T_parameters}")
+print(f"\n{performance.describe()}")
+pd.reset_option("display.max_columns")
+pd.reset_option("display.max_rows")
+
+
 
 
 

@@ -41,37 +41,8 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-from derman_test import derman_coefs, atm_volvec
-from routine_collection import contract_details
 
-calls = contract_details['calls']
-puts = contract_details['puts']
-
-def apply_derman_vols(row):
-    t = row['days_to_maturity']
-    moneyness = row['moneyness']
-    b = derman_coefs.loc['b',t]
-    atm_vol = atm_volvec[t]
-    
-    volatility = atm_vol + b*moneyness
-    row['volatility'] = volatility
-    
-    return row
-
-calls = calls[calls['days_to_maturity'].isin(atm_volvec.index)].copy()
-
-calls['moneyness'] = \
-    calls.loc[:,'spot_price'] - calls.loc[:,'strike_price'] 
-calls = calls.loc[calls['moneyness']<0].copy()
-calls = calls.apply(apply_derman_vols,axis=1)
-
-puts = puts[puts['days_to_maturity'].isin(atm_volvec.index)].copy()
-
-puts['moneyness'] = \
-    puts.loc[:,'strike_price'] - puts.loc[:,'spot_price']
-puts = puts.loc[puts['moneyness']<0].copy()
-puts = puts.apply(apply_derman_vols,axis=1)
-
+from routine_calibration_generation import calls, puts
 
 features = pd.concat([calls,puts],ignore_index=True).reset_index(drop=True)
 
@@ -127,7 +98,6 @@ model.calibrate(heston_helpers, lm,
 
 theta, kappa, sigma, rho, v0 = model.params()
 
-
 perfcols = ['black_scholes','heston','relative_error']
 performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
 performance_df = pd.DataFrame(performance_np)
@@ -135,24 +105,31 @@ performance_df.columns = perfcols
 
 for i in range(len(heston_helpers)):
     opt = heston_helpers[i]
-    # print(f'{opt.marketValue()}')
     performance_df.loc[i,'black_scholes'] = opt.marketValue()
     performance_df.loc[i,'heston'] = opt.modelValue()
     performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
 
+avgAbsRelErr = np.mean(abs(performance_df.loc[i,'relative_error']))
 
-parameters = {
-    'theta' : theta,
-    'rho' : rho,
-    'kappa' : kappa,
-    'sigma' : sigma,
-    'v0' : v0
-    }
+param_names = ['spot','theta', 'rho', 'kappa', 'sigma', 'v0', 'avgAbsRelErr']
+
+heston_parameters_np = np.zeros((1,len(param_names)),dtype=float)
+heston_parameters = pd.DataFrame(heston_parameters_np)
+heston_parameters.columns = param_names
+
+heston_parameters['spot'] = s
+heston_parameters['theta'] = theta
+heston_parameters['rho'] = rho
+heston_parameters['kappa'] = kappa
+heston_parameters['v0'] = v0
+heston_parameters['avgAbsRelErr'] = avgAbsRelErr
+heston_parameters = heston_parameters.set_index('spot',drop=True)
 
 pd.set_option("display.max_columns",None)
 # pd.set_option("display.max_rows",None)
 print(f'\n\n{performance_df}')
-print(f"    average abs relative error: {round(100*np.mean(performance_df.loc[i,'relative_error']),4)}%")
+print(f"     average abs relative error: {round(100*avgAbsRelErr,4)}%")
+print(f"\n{heston_parameters}")
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
 

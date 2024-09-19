@@ -77,7 +77,7 @@ from routine_ivol_collection import raw_ts
 raw_ks = raw_ts.iloc[:,0].dropna().index
 ub_k = max(raw_ks)
 lb_k = min(raw_ks)
-n_k = 5 #ms.n_k
+n_k =  int(1e4) # ms.n_k
 
 K_calls = np.linspace(lb_k,s,n_k)
 call_features = generate_features(K_calls,T,s)
