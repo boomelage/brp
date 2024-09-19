@@ -8,7 +8,7 @@ Created on Sat Sep 14 17:26:58 2024
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-def plot_volatility_surface(black_var_surface, K, T):
+def plot_volatility_surface(black_var_surface, K, T, elev=30, azim=120):
     plt.rcParams['figure.figsize']=(15,7)
     K = K.astype(int)
     plot_maturities = np.sort(T/365).astype(float)
@@ -20,7 +20,7 @@ def plot_volatility_surface(black_var_surface, K, T):
     
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    
+    ax.view_init(elev=elev, azim=azim)  
     surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
                     linewidth=0.1)
     fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -33,11 +33,12 @@ def plot_volatility_surface(black_var_surface, K, T):
     plt.cla()
     plt.clf()
     return fig
+
 def plot_term_structure(
         K,
         real_ts,
         est_ts,
-        title,
+        title
         ):
     plt.rcParams['figure.figsize']=(6,4)
     K = K.astype(int)

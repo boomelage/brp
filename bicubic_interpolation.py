@@ -83,7 +83,7 @@ for i, k in enumerate(ql_K):
      
 
 
-i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
+i = ql.BicubicSpline(ql_T, ql_K, ql_vols)
 
 TT = T
 KK = np.linspace(s*0.6,s*1.5,len(TT))
@@ -106,4 +106,9 @@ from plot_surface import plot_volatility_surface
 expiration_dates = ms.compute_ql_maturity_dates(TT)
 black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bilinear)
 
-fig = plot_volatility_surface(black_var_surface, KK, TT, elev=30, azim=135)
+azims = np.arange(0,720,1)
+import time
+for a in azims:
+    # time.sleep()
+    a
+    fig = plot_volatility_surface(black_var_surface, KK, TT, elev=30, azim=a)
