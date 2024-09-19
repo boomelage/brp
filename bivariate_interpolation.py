@@ -22,18 +22,16 @@ import pandas as pd
 ms = model_settings()
 
 
-atm_volvec = ms.atm_volvec
+atm_volvec = ms.call_atmvols
 
-K = ms.raw_K
+K = ms.call_K
 
-T = ms.raw_T
-
-atm_volvec = atm_volvec.loc[T]
+T = ms.call_T
 
 s = ms.s
 
+raw_ts = ms.raw_vols
 
-from routine_ivol_collection import raw_ts
 
 derman_coefs_np = np.zeros((2,len(T)),dtype=float)
 derman_coefs = pd.DataFrame(derman_coefs_np)

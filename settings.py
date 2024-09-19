@@ -11,6 +11,7 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
+import pandas as pd
 from data_query import dirdatacsv, dirdata
 class model_settings():
     
@@ -31,28 +32,24 @@ class model_settings():
         self.s                  =    5630
         self.n_k                =    int(1e3)
 
-        from routine_ivol_collection import raw_ts
+        from routine_ivol_collection import raw_calls, raw_puts
         
-        self.raw_ts = raw_ts
+        self.raw_calls = raw_calls
+        self.raw_puts = raw_puts
         
+        self.call_atmvols = raw_calls.loc[self.s,:].replace(0,np.nan).dropna()
+        self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
         
+        self.call_T = self.call_atmvols.index
+        self.put_T = self.put_atmvols.index
         
-        self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
+        self.call_K = raw_calls.index[raw_calls.index>self.s]
+        self.put_K = raw_puts.index[raw_puts.index<self.s]
         
-        self.raw_T = self.atm_volvec.index.astype(int)
-        self.raw_K = raw_ts.iloc[:,1].dropna().index
-        self.s = np.median(self.raw_K)
+        self.call_ts = raw_calls.loc[self.call_K,self.call_T]
+        self.put_ts = raw_puts.loc[self.put_K,self.call_T]
         
-        # self.raw_T              = [
-        #                             3, 7, 14, 28, 42, 63, 109, 168
-        #                             ]
-        
-        self.raw_K              = [
-            5620, 5625, 5630, 5635,5640
-            ]
-        
-        print(f"\nnumber of strikes detected: {len(self.raw_K)}")
-        print(5*f"\nspot price: {self.s}")
+        self.raw_vols = pd.concat([self.raw_puts,self.raw_calls])
         
         ql.Settings.instance().evaluationDate = self.calculation_date
         

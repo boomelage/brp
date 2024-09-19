@@ -17,57 +17,75 @@ from sklearn.linear_model import LinearRegression
 # =============================================================================
 from settings import model_settings
 ms = model_settings()
-raw_T = ms.raw_T 
-raw_K = ms.raw_K
-atm_volvec = ms.atm_volvec
+
+raw_calls = ms.raw_calls
+raw_puts = ms.raw_puts
+
+call_T = ms.call_T
+call_K = ms.call_K
+
+put_T = ms.put_T
+put_K = ms.put_K
+
+call_atmvols = ms.call_atmvols
+put_atmvols = ms.put_atmvols
+
+raw_vols = ms.raw_vols
+
 s = ms.s
-raw_ts = ms.model_vol_ts
+
 # =============================================================================
 """
 computing Derman coefficients
 """
 
 
-from plot_surface import plot_rotate, plot_term_structure
-T = raw_T
-K = raw_K
-
-derman_coefs_np = np.zeros((2,len(T)),dtype=float)
-derman_coefs = pd.DataFrame(derman_coefs_np)
-derman_coefs['t days'] = ['b','atm_vol']
-derman_coefs = derman_coefs.set_index('t days')
-derman_coefs.columns = T
-
-
-for t in T:
-    try:
-        t = int(t)
-        term_struct = raw_ts.loc[:,t].dropna()
-        
-        K_reg = term_struct.index
-        x = np.array(K_reg  - s, dtype=float)
-        y = np.array(term_struct - atm_volvec[t],dtype=float)
+def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts,flag):
     
-        model = LinearRegression(fit_intercept=False)
-        x = x.reshape(-1,1)
-        model.fit(x,y)
-        b = model.coef_[0]
+    derman_coefs_np = np.zeros((2,len(T)),dtype=float)
+    derman_coefs = pd.DataFrame(derman_coefs_np)
+    derman_coefs['t days'] = ['b','atm_vol']
+    derman_coefs = derman_coefs.set_index('t days')
+    derman_coefs.columns = T
+    
+    for t in T:
+        try:
+            t = int(t)
+            term_struct = raw_ts.loc[:,t].dropna()
+            
+            K_reg = term_struct.index
+            x = np.array(K_reg  - s, dtype=float)
+            y = np.array(term_struct - atm_volvec[t],dtype=float)
+        
+            model = LinearRegression(fit_intercept=False)
+            x = x.reshape(-1,1)
+            model.fit(x,y)
+            b = model.coef_[0]
+    
+            derman_coefs.loc['b',t] = b
+            derman_coefs.loc['atm_vol',t] = atm_volvec[t]
+        except Exception:
+            print(f'error: t = {t}')
+    return derman_coefs
 
-        derman_coefs.loc['b',t] = b
-        derman_coefs.loc['atm_vol',t] = atm_volvec[t]
-    except Exception:
-        print(f'error: t = {t}')
+
+call_dermans = compute_derman_coefficients(s,call_T,call_K,call_atmvols,raw_calls,'call')
+put_dermans = compute_derman_coefficients(s,put_T,put_K,put_atmvols,raw_puts,'put')
 
 
-print(f'\n{derman_coefs}')
+print(f'\n\n\ncall coefs:\n{call_dermans}')
+print(f'\n\n\nput coefs:\n{put_dermans}')
+
+
+from plot_surface import plot_rotate, plot_term_structure
+
 
 """
 surface maker
 
 """
 
-def make_derman_surface(
-        K=None, atm_volvec=atm_volvec, derman_coefs=derman_coefs, s = s):
+def make_derman_surface(atm_volvec, derman_coefs, K, s = ms.s):
     T = derman_coefs.columns
     derman_ts_np = np.zeros((len(K),len(T)),dtype=float)
     derman_ts = pd.DataFrame(derman_ts_np)
@@ -85,17 +103,15 @@ def make_derman_surface(
     return derman_ts
 
 
+derman_callvols = make_derman_surface(call_atmvols, call_dermans, call_K)
+derman_putvols = make_derman_surface(put_atmvols, put_dermans, put_K)
+
+otm_derman_vols = pd.concat([derman_putvols, derman_callvols])
 
 """
 testing approximation fit
 """
-def plot_derman_test():
-    K_test = raw_ts.index
-    derman_test_ts = make_derman_surface(K = K_test)
-    
-    raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
-    fig = plot_term_structure(K_test, raw_test_ts,derman_test_ts,title="Derman approximation of volatility versus market obs")
-    return fig
+
 
 """
 creating vol surface
@@ -109,7 +125,7 @@ def plot_derman_rotate():
     n_K = 20
     K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
     
-    derman_ts = make_derman_surface(K=K)
+    derman_ts = otm_derman_vols
     
     T = derman_ts.columns.astype(float)
     K = derman_ts.index
@@ -130,3 +146,4 @@ def plot_derman_rotate():
     return fig
 
 
+fig = plot_derman_rotate()
