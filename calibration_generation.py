@@ -26,9 +26,11 @@ s = security_settings[5]
 
 
 from derman_test import derman_coefs
+from routine_ivol_collection import raw_ts
 
 T = np.sort(derman_coefs.columns.unique().astype(int))
-K = np.linspace(ms.lower_moneyness, ms.upper_moneyness, 20)
+# K = np.linspace(5685, ms.upper_moneyness, 20)
+K = raw_ts.iloc[:,0].dropna().index
 def generate_features(K,T,s):
     features = pd.DataFrame(
         product(

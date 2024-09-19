@@ -41,15 +41,17 @@ day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-from derman_test import derman_coefs, atm_volvec
+from derman_test import derman_coefs
 from calibration_generation import contract_details
+
+
 
 
 def apply_derman_vols(row):
     t = row['days_to_maturity']
     moneyness = row['moneyness']
     b = derman_coefs.loc['b',t]
-    atm_vol = atm_volvec[t]
+    atm_vol = derman_coefs.loc['atm_vol',t]
     
     volatility = atm_vol + b*moneyness
     row['volatility'] = volatility
@@ -89,9 +91,11 @@ groupedby_t = calibration_dataset.groupby('days_to_maturity')
 
 T = np.sort(calibration_dataset['days_to_maturity'].unique())
 
-
-
-
+T_param_cols = ['v0','kappa','theta','sigma','rho']
+T_param_np = np.zeros((len(T),len(T_param_cols)))
+T_parameters = pd.DataFrame(T_param_np)
+T_parameters.columns = T_param_cols
+T_parameters.index = T
 
 for t in T:
     group_t = groupedby_t.get_group(t)
@@ -104,8 +108,6 @@ for t in T:
     date = calculation_date + ql.Period(int(t),ql.Days)
     dt = (date - calculation_date)
     p = ql.Period(dt, ql.Days)
-
-    
     
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
     process = ql.HestonProcess(
@@ -122,7 +124,6 @@ for t in T:
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
     heston_helpers = []    
-
 
     for row_idx, row in group_t.iterrows():
         
@@ -160,7 +161,7 @@ for t in T:
         performance_df.loc[i,'black_scholes'] = opt.marketValue()
         performance_df.loc[i,'heston'] = opt.modelValue()
         performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
-    
+        print(performance_df)
     
     parameters = {
         'theta' : theta,
@@ -170,11 +171,22 @@ for t in T:
         'v0' : v0
         }
     
+    T_parameters.loc[t,'theta'] = theta
+    T_parameters.loc[t,'rho'] = rho
+    T_parameters.loc[t,'kappa'] = kappa
+    T_parameters.loc[t,'sigma'] = sigma
+    T_parameters.loc[t,'v0'] = v0
     
-    pd.set_option("display.max_columns",None)
-    pd.set_option("display.max_rows",None)
-    print(f"\n{performance_df}")
-    pd.reset_option("display.max_columns")
-    pd.reset_option("display.max_rows")
     
-    parameters
+pd.set_option("display.max_columns",None)
+pd.set_option("display.max_rows",None)
+print(f"\n{T_parameters}")
+pd.reset_option("display.max_columns")
+pd.reset_option("display.max_rows")
+
+
+
+
+
+
+
