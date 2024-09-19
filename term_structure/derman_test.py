@@ -2,7 +2,6 @@
 """
 Created on Mon Sep 16 14:15:10 2024
 
-@author: boomelage
 """
 # =============================================================================
 import os
@@ -26,6 +25,7 @@ computing Derman coefficients
 """
 
 from routine_ivol_collection import raw_ts, raw_T, raw_K, atm_volvec
+from plot_surface import plot_rotate, plot_term_structure
 T = raw_T
 K = raw_K
 
@@ -86,53 +86,44 @@ def make_derman_surface(
 """
 testing approximation fit
 """
-
-K_test = raw_ts.index
-derman_test_ts = make_derman_surface(K = K_test)
-
-raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
-from plot_derman import plot_derman_fit
-plot_derman_fit(derman_test_ts, raw_test_ts)
-
+def plot_derman_test():
+    K_test = raw_ts.index
+    derman_test_ts = make_derman_surface(K = K_test)
+    
+    raw_test_ts = raw_ts.copy().loc[derman_test_ts.index,derman_test_ts.columns]
+    fig = plot_term_structure(K_test, raw_test_ts,derman_test_ts,title="Derman approximation of volatility versus market obs")
+    return fig
 
 """
 creating vol surface
 
 """
 
-upper_moneyness = s*1.2
-lower_moneyness = s*0.8
-
-n_K = 50
-K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
-
-derman_ts = make_derman_surface(K=K)
-
-T = derman_ts.columns.astype(float)
-K = derman_ts.index
-T = T[(
-        ( T > 0 )
-        &
-        ( T < 37000 )
-)]
-
-expiration_dates = ms.compute_ql_maturity_dates(T)
-
-implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
-black_var_surface = ms.make_black_var_surface(
-    expiration_dates, K, implied_vols_matrix)
-
-
-# """
-# plotting vol surface
-
-# """
-# from plot_surface import plot_volatility_surface
-# azims = np.arange(0,720,1)
-# for a in azims:
-#     fig = plot_volatility_surface(black_var_surface, K, T, elev=30, azim=a)
-
-
-
+def plot_derman_rotate():
+    upper_moneyness = s*1.2
+    lower_moneyness = s*0.8
+    
+    n_K = 20
+    K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
+    
+    derman_ts = make_derman_surface(K=K)
+    
+    T = derman_ts.columns.astype(float)
+    K = derman_ts.index
+    T = T[(
+            ( T > 0 )
+            &
+            ( T < 37000 )
+    )]
+    
+    expiration_dates = ms.compute_ql_maturity_dates(T)
+    
+    implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
+    black_var_surface = ms.make_black_var_surface(
+        expiration_dates, K, implied_vols_matrix)
+    
+    fig = plot_rotate(
+        black_var_surface,K,T,'Derman approximation of volatility surface')
+    return fig
 
 

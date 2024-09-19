@@ -22,9 +22,14 @@ import pandas as pd
 ms = model_settings()
 
 
-from routine_ivol_collection import atm_volvec, raw_T, raw_K
-T = raw_T
+from routine_ivol_collection import atm_volvec, raw_K, raw_T
 K= raw_K
+
+K = [5615, 5620, 5625, 5630, 5635,
+       5640, 5645, 5650]
+
+T  = raw_T
+
 atm_volvec = atm_volvec.loc[T]
 
 s = ms.s
@@ -80,11 +85,10 @@ for i, k in enumerate(ql_K):
      
 
 i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
-# i = ql.BicubicSpline(ql_T, ql_K, ql_vols)
 
 TT = T
-# KK = K
-KK = np.linspace(min(K)*0.8,max(K)*1.2,100)
+KK = K
+KK = np.linspace(min(K),max(K)*1.4,100)
 
 bilinear_ts = pd.DataFrame(
     [[i(t,k, True) for t in TT] for k in KK],
@@ -104,9 +108,13 @@ from plot_surface import plot_volatility_surface
 expiration_dates = ms.compute_ql_maturity_dates(TT)
 black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bilinear)
 
-azims = np.arange(0,360,15)
-for a in azims:
-    fig = plot_volatility_surface(black_var_surface, KK, TT, elev=30, azim=a)
+def plot_bicubic_rotate():
+    azims = np.arange(0,360,15)
+    for a in azims:
+        fig = plot_volatility_surface(
+            black_var_surface, KK, TT,
+            title='Bilinear Interpolation', elev=30, azim=a)
+    return fig
 
 pd.reset_option("display.max_rows")
-print(f"\n{bilinear_ts}")
+print(f"\nBicubic Spline Volatility Term Structure:\n{bilinear_ts}")

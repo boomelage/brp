@@ -64,24 +64,23 @@ def apply_derman_vols(row):
 
 from routine_calibration_global import heston_parameters
 
-from routine_calibration_generation import T, call_ks, put_ks
+from routine_calibration_generation import T, call_K, put_K
 S = [ms.s]
 
 features_dataset = pd.DataFrame()
 
-n_k = int(1e1) #ms.n_k
+n_k = int(1e5) #ms.n_k
 print(f'generating {int(2*n_k*len(T))} contract_features')
 
 import numpy as np
-
-# call_ks = np.linspace(0.99*s,s,n_k)
-call_features = generate_features(call_ks,T,s)
+call_K_train = np.linspace(min(call_K),min(call_K),n_k)
+call_features = generate_features(call_K_train,T,s)
 call_features['w'] = 'call'
 call_features['moneyness'] = call_features['strike_price']-call_features['spot_price']
 call_features
 
-# put_ks = np.linspace(s,1.01*s,n_k)
-put_features = generate_features(put_ks,T,s)
+put_K_train = np.linspace(min(put_K),max(put_K),n_k)
+put_features = generate_features(put_K_train,T,s)
 put_features['w'] = 'put'
 put_features['moneyness'] = put_features['spot_price']-put_features['strike_price']
 put_features
@@ -96,30 +95,25 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-
+features
 features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
 features
-
 
 
 from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
 bs_features = features.apply(black_scholes_price,axis=1)
 
-# bs_features
+bs_features
 heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
 
-
-# ml_data = noisyfier(heston_features)
-
+ml_data = noisyfier(heston_features)
 
 pd.set_option("display.max_columns",None)
-# ml_data[ml_data['heston_price']<0]
-# print(f"\n{ml_data.describe()}")
-# pd.reset_option("display.max_columns")
+print(f"\n{ml_data.describe()}")
+pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
 
-
-heston_features[heston_features['heston_price']<0]
+print(f"\nheston priced vanillas: {ml_data}")
 
 

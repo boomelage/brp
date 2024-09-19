@@ -108,10 +108,15 @@ raw_ts = raw_ts/100
 
 
 atm_volvec = raw_ts.loc[s,:].replace(0,np.nan).dropna()
-atm_volvec = atm_volvec[~(atm_volvec.index == 35)]
-raw_T = atm_volvec.index.astype(int)
-raw_K = raw_ts.iloc[:,0].dropna().index
 
+
+raw_T = atm_volvec.index.astype(int)
+raw_T = [
+    3,7,14,28,42,63,109,168
+    ]
+
+raw_K = raw_ts.iloc[:,0].dropna().index
+raw_ts = raw_ts.loc[raw_K,raw_T]
 
 print(f'\nterm structure collected:\n\n{raw_ts}\n')
 

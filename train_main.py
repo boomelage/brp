@@ -13,12 +13,10 @@ sys.path.append('misc')
 
 train_start = time.time()
 
-# from train_generation import ml_data
-from train_generation_by_maturity import ml_data
+from train_generation import ml_data
 
 from mlop import mlop
 mlop = mlop(user_dataset=ml_data)
-
 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
@@ -28,9 +26,9 @@ preprocessor = mlop.preprocess()
 
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
-# model_fit = mlop.run_rf(preprocessor,train_X,train_y)
+model_fit = mlop.run_rf(preprocessor,train_X,train_y)
 
 # model_fit = mlop.run_lm(train_X,train_y)
 

@@ -22,7 +22,6 @@ start_tag = start_datetime.strftime("%c")
 
 import os
 import sys
-from tqdm import tqdm
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
@@ -42,7 +41,6 @@ calculation_date = ms.calculation_date
 calendar = ms.calendar
 
 from routine_calibration_generation import contract_details
-
 
 calibration_dataset = contract_details
 S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
