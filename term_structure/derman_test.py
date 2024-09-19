@@ -109,7 +109,7 @@ lower_moneyness = s*0.8
 
 n_K = 50
 K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
-
+# K = raw_ts.loc[:0].dropna().index
 derman_ts = make_derman_surface(K=K)
 
 T = derman_ts.columns.astype(float)

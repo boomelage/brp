@@ -73,30 +73,36 @@ def apply_derman_vols(row):
 
 
 
-from routine_calibration_global2 import heston_by_s
-S = heston_by_s.index
-# S = [S[0]] 
+from routine_calibration_global import parameters
+
+
+S = [ms.s]
 
 features_dataset = pd.DataFrame()
 flag = ['call','put']
 T = derman_coefs.columns
-n_k = int(1e4)
+n_k = int(1e5)
 print(f'\ngenerating {len(S)*n_k*len(flag)*len(T)} contract features')
 
+
+from routine_ivol_collection import raw_ts
+
 for s in S:
-    
-    hestons = heston_by_s.loc[s]
-    K = np.linspace(s*0.995,s*1.005,n_k)
+    raw_ks = raw_ts.iloc[:,0].dropna().index
+    u_k = max(raw_ks)
+    l_k = min(raw_ks)
+    K = np.linspace(l_k,u_k,n_k)
     features = generate_features(K,T,s,flag)
     
-    features['dividend_rate'] = hestons.loc['dividend_rate']
-    features['risk_free_rate'] = hestons.loc['risk_free_rate']
+    features['dividend_rate'] = 0.02
+    features['risk_free_rate'] = 0.04
     
-    features['sigma'] = hestons.loc['sigma']
-    features['theta'] = hestons.loc['theta']
-    features['kappa'] = hestons.loc['kappa']
-    features['rho'] = hestons.loc['rho']
-    features['v0'] = hestons.loc['v0']
+    
+    features['sigma'] = parameters['sigma']
+    features['theta'] = parameters['theta']
+    features['kappa'] = parameters['kappa']
+    features['rho'] = parameters['rho']
+    features['v0'] = parameters['v0']
     
     features = features.apply(apply_derman_vols,axis=1)
     
@@ -105,16 +111,13 @@ for s in S:
     
 features_dataset = features_dataset.reset_index(drop=True)
 
-features_dataset.describe()
+from pricing import black_scholes_price, heston_price_vanilla_row, noisyfier
 
-pd.set_option("display.max_columns",None)
-features_dataset
+priced_features = features_dataset.apply(black_scholes_price,axis=1)
 
-from pricing import heston_price_vanilla_row, noisyfier
+priced_features = priced_features.apply(heston_price_vanilla_row,axis=1)
 
-priced_features = features_dataset.apply(heston_price_vanilla_row,axis=1)
-
-priced_features = priced_features[priced_features['heston_price']>0]
+# priced_features['error'] = priced_features['heston_price']/priced_features['black_scholes']-1
 
 ml_data = noisyfier(priced_features)
 

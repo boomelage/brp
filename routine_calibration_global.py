@@ -152,7 +152,7 @@ parameters = {
 pd.set_option("display.max_columns",None)
 # pd.set_option("display.max_rows",None)
 print(f'\n\n{performance_df}')
+print(f"    average abs relative error: {round(100*np.mean(performance_df.loc[i,'relative_error']),4)}%")
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
 
-parameters

@@ -147,7 +147,6 @@ for t in T:
     
     theta, kappa, sigma, rho, v0 = model.params()
     
-    
     perfcols = [
         'black_scholes',
         'heston',
@@ -183,6 +182,8 @@ pd.set_option("display.max_rows",None)
 print(f"\n{T_parameters}")
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
+
+
 
 
 
