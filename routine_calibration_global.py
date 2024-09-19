@@ -37,18 +37,12 @@ from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 
-
-
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
 
-
-
 from derman_test import derman_coefs, atm_volvec
-
 from routine_collection import contract_details
-
 
 calls = contract_details['calls']
 puts = contract_details['puts']
@@ -147,9 +141,18 @@ for i in range(len(heston_helpers)):
     performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
 
 
+parameters = {
+    'theta' : theta,
+    'rho' : rho,
+    'kappa' : kappa,
+    'sigma' : sigma,
+    'v0' : v0
+    }
+
 pd.set_option("display.max_columns",None)
-pd.set_option("display.max_rows",None)
+# pd.set_option("display.max_rows",None)
 print(f'\n\n{performance_df}')
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
 
+parameters
