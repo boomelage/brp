@@ -18,9 +18,9 @@ from itertools import product
 
 from settings import model_settings
 ms = model_settings()
-
 s = ms.s
-from routine_ivol_collection import raw_T
+T = ms.raw_T
+
 
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -43,12 +43,11 @@ def generate_features(K,T,s):
 call_K = np.array([5610, 5615, 5620, 5625],dtype=float)
 put_K = np.array([5635, 5640, 5645, 5650],dtype=float)
 
-T = raw_T
-
 calls = generate_features(call_K, T, s)
 calls = calls[calls['days_to_maturity'].isin(T)].copy()
 calls['w'] = 'call'
 calls['moneyness'] = calls['strike_price'] - calls['spot_price']
+
 puts = generate_features(put_K, T, s)
 puts = puts[puts['days_to_maturity'].isin(T)].copy()
 puts['w'] = 'put'
@@ -59,39 +58,39 @@ bivariate interpolation
 
 """
 
-# from bivariate_interpolation import ql_T,ql_K,ql_vols,plot_bicubic_rotate
-# import QuantLib as ql
-# i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
-# def apply_interpolated_vol_row(row):
-#     k = row['strike_price']
-#     t = row['days_to_maturity']
-#     atm_vol =i(t,k, True)
-#     row['volatility'] = atm_vol
-#     return row
+from bivariate_interpolation import ql_T,ql_K,ql_vols,plot_bicubic_rotate
+import QuantLib as ql
+i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
+def apply_interpolated_vol_row(row):
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    atm_vol =i(t,k, True)
+    row['volatility'] = atm_vol
+    return row
 
-# calls = calls.apply(apply_interpolated_vol_row,axis=1)
-# puts = puts.apply(apply_interpolated_vol_row,axis=1)
-# surf = plot_bicubic_rotate()
+calls = calls.apply(apply_interpolated_vol_row,axis=1)
+puts = puts.apply(apply_interpolated_vol_row,axis=1)
+surf = plot_bicubic_rotate()
 
 
 """
 Derman approximation
 """
 
-from derman_test import derman_coefs, plot_derman_rotate, plot_derman_test
-def apply_derman_vols(row):
-    t = row['days_to_maturity']
-    moneyness = row['moneyness']
-    b = derman_coefs.loc['b',t]
-    atm_vol = derman_coefs.loc['atm_vol',t]
-    volatility = atm_vol + b*moneyness
-    row['volatility'] = volatility
-    return row
+# from derman_test import derman_coefs, plot_derman_rotate, plot_derman_test
+# def apply_derman_vols(row):
+#     t = row['days_to_maturity']
+#     moneyness = row['moneyness']
+#     b = derman_coefs.loc['b',t]
+#     atm_vol = derman_coefs.loc['atm_vol',t]
+#     volatility = atm_vol + b*moneyness
+#     row['volatility'] = volatility
+#     return row
 
-calls = calls.apply(apply_derman_vols,axis=1)
-puts = puts.apply(apply_derman_vols,axis=1)
-surf = plot_derman_rotate()
-ts_test = plot_derman_test()
+# calls = calls.apply(apply_derman_vols,axis=1)
+# puts = puts.apply(apply_derman_vols,axis=1)
+# surf = plot_derman_rotate()
+# ts_test = plot_derman_test()
 
 
 """

@@ -17,14 +17,17 @@ from sklearn.linear_model import LinearRegression
 # =============================================================================
 from settings import model_settings
 ms = model_settings()
-settings = ms.import_model_settings()
+raw_T = ms.raw_T 
+raw_K = ms.raw_K
+atm_volvec = ms.atm_volvec
 s = ms.s
+raw_ts = ms.model_vol_ts
 # =============================================================================
 """
 computing Derman coefficients
 """
 
-from routine_ivol_collection import raw_ts, raw_T, raw_K, atm_volvec
+
 from plot_surface import plot_rotate, plot_term_structure
 T = raw_T
 K = raw_K

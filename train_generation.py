@@ -14,15 +14,13 @@ sys.path.append('misc')
 import pandas as pd
 from itertools import product
 from settings import model_settings
-ms = model_settings()
 
-settings = ms.import_model_settings()
+ms = model_settings()
 s = ms.s
 ticker = ms.ticker
-
-day_count = settings[0]['day_count']
-calendar = settings[0]['calendar']
-calculation_date = settings[0]['calculation_date']
+day_count = ms.day_count
+calendar = ms.day_count
+calculation_date = ms.day_count
 
 from derman_test import derman_coefs
 

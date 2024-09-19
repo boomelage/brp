@@ -25,23 +25,22 @@ class model_settings():
         self.n_k                =    int(1e3)
 
         from routine_ivol_collection import raw_ts
+        
         self.raw_ts = raw_ts
         
+        self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
+        self.raw_T = self.atm_volvec.index.astype(int)
         
-        # self.atm_volvec = raw_ts.loc[self.s,:].replace(0,np.nan).dropna()
-        # self.raw_T = self.atm_volvec.index.astype(int)
+        self.raw_T              = [
+                                    3, 7, 14, 28, 42, 63, 109, 168
+                                    ]
         
-        # self.raw_T              = [
-        #                             3, 7, 14, 28, 42, 63, 109, 168
-        #                             ]
+        self.raw_K              = [
+            5615, 5620, 5625, 5630, 5635, 5640, 5645, 5650
+            ]
         
-        # self.raw_K              = [
-        #     5615, 5620, 5625, 5630, 5635, 5640, 5645, 5650
-        #     ]
+        self.model_vol_ts = raw_ts.loc[self.raw_K,self.raw_T]
         
-        # self.model_vol_ts = raw_ts.loc[self.raw_K,self.raw_T]
-        
-        self.security_settings  = (self.ticker, self.s)
         ql.Settings.instance().evaluationDate = self.calculation_date
         
     def make_ql_array(self,nparr):

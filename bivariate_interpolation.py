@@ -22,10 +22,11 @@ import pandas as pd
 ms = model_settings()
 
 
-from routine_ivol_collection import atm_volvec, raw_K, raw_T
-K = raw_K
+atm_volvec = ms.atm_volvec
 
-T  = raw_T
+K = ms.raw_K
+
+T = ms.raw_T
 
 atm_volvec = atm_volvec.loc[T]
 

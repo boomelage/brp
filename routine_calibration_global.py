@@ -34,11 +34,12 @@ import pandas as pd
 
 from settings import model_settings
 ms = model_settings()
-settings = ms.import_model_settings()
+
 day_count = ms.day_count
 s = ms.s
 calculation_date = ms.calculation_date
 calendar = ms.calendar
+
 
 from routine_calibration_generation import contract_details
 
