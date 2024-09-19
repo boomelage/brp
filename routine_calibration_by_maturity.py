@@ -170,6 +170,7 @@ for t in T:
         'v0' : v0
         }
     
+    
     pd.set_option("display.max_columns",None)
     pd.set_option("display.max_rows",None)
     print(f"\n{performance_df}")
