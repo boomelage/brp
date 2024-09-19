@@ -37,15 +37,9 @@ from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 
-day_count = settings[0]['day_count']
-calendar = settings[0]['calendar']
-calculation_date = settings[0]['calculation_date']
 
 from derman_test import derman_coefs
-from calibration_generation import contract_details
-
-
-
+from routine_calibration_generation import contract_details
 
 def apply_derman_vols(row):
     t = row['days_to_maturity']
@@ -57,7 +51,6 @@ def apply_derman_vols(row):
     row['volatility'] = volatility
     
     return row
-
 
 
 calls = contract_details.copy()
@@ -79,10 +72,10 @@ calibration_dataset = features.apply(apply_derman_vols,axis=1)
 calibration_dataset
 
 
-
-
+calculation_date = ms.calculation_date
 s = ms.s
 S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
+calendar = ms.calendar
 
 
 
@@ -95,6 +88,10 @@ T_param_np = np.zeros((len(T),len(T_param_cols)))
 T_parameters = pd.DataFrame(T_param_np)
 T_parameters.columns = T_param_cols
 T_parameters.index = T
+performance = pd.DataFrame()
+
+progress_bar = tqdm(
+    total=len(T), desc="calibrating", unit="calirations", leave=True)
 
 for t in T:
     group_t = groupedby_t.get_group(t)
@@ -149,7 +146,8 @@ for t in T:
     perfcols = [
         'black_scholes',
         'heston',
-        'relative_error']
+        'relative_error',
+        't']
     performance_np = np.zeros((group_t.shape[0],len(perfcols)),dtype=float)
     performance_df = pd.DataFrame(performance_np)
     performance_df.columns = perfcols
@@ -160,20 +158,26 @@ for t in T:
         performance_df.loc[i,'heston'] = opt.modelValue()
         performance_df.loc[i,'relative_error'] = \
             opt.modelValue() / opt.marketValue() - 1
-        print(f"\n{performance_df}")
+        performance_df.loc[i,'t'] = int(t)
+        # print(f"\n{performance_df}")
     
     T_parameters.loc[t,'theta'] = theta
     T_parameters.loc[t,'rho'] = rho
     T_parameters.loc[t,'kappa'] = kappa
     T_parameters.loc[t,'sigma'] = sigma
     T_parameters.loc[t,'v0'] = v0
-
+    performance = pd.concat([performance, performance_df],ignore_index=True)
+    progress_bar.update(1)
+    
+progress_bar.close()    
+performance = performance.replace(0,np.nan).dropna()
+    
 pd.set_option("display.max_columns",None)
 pd.set_option("display.max_rows",None)
 print(f"\n{T_parameters}")
 pd.reset_option("display.max_columns")
 pd.reset_option("display.max_rows")
-
+print(f"\n{performance}")
 
 
 

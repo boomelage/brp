@@ -21,18 +21,9 @@ settings = ms.import_model_settings()
 xlsxs = dirdata()
 data_files = xlsxs
 
+s = ms.s
+ticker = ms.ticker
 
-dividend_rate = settings[0]['dividend_rate']
-risk_free_rate = settings[0]['risk_free_rate']
-
-security_settings = settings[0]['security_settings']
-s = security_settings[5]
-
-ticker = security_settings[0]
-lower_moneyness = security_settings[1]
-upper_moneyness = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
 
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']

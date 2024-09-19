@@ -11,17 +11,7 @@ from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
 
-dividend_rate = settings[0]['dividend_rate']
-risk_free_rate = settings[0]['risk_free_rate']
-
-security_settings = settings[0]['security_settings']
-s = security_settings[5]
-
-ticker = security_settings[0]
-lower_moneyness = security_settings[1]
-upper_moneyness = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
+s = ms.s
 
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
@@ -59,6 +49,8 @@ def heston_price_vanilla_row(row):
     else:
         raise ValueError("flag error")
         
+    dividend_rate = row['dividend_rate']
+    risk_free_rate = row['risk_free_rate']
     flat_ts = ms.make_ts_object(risk_free_rate)
     dividend_ts = ms.make_ts_object(dividend_rate)
     

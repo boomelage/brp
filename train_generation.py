@@ -16,23 +16,14 @@ import pandas as pd
 from itertools import product
 from settings import model_settings
 ms = model_settings()
+
 settings = ms.import_model_settings()
-dividend_rate = settings[0]['dividend_rate']
-risk_free_rate = settings[0]['risk_free_rate']
-
-security_settings = settings[0]['security_settings']
-s = security_settings[5]
-
-ticker = security_settings[0]
-lower_moneyness = security_settings[1]
-upper_moneyness = security_settings[2]
-lower_maturity = security_settings[3]
-upper_maturity = security_settings[4]
+s = ms.s
+ticker = ms.ticker
 
 day_count = settings[0]['day_count']
 calendar = settings[0]['calendar']
 calculation_date = settings[0]['calculation_date']
-
 from derman_test import derman_coefs
 
 def generate_features(K,T,s):
@@ -78,7 +69,7 @@ S = [ms.s]
 
 features_dataset = pd.DataFrame()
 T = derman_coefs.columns
-n_k = int(1e4/2)
+n_k = int(1e1/2)
 
 print(f'generating {int(2*n_k*len(T))} contract_features')
 
@@ -112,9 +103,6 @@ features['theta'] = parameters['theta']
 features['kappa'] = parameters['kappa']
 features['rho'] = parameters['rho']
 features['v0'] = parameters['v0']
-
-
-
 
 
 features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)

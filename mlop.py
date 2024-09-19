@@ -99,7 +99,7 @@ class mlop:
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
-            ("scale2",QuantileTransformer(),self.numerical_features),
+            # ("scale2",QuantileTransformer(),self.numerical_features),
             ("encode", OneHotEncoder(),self.categorical_features)
             ]   
         

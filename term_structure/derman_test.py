@@ -19,8 +19,7 @@ from sklearn.linear_model import LinearRegression
 from settings import model_settings
 ms = model_settings()
 settings = ms.import_model_settings()
-security_settings = settings[0]['security_settings']
-s = security_settings[5]
+s = ms.s
 # =============================================================================
 """
 computing Derman coefficients
