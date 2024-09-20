@@ -3,7 +3,6 @@
 """
 Created on Thu Sep 19 14:17:18 2024
 
-@author: doomd
 """
 
 import os
@@ -14,80 +13,35 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from settings import model_settings
 import pandas as pd
-
-
-ms = model_settings()
-
-
-atm_volvec = ms.call_atmvols
-
-K = ms.call_K
-
-T = ms.call_T
-
-s = ms.s
-
-raw_ts = ms.otm_ts
-
-
-derman_coefs_np = np.zeros((2,len(T)),dtype=float)
-derman_coefs = pd.DataFrame(derman_coefs_np)
-derman_coefs.columns = T
-derman_coefs.index = ['b','atm_vol']
-
-for t in T:
-    try:
-        t = int(t)
-        term_struct = raw_ts.loc[:,t].dropna()
-        
-        K_reg = term_struct.index
-        x = np.array(K_reg  - s, dtype=float)
-        y = np.array(term_struct - atm_volvec[t],dtype=float)
-    
-        model = LinearRegression(fit_intercept=False)
-        x = x.reshape(-1,1)
-        model.fit(x,y)
-        b = model.coef_[0]
-
-        derman_coefs.loc['b',t] = b
-        derman_coefs.loc['atm_vol',t] = atm_volvec[t]
-    except Exception:
-        print(f'error: t = {t}')
-    
-
-
-vols_vector = [
-        [ 
-        derman_coefs.loc['atm_vol',t] + \
-            derman_coefs.loc['b',t] * (ms.s-k) \
-                for t in T
-        ] for k in K
-        ]
-df = pd.DataFrame(vols_vector, columns=T, index=K)
-
-
 import QuantLib as ql
 
+from settings import model_settings
+ms = model_settings()
+atm_volvec = ms.call_atmvols
+T = ms.T
+s = ms.s
+
+
+from derman_test import otm_derman_vols
+K = otm_derman_vols.index
+
 ql_T = ql.Array(list(T))
-ql_K = ql.Array(list(K))
+ql_K = ql.Array(K.tolist())
 ql_vols = ql.Matrix(len(K),len(T),0.00)
 
 for i, k in enumerate(ql_K):
     for j, t in enumerate(ql_T):
-        ql_vols[i][j] = df.loc[k,t]
-     
+        ql_vols[i][j] = otm_derman_vols.loc[k,t]
 
-i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
+bilin_vol = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
 
 TT = T
 KK = K
-KK = np.linspace(min(K),max(K)*1.4,100)
+KK = np.linspace(min(K),max(K),1000)
 
 bilinear_ts = pd.DataFrame(
-    [[i(t,k, True) for t in TT] for k in KK],
+    [[bilin_vol(t,k, True) for t in TT] for k in KK],
     columns=TT,
     index=KK)
 
@@ -112,5 +66,18 @@ def plot_bicubic_rotate():
             title='Bilinear Interpolation', elev=30, azim=a)
     return fig
 
-pd.reset_option("display.max_rows")
-print(f"\nBicubic Spline Volatility Term Structure:\n{bilinear_ts}")
+
+fig = plot_bicubic_rotate()
+
+
+"""
+interpolating for generation
+"""
+
+def bilinear_vol(t,k):
+    vol = bilin_vol(t,k, True) 
+    return vol
+
+def bilinear_vol_row(row):
+    row['volatility'] = bilinear_vol(row['days_to_maturity'], row['strike_price'])
+    return row

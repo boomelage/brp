@@ -11,7 +11,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
-import numpy as np
 import pandas as pd
 from itertools import product
 
@@ -19,12 +18,10 @@ from itertools import product
 from settings import model_settings
 ms = model_settings()
 s = ms.s
+calibration_call_K = ms.calibration_call_K
+calibration_put_K = ms.calibration_put_K
 
-calibration_call_K = ms.call_K[0:3]
-calibration_put_K = ms.put_K[-3:]
-
-call_T = ms.call_T
-put_T = ms.put_T
+T = ms.T
 
 
 
@@ -47,15 +44,15 @@ def generate_features(K,T,s):
 """
 
 
-calls = generate_features(calibration_call_K, call_T, s)
-calls = calls[calls['days_to_maturity'].isin(call_T)].copy()
+calls = generate_features(calibration_call_K, T, s)
+calls = calls[calls['days_to_maturity'].isin(T)].copy()
 calls['w'] = 'call'
 calls['moneyness'] = calls['spot_price'] - calls['strike_price']
 
 
 
-puts = generate_features(calibration_put_K, put_T, s)
-puts = puts[puts['days_to_maturity'].isin(put_T)].copy()
+puts = generate_features(calibration_put_K, T, s)
+puts = puts[puts['days_to_maturity'].isin(T)].copy()
 puts['w'] = 'put'
 puts['moneyness'] = puts['strike_price'] - puts['spot_price']
 
@@ -65,21 +62,10 @@ puts['moneyness'] = puts['strike_price'] - puts['spot_price']
 bivariate interpolation
 
 """
+from bivariate_interpolation import bilinear_vol_row
 
-from bivariate_interpolation import ql_T,ql_K,ql_vols,plot_bicubic_rotate
-
-import QuantLib as ql
-i = ql.BilinearInterpolation(ql_T, ql_K, ql_vols)
-def apply_interpolated_vol_row(row):
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    atm_vol =i(t,k, True)
-    row['volatility'] = atm_vol
-    return row
-
-calls = calls.apply(apply_interpolated_vol_row,axis=1)
-puts = puts.apply(apply_interpolated_vol_row,axis=1)
-surf = plot_bicubic_rotate()
+calls = calls.apply(bilinear_vol_row,axis=1)
+puts = puts.apply(bilinear_vol_row,axis=1)
 
 
 """
@@ -115,7 +101,7 @@ contract_details['risk_free_rate'] = 0.04
 contract_details['dividend_rate'] = 0.001
 
 
-pd.set_option('display.max_rows',None)
+# pd.set_option('display.max_rows',None)
 # pd.set_option('display.max_columns',None)
 
 print(f"\ncalibration dataset:\n{contract_details}")

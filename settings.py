@@ -40,14 +40,19 @@ class model_settings():
         self.call_atmvols = raw_calls.loc[self.s,:].replace(0,np.nan).dropna()
         self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
         
-        self.call_T = self.call_atmvols.index
-        self.put_T = self.put_atmvols.index
+        self.T = self.call_atmvols.index
+        # self.T = [ 7, 14,  28,  31,  63,  77,  98, 109, 126, 140, 168, 199]
         
         self.call_K = raw_calls.index[raw_calls.index>self.s]
         self.put_K = raw_puts.index[raw_puts.index<self.s]
         
-        self.call_ts = raw_calls.loc[self.call_K,self.call_T]
-        self.put_ts = raw_puts.loc[self.put_K,self.call_T]
+        self.calibration_call_K = self.call_K[:3]
+        self.calibration_put_K = self.put_K[-3:]
+        self.calibration_K = np.array(
+            [self.calibration_put_K,self.calibration_call_K]).flatten().tolist()
+        
+        self.call_ts = raw_calls.loc[self.call_K,self.T]
+        self.put_ts = raw_puts.loc[self.put_K,self.T]
         
         self.otm_ts = pd.concat([self.put_ts,self.call_ts])
         

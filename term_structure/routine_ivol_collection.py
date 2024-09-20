@@ -50,9 +50,6 @@ for file in data_files:
     
     
     
-# raw_put_ts
-
-# raw_market_ts = raw_put_ts.copy()
 def clean_raw_ts(raw_market_ts):
     ts_columns = []
     ivm_count = 1

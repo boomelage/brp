@@ -60,28 +60,26 @@ def apply_derman_vols(row):
 
 
 
-
-
-call_T = ms.call_T
-put_T = ms.put_T 
+T = ms.T
 call_K = ms.call_K[:4]
 put_K = ms.put_K[-4:]
 
 S = [ms.s]
 
 
-n_k = int(1e5) #ms.n_k
+n_k = int(1e2) #ms.n_k
 
 import numpy as np
 
-call_K_train = np.linspace(s*0.99,s-1,n_k)
+call_K_train = np.linspace(min(call_K),max(ms.calibration_K),n_k)
 
-call_features = generate_features(call_K_train,call_T,s)
+call_features = generate_features(call_K_train,T,s)
 call_features['w'] = 'call'
 call_features['moneyness'] = call_features['spot_price'] - call_features['strike_price']
 
-put_K_train = np.linspace(s+1,s*1.01,n_k)
-put_features = generate_features(put_K_train,put_T,s)
+put_K_train = np.linspace(min(put_K),max(put_K),n_k)
+
+put_features = generate_features(put_K_train,T,s)
 put_features['w'] = 'put'
 put_features['moneyness'] = put_features['strike_price'] - put_features['spot_price']
 
@@ -104,30 +102,18 @@ features['v0'] = heston_parameters['v0'].iloc[0]
 # features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
 # features.describe()
 
+from bivariate_interpolation import bilinear_vol_row
 
-from bivariate_interpolation import ql_vols, ql_T
-import QuantLib as ql
 
-ql_K_gen = ql.Array(list(np.array([put_K,call_K],dtype=float).flatten()))
-
-import QuantLib as ql
-i = ql.BilinearInterpolation(ql_T, ql_K_gen, ql_vols)
-def apply_interpolated_vol_row(row):
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    atm_vol =i(t,k, True)
-    row['volatility'] = atm_vol
-    return row
-
-features = features.apply(apply_interpolated_vol_row,axis=1)
+features = features.apply(bilinear_vol_row,axis=1)
 
 from pricing import black_scholes_price, noisyfier, heston_price_vanilla_row
 bs_features = features.apply(black_scholes_price,axis=1)
 
-pd.set_option('display.max_rows',None)
-pd.set_option('display.max_columns',None)
-pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')
+# pd.set_option('display.max_rows',None)
+# pd.set_option('display.max_columns',None)
+# pd.reset_option('display.max_rows')
+# pd.reset_option('display.max_columns')
 
 heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 

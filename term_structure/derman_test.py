@@ -21,25 +21,22 @@ ms = model_settings()
 raw_calls = ms.raw_calls
 raw_puts = ms.raw_puts
 
-call_T = ms.call_T
 call_K = ms.call_K
-
-put_T = ms.put_T
 put_K = ms.put_K
 
 call_atmvols = ms.call_atmvols
 put_atmvols = ms.put_atmvols
 
-raw_vols = ms.raw_vols
+otm_ts = ms.otm_ts
 
+T = ms.T
 s = ms.s
 
 # =============================================================================
 """
 computing Derman coefficients
+
 """
-
-
 def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts,flag):
     
     derman_coefs_np = np.zeros((2,len(T)),dtype=float)
@@ -69,15 +66,15 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts,flag):
     return derman_coefs
 
 
-call_dermans = compute_derman_coefficients(s,call_T,call_K,call_atmvols,raw_calls,'call')
-put_dermans = compute_derman_coefficients(s,put_T,put_K,put_atmvols,raw_puts,'put')
+call_dermans = compute_derman_coefficients(s,T,call_K,call_atmvols,raw_calls,'call')
+put_dermans = compute_derman_coefficients(s,T,put_K,put_atmvols,raw_puts,'put')
 
 
 print(f'\n\n\ncall coefs:\n{call_dermans}')
 print(f'\n\n\nput coefs:\n{put_dermans}')
 
 
-from plot_surface import plot_rotate, plot_term_structure
+
 
 
 """
@@ -108,16 +105,32 @@ derman_putvols = make_derman_surface(put_atmvols, put_dermans, put_K)
 
 otm_derman_vols = pd.concat([derman_putvols, derman_callvols])
 
+
 """
 testing approximation fit
 """
 
+from plot_surface import plot_term_structure
+
+K = otm_ts.iloc[:,0].dropna().index
+
+real_test_ts = otm_ts.loc[K,:]
+indices = otm_derman_vols.index.intersection(real_test_ts.index)
+derman_test_ts = otm_derman_vols.loc[indices,:]
+
+T = derman_test_ts.columns
+
+for t in T:
+    fig = plot_term_structure(
+        K,real_test_ts.loc[:,t],derman_test_ts.loc[:,t],
+        title = f"Derman approximation for {t} day maturity")
 
 """
 creating vol surface
 
 """
 
+from plot_surface import plot_rotate
 def plot_derman_rotate():
     upper_moneyness = s*1.2
     lower_moneyness = s*0.8
