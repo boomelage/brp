@@ -54,9 +54,6 @@ def apply_derman_vols(row):
     return row
 
 
-
-
-
 from settings import model_settings
 ms = model_settings()
 import numpy as np
@@ -64,12 +61,10 @@ s = ms.s
 call_K = ms.call_K[:5]
 put_K = ms.put_K[-5:]
 
-number_of_contracts = 40000
-# n_strikes = int(10000)
-# n_maturities = int(200)
 
-n_maturities = int(np.sqrt(number_of_contracts/2))
-n_strikes = int(np.sqrt(number_of_contracts/2))
+n_strikes = int(10)
+n_maturities = int(10)
+
 n_contracts = int(n_maturities*n_maturities*2)
 
 print(f"pricing {n_contracts} contracts...")
@@ -90,8 +85,6 @@ train_K = np.sort(np.array([put_K,call_K],dtype=int).flatten())
 
 features = pd.concat(
     [call_features,put_features],ignore_index=True).reset_index(drop=True)
-
-
 
 def compute_moneyness_row(row):
     s = row['spot_price']
