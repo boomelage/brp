@@ -28,14 +28,18 @@ train_data, train_X, train_y, \
 
 preprocessor = mlop.preprocess()
 
+print('training...')
 
+# model_name = "Single Layer Network"
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
-# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+model_name = "Deep Neural Network"
+model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
-model_name = "Random Forrest"
-model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
+# model_name = "Random Forest"
+# model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
+# model_name = "Lasso Regression"
 # model_fit = mlop.run_lm(train_X,train_y)
 
 

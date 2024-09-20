@@ -31,7 +31,7 @@ class mlop:
     '''
     def __init__(self,user_dataset):
         
-        self.random_state = 42
+        self.random_state = None
         self.test_size = 0.10
         self.max_iter = 10000
         self.hidden_layer_sizes = (10,10,10)
@@ -68,13 +68,6 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity', 
-            'w',
-            'v0',
-            'kappa', 
-            'theta', 
-            'rho', 
-            'sigma', 
-            
             ]
         
         self.numerical_features = [
@@ -82,17 +75,12 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity', 
-            'v0',
-            'kappa', 
-            'theta', 
-            'rho', 
-            'sigma', 
             
             ]
         
         self.categorical_features = [
             
-            'w'
+            # 'w'
             
             ]
         
@@ -100,7 +88,7 @@ class mlop:
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            ("encode", OneHotEncoder(),self.categorical_features)
+            # ("encode", OneHotEncoder(),self.categorical_features)
             ]   
         
         

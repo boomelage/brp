@@ -36,12 +36,15 @@ from settings import model_settings
 ms = model_settings()
 import numpy as np
 s = ms.s
-call_K = ms.call_K[:7]
-put_K = ms.put_K[-7:]
+call_K = ms.call_K
+put_K = ms.put_K
+mats = 5
+call_K = call_K[:mats]
+put_K = put_K[-mats:]
 
 
 n_strikes = int(1000)
-n_maturities = int(70 )
+n_maturities = int(700)
 
 n_contracts = int(n_maturities*n_strikes*2)
 
@@ -50,14 +53,16 @@ print(f"pricing {n_contracts} contracts...")
 progress_bar = tqdm(total=2, desc="generatingFeatures", leave=False,
                     bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
-call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
-put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
+# call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
+# put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
 
 call_K_interp = np.linspace(s*0.99,s*1.01,int(n_strikes))
 put_K_interp = call_K_interp
 
 T = np.linspace(1,7,n_maturities).astype(int)
-# T = ms.T
+# T = np.linspace(min(T),max(T),n_maturities)
+
+
 
 call_features = generate_features(call_K_interp, T, s, ['call'])
 put_features = generate_features(put_K_interp, T, s, ['put'])
@@ -82,6 +87,7 @@ def compute_moneyness_row(row):
     else:
         raise ValueError('\n\n\nflag error')
 
+
 features = features.apply(compute_moneyness_row,axis = 1)
 
 
@@ -100,22 +106,19 @@ progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
 progress_bar.update(1)
 
 from pricing import noisyfier
-
 heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
-
 ml_data = noisyfier(heston_features)
-
 progress_bar.update(1)
 progress_bar.close()
-
-
 
 # pd.set_option('display.max_rows',None)
 
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
-print(f"\n\ntrain s: {s}, K, T:\n{train_K}\n{ms.T}")
+print(f"\n\ntrain s: {s}")
+print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
+print(f"maturities between {int(min(T))} and {int(max(T))}")
 pd.reset_option('display.max_columns')
 
 # pd.reset_option('display.max_rows')

@@ -38,7 +38,7 @@ class model_settings():
         self.T = self.call_atmvols.index
         self.T =  [
             
-            # 2,   3,   
+            # 2, 3,   
             
             7,
             
