@@ -41,8 +41,8 @@ class model_settings():
         self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
         
         self.T = self.call_atmvols.index
-        # self.T = [ 7, 14,  28,  31,  63,  77,  98, 109, 126, 140, 168, 199]
-        
+        self.T = self.T[~(self.T==36)]
+        # sep 16th
         self.call_K = raw_calls.index[raw_calls.index>self.s]
         self.put_K = raw_puts.index[raw_puts.index<self.s]
         

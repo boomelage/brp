@@ -67,7 +67,7 @@ def plot_bicubic_rotate():
     return fig
 
 
-fig = plot_bicubic_rotate()
+# fig = plot_bicubic_rotate()
 
 
 """
