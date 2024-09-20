@@ -31,16 +31,17 @@ preprocessor = mlop.preprocess()
 
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
-# model_fit = mlop.run_rf(preprocessor,train_X,train_y)
+model_name = "Random Forrest"
+model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
 # model_fit = mlop.run_lm(train_X,train_y)
 
 
-df = mlop.compute_predictive_performance(test_data,test_X,model_fit)
+df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
 
-predictive_performance_plot = mlop.plot_model_performance(df)
+predictive_performance_plot = mlop.plot_model_performance(df,runtime)
 
 train_end = time.time()
 

@@ -56,7 +56,7 @@ def heston_price_vanilla_row(row):
     t = row['days_to_maturity']
     v0 = row['v0']
     theta = row['theta']
-    sigma = row['volatility']
+    sigma = row['sigma']
     kappa = row['kappa']
     rho = row['rho']
     

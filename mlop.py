@@ -20,8 +20,8 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, facet_wrap, labs, theme
-from time import time
 import matplotlib.pyplot as plt
+import time
 
 class mlop:
     
@@ -58,7 +58,6 @@ class mlop:
             
             ]
         
-
         
         self.rf_n_estimators = 50
         self.rf_min_samples_leaf = 2000
@@ -138,7 +137,7 @@ class mlop:
                                                              # Model Estimation
 
     def run_nnet(self, preprocessor, train_X, train_y):
-        nnet_start = time()
+        nnet_start = time.time()
         nnet_model = MLPRegressor(
             hidden_layer_sizes=self.hidden_layer_sizes,
             activation=self.activation_function, 
@@ -153,12 +152,12 @@ class mlop:
             ])
         
         model_fit = nnet_pipeline.fit(train_X, train_y)
-        nnet_end = time()
+        nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
         return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor,train_X,train_y):
-        dnn_start = time()
+        dnn_start = time.time()
         deepnnet_model = MLPRegressor(
             hidden_layer_sizes= self.hidden_layer_sizes,
             activation = self.activation_function, 
@@ -174,11 +173,12 @@ class mlop:
             ("regressor", deepnnet_model)
         ])
         dnn_fit = deepnnet_pipeline.fit(train_X,train_y)
-        dnn_end = time()
+        dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
+        rf_start = time.time()
         rf_model = RandomForestRegressor(
         n_estimators=self.rf_n_estimators, 
         min_samples_leaf=self.rf_min_samples_leaf, 
@@ -188,9 +188,12 @@ class mlop:
             ("preprocessor", preprocessor),
             ("regressor", rf_model)])
         rf_fit = rf_pipeline.fit(train_X, train_y)
-        return rf_fit
+        rf_end = time.time()
+        rf_runtime = rf_end - rf_start
+        return rf_fit, rf_runtime
     
     def run_lm(self, train_X, train_y):
+        lm_start = time.time()
         lm_pipeline = Pipeline([
             ("polynomial", PolynomialFeatures(degree=5, 
                                     interaction_only=False, 
@@ -199,15 +202,17 @@ class mlop:
             ("regressor", Lasso(alpha=0.01))])
 
         lm_fit = lm_pipeline.fit(train_X, train_y)
-        return lm_fit
+        lm_end = time.time()
+        lm_runtime = lm_end - lm_start
+        return lm_fit, lm_runtime
 
 # =============================================================================
                                                                 # Model Testing
                                                                 
-    def compute_predictive_performance(self,test_data,test_X,model_fit):
+    def compute_predictive_performance(self,test_data,test_X,model_fit, model_name):
         predictive_performance = (pd.concat(
             [test_data.reset_index(drop=True), 
-             pd.DataFrame({"model_name": model_fit.predict(test_X)})
+             pd.DataFrame({f"{model_name}": model_fit.predict(test_X)})
             ], axis=1)
           .melt(
             id_vars=self.user_dataset.columns,
@@ -225,14 +230,14 @@ class mlop:
         return predictive_performance
     
     
-    def plot_model_performance(self,predictive_performance):
+    def plot_model_performance(self,predictive_performance, runtime):
         predictive_performance_plot = (
             ggplot(predictive_performance, 
                    aes(x="moneyness", y="pricing_error")) + 
             geom_point(alpha=0.05) + 
             facet_wrap("Model") + 
             labs(x="Percentage moneyness (S/K)", 
-                 y="Absolute percentage error (addruntimeyo second runtime)",
+                 y=f"Absolute percentage error ({round(runtime,4)} second runtime)",
                  title=f'Prediction error for {self.security_tag} under Heston') + 
             theme(legend_position="")
             )

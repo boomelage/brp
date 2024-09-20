@@ -40,20 +40,23 @@ call_K = ms.call_K[:7]
 put_K = ms.put_K[-7:]
 
 
-n_strikes = int(100)
-n_maturities = int(100)
+n_strikes = int(1000)
+n_maturities = int(70 )
 
 n_contracts = int(n_maturities*n_strikes*2)
 
 print(f"pricing {n_contracts} contracts...")
 
-progress_bar = tqdm(total=2, desc="generatingFeatures", leave=True,
+progress_bar = tqdm(total=2, desc="generatingFeatures", leave=False,
                     bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
 call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
 put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
 
-T = np.linspace(1,31,n_maturities).astype(int)
+call_K_interp = np.linspace(s*0.99,s*1.01,int(n_strikes))
+put_K_interp = call_K_interp
+
+T = np.linspace(1,7,n_maturities).astype(int)
 # T = ms.T
 
 call_features = generate_features(call_K_interp, T, s, ['call'])
@@ -96,9 +99,9 @@ features['v0'] = heston_parameters['v0'].iloc[0]
 progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
 progress_bar.update(1)
 
-from pricing import  noisyfier, heston_price_vanilla_row
+from pricing import noisyfier
 
-heston_features = features.apply(heston_price_vanilla_row,axis=1)
+heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
 
 ml_data = noisyfier(heston_features)
 
@@ -112,7 +115,7 @@ progress_bar.close()
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
-print(f"\n\ntrain s: {s}, K:\n{train_K}\nT:\n{ms.T}")
+print(f"\n\ntrain s: {s}, K, T:\n{train_K}\n{ms.T}")
 pd.reset_option('display.max_columns')
 
 # pd.reset_option('display.max_rows')
