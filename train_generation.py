@@ -61,21 +61,22 @@ s = ms.s
 call_K = ms.call_K[:5]
 put_K = ms.put_K[-5:]
 
+number_of_contracts = 100
 
-n_strikes = int(10)
-n_maturities = int(10)
+n_strikes = int(10000)
+n_maturities = int(100)
 
-n_contracts = int(n_maturities*n_maturities*2)
+n_contracts = int(n_maturities*n_strikes*2)
 
 print(f"pricing {n_contracts} contracts...")
 
 progress_bar = tqdm(total=2, desc="generatingFeatures", leave=True,
                     bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
-call_K_interp = np.linspace(min(call_K), max(call_K),n_strikes)
-put_K_interp = np.linspace(min(put_K),max(put_K),n_strikes)
+call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
+put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
 
-T = np.unique(np.linspace(1,31,n_maturities).astype(int))
+T = np.linspace(1,31,n_maturities).astype(int)
 # T = ms.T
 
 call_features = generate_features(call_K_interp, T, s, ['call'])
@@ -142,7 +143,7 @@ progress_bar.close()
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
-print(f"\n\ntrain s: {s}, K:\n{train_K}")
+print(f"\n\ntrain s: {s}, K:\n{train_K}\nT:\n{ms.T}")
 pd.reset_option('display.max_columns')
 
 # pd.reset_option('display.max_rows')

@@ -17,6 +17,7 @@ train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
 print(f"\n{train_start_tag}\n")
 
+
 from train_generation import ml_data
 
 from mlop import mlop

@@ -7,19 +7,17 @@ works for one spot only at the moment, be careful of the data loaded in
 
 """
 
-def clear_all():
-    globals_ = globals().copy()
-    for name in globals_:
-        if not name.startswith('_') and name not in ['clear_all']:
-            del globals()[name]
-clear_all()
+# def clear_all():
+#     globals_ = globals().copy()
+#     for name in globals_:
+#         if not name.startswith('_') and name not in ['clear_all']:
+#             del globals()[name]
+# clear_all()
 import time
 from datetime import datetime
-
 start_time = time.time()
 start_datetime = datetime.fromtimestamp(start_time)
 start_tag = start_datetime.strftime("%c")
-
 import os
 import sys
 
