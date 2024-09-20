@@ -123,7 +123,7 @@ heston_parameters = heston_parameters.set_index('spot',drop=True)
 
 pd.set_option("display.max_columns",None)
 pd.set_option("display.max_rows",None)
-print(f'\n\n{performance_df}')
+print(f'\n\ncalibration results:\n{performance_df}')
 print(f"average abs relative error: {round(100*avgAbsRelErr,4)}%")
 print(f"\n{heston_parameters}")
 pd.reset_option("display.max_columns")

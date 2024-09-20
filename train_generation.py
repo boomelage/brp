@@ -13,7 +13,7 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
 from itertools import product
-
+from tqdm import tqdm
 
 def generate_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -64,18 +64,34 @@ s = ms.s
 call_K = ms.call_K[:5]
 put_K = ms.put_K[-5:]
 
-n_KT = int(1e2/2)
+number_of_contracts = 40000
+# n_strikes = int(10000)
+# n_maturities = int(200)
 
-call_K_interp = np.linspace(min(call_K), max(call_K),n_KT)
-put_K_interp = np.linspace(min(put_K),max(put_K),n_KT)
+n_maturities = int(np.sqrt(number_of_contracts/2))
+n_strikes = int(np.sqrt(number_of_contracts/2))
+n_contracts = int(n_maturities*n_maturities*2)
 
-T = np.linspace(1,31,n_KT)
+print(f"pricing {n_contracts} contracts...")
+
+progress_bar = tqdm(total=2, desc="generatingFeatures", leave=True,
+                    bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
+
+call_K_interp = np.linspace(min(call_K), max(call_K),n_strikes)
+put_K_interp = np.linspace(min(put_K),max(put_K),n_strikes)
+
+T = np.unique(np.linspace(1,31,n_maturities).astype(int))
+# T = ms.T
 
 call_features = generate_features(call_K_interp, T, s, ['call'])
 put_features = generate_features(put_K_interp, T, s, ['put'])
 
+train_K = np.sort(np.array([put_K,call_K],dtype=int).flatten())
 
-features = pd.concat([call_features,put_features],ignore_index=True).reset_index(drop=True)
+features = pd.concat(
+    [call_features,put_features],ignore_index=True).reset_index(drop=True)
+
+
 
 def compute_moneyness_row(row):
     s = row['spot_price']
@@ -93,8 +109,6 @@ def compute_moneyness_row(row):
         raise ValueError('\n\n\nflag error')
 
 features = features.apply(compute_moneyness_row,axis = 1)
-
-
 
 
 features['dividend_rate'] = 0.02
@@ -115,24 +129,27 @@ features['v0'] = heston_parameters['v0'].iloc[0]
 from bilinear_interpolation import bilinear_vol_row
 features = features.apply(bilinear_vol_row,axis=1)
 
+progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
+progress_bar.update(1)
 
 from pricing import black_scholes_price, noisyfier, heston_price_vanilla_row
 bs_features = features.apply(black_scholes_price,axis=1)
 
-
-
-
-
-
 heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
+
 ml_data = noisyfier(heston_features)
+
+
+progress_bar.update(1)
+progress_bar.close()
 
 # pd.set_option('display.max_rows',None)
 
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
+print(f"\n\ntrain s: {s}, K:\n{train_K}")
 pd.reset_option('display.max_columns')
 
 # pd.reset_option('display.max_rows')
