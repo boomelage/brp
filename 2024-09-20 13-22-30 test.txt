@@ -1,0 +1,343 @@
+
+
+spot_price                  5625
+strike_price                5610
+days_to_maturity              60
+w                            put
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.152824
+black_scholes         114.036715
+heston_price       -29594.958542
+observed_price               0.0
+Name: 21, dtype: object
+Heston Price: -131572.25884105655
+
+spot_price                  5625
+strike_price                5610
+days_to_maturity              74
+w                            put
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.152576
+black_scholes         125.036915
+heston_price       -28094.065292
+observed_price               0.0
+Name: 22, dtype: object
+Heston Price: -97150.29138912586
+
+spot_price                  5625
+strike_price                5610
+days_to_maturity              95
+w                            put
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.153665
+black_scholes         140.609907
+heston_price       -26373.695817
+observed_price               0.0
+Name: 23, dtype: object
+Heston Price: -89366.11031832309
+
+spot_price                  5625
+strike_price                5615
+days_to_maturity              60
+w                            put
+moneyness                    -10
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.152241
+black_scholes         115.776858
+heston_price       -29469.589859
+observed_price               0.0
+Name: 45, dtype: object
+Heston Price: -131631.37506993327
+
+spot_price                 5625
+strike_price               5615
+days_to_maturity             74
+w                           put
+moneyness                   -10
+dividend_rate              0.02
+risk_free_rate             0.04
+sigma                  0.458795
+theta                  0.034024
+kappa                  0.408311
+rho                        -1.0
+v0                     0.010289
+volatility             0.152016
+black_scholes        126.730386
+heston_price       -27986.85516
+observed_price              0.0
+Name: 46, dtype: object
+Heston Price: -97190.10529603195
+
+spot_price                  5625
+strike_price                5615
+days_to_maturity              95
+w                            put
+moneyness                    -10
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.153146
+black_scholes          142.26009
+heston_price       -26266.527767
+observed_price               0.0
+Name: 47, dtype: object
+Heston Price: -89402.49898753138
+
+spot_price                  5625
+strike_price                5620
+days_to_maturity              60
+w                            put
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.151657
+black_scholes         117.542957
+heston_price       -29357.080942
+observed_price               0.0
+Name: 69, dtype: object
+Heston Price: -131690.4653712404
+
+spot_price                  5625
+strike_price                5620
+days_to_maturity              74
+w                            put
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.151456
+black_scholes         128.446892
+heston_price       -27884.595128
+observed_price               0.0
+Name: 70, dtype: object
+Heston Price: -97229.89703151541
+
+spot_price                  5625
+strike_price                5620
+days_to_maturity              95
+w                            put
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.152626
+black_scholes         143.930067
+heston_price       -26174.401736
+observed_price               0.0
+Name: 71, dtype: object
+Heston Price: -89438.86889318548
+
+spot_price                  5625
+strike_price                5630
+days_to_maturity              60
+w                           call
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.150489
+black_scholes         153.052021
+heston_price       -29101.604659
+observed_price               0.0
+Name: 21, dtype: object
+Heston Price: -131795.1325541337
+
+spot_price                  5625
+strike_price                5630
+days_to_maturity              74
+w                           call
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.150335
+black_scholes         172.422441
+heston_price       -27636.268464
+observed_price               0.0
+Name: 22, dtype: object
+Heston Price: -97291.70365856712
+
+spot_price                  5625
+strike_price                5630
+days_to_maturity              95
+w                           call
+moneyness                     -5
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.151587
+black_scholes         200.639899
+heston_price       -25962.874038
+observed_price               0.0
+Name: 23, dtype: object
+Heston Price: -89487.44763815682
+
+spot_price                  5625
+strike_price                5635
+days_to_maturity              60
+w                           call
+moneyness                    -10
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.149906
+black_scholes         149.930652
+heston_price       -28978.841863
+observed_price               0.0
+Name: 45, dtype: object
+Heston Price: -131859.11060293193
+
+spot_price                  5625
+strike_price                5635
+days_to_maturity              74
+w                           call
+moneyness                    -10
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.149775
+black_scholes         169.250053
+heston_price       -27527.494876
+observed_price               0.0
+Name: 46, dtype: object
+Heston Price: -97336.3881680425
+
+spot_price                  5625
+strike_price                5635
+days_to_maturity              95
+w                           call
+moneyness                    -10
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.151067
+black_scholes         197.422324
+heston_price       -25863.336745
+observed_price               0.0
+Name: 47, dtype: object
+Heston Price: -89528.70955654154
+
+spot_price                  5625
+strike_price                5640
+days_to_maturity              60
+w                           call
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.149322
+black_scholes         146.836505
+heston_price       -28863.348354
+observed_price               0.0
+Name: 69, dtype: object
+Heston Price: -131923.06117710905
+
+spot_price                  5625
+strike_price                5640
+days_to_maturity              74
+w                           call
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.149215
+black_scholes         166.101781
+heston_price       -27425.612745
+observed_price               0.0
+Name: 70, dtype: object
+Heston Price: -97381.04982320288
+
+spot_price                  5625
+strike_price                5640
+days_to_maturity              95
+w                           call
+moneyness                    -15
+dividend_rate               0.02
+risk_free_rate              0.04
+sigma                   0.458795
+theta                   0.034024
+kappa                   0.408311
+rho                         -1.0
+v0                      0.010289
+volatility              0.150547
+black_scholes         194.225397
+heston_price       -25773.227397
+observed_price               0.0
+Name: 71, dtype: object
+Heston Price: -89569.952547299

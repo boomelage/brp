@@ -66,18 +66,26 @@ put_K = ms.put_K[-4:]
 
 S = [ms.s]
 
-
-n_k = int(1e2) #ms.n_k
-
+n_k = int(1e3) #ms.n_k
+pricing_spread = 0.05
 import numpy as np
 
-call_K_train = np.linspace(min(call_K),max(ms.calibration_K),n_k)
+call_K_train = np.linspace(
+    ms.s*(1-pricing_spread),
+    max(ms.calibration_call_K),
+    n_k
+    )
+
+put_K_train = np.linspace(
+    min(ms.calibration_put_K),
+    ms.s*(1+pricing_spread),
+    n_k
+    )
 
 call_features = generate_features(call_K_train,T,s)
 call_features['w'] = 'call'
 call_features['moneyness'] = call_features['spot_price'] - call_features['strike_price']
 
-put_K_train = np.linspace(min(put_K),max(put_K),n_k)
 
 put_features = generate_features(put_K_train,T,s)
 put_features['w'] = 'put'
@@ -99,24 +107,29 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-# features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
-# features.describe()
+features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
+features.describe()
 
-from bivariate_interpolation import bilinear_vol_row
-
-
-features = features.apply(bilinear_vol_row,axis=1)
+from bilinear_interpolation import bilinear_vol_row
+# features = features.apply(bilinear_vol_row,axis=1)
 
 from pricing import black_scholes_price, noisyfier, heston_price_vanilla_row
 bs_features = features.apply(black_scholes_price,axis=1)
 
-# pd.set_option('display.max_rows',None)
-# pd.set_option('display.max_columns',None)
-# pd.reset_option('display.max_rows')
-# pd.reset_option('display.max_columns')
+
+
+
+
 
 heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
 
 ml_data = noisyfier(heston_features)
 
+# pd.set_option('display.max_rows',None)
+
+pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
+print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
+pd.reset_option('display.max_columns')
+
+# pd.reset_option('display.max_rows')

@@ -26,7 +26,6 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.append('term_structure')
-sys.path.append('contract_details')
 
 import QuantLib as ql
 import numpy as np
@@ -123,7 +122,7 @@ heston_parameters['avgAbsRelErr'] = avgAbsRelErr
 heston_parameters = heston_parameters.set_index('spot',drop=True)
 
 pd.set_option("display.max_columns",None)
-# pd.set_option("display.max_rows",None)
+pd.set_option("display.max_rows",None)
 print(f'\n\n{performance_df}')
 print(f"average abs relative error: {round(100*avgAbsRelErr,4)}%")
 print(f"\n{heston_parameters}")

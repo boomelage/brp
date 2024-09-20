@@ -21,13 +21,11 @@ ms = model_settings()
 raw_calls = ms.raw_calls
 raw_puts = ms.raw_puts
 
-call_K = ms.call_K
-put_K = ms.put_K
+raw_call_K = ms.raw_call_K
+raw_put_K = ms.raw_put_K
 
 call_atmvols = ms.call_atmvols
 put_atmvols = ms.put_atmvols
-
-otm_ts = ms.otm_ts
 
 T = ms.T
 s = ms.s
@@ -66,8 +64,8 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts,flag):
     return derman_coefs
 
 
-call_dermans = compute_derman_coefficients(s,T,call_K,call_atmvols,raw_calls,'call')
-put_dermans = compute_derman_coefficients(s,T,put_K,put_atmvols,raw_puts,'put')
+call_dermans = compute_derman_coefficients(s,T,raw_call_K,call_atmvols,raw_calls,'call')
+put_dermans = compute_derman_coefficients(s,T,raw_put_K,put_atmvols,raw_puts,'put')
 
 
 print(f'\n\n\ncall coefs:\n{call_dermans}')
@@ -100,10 +98,8 @@ def make_derman_surface(atm_volvec, derman_coefs, K, s = ms.s):
     return derman_ts
 
 
-derman_callvols = make_derman_surface(call_atmvols, call_dermans, call_K)
-derman_putvols = make_derman_surface(put_atmvols, put_dermans, put_K)
-
-otm_derman_vols = pd.concat([derman_putvols, derman_callvols])
+derman_callvols = make_derman_surface(call_atmvols, call_dermans, raw_call_K)
+derman_putvols = make_derman_surface(put_atmvols, put_dermans, raw_put_K)
 
 
 """
@@ -112,19 +108,22 @@ testing approximation fit
 
 from plot_surface import plot_term_structure
 
-K = otm_ts.iloc[:,0].dropna().index
+derman_test_ts = derman_callvols
+real_test_ts = ms.raw_calls
 
-real_test_ts = otm_ts.loc[K,:]
-indices = otm_derman_vols.index.intersection(real_test_ts.index)
-derman_test_ts = otm_derman_vols.loc[indices,:]
+T = ms.T
 
-T = derman_test_ts.columns
-
-for t in T:
-    fig = plot_term_structure(
-        K,real_test_ts.loc[:,t],derman_test_ts.loc[:,t],
-        title = f"Derman approximation for {t} day maturity")
-
+for t in T: 
+    try:
+        actual_data = real_test_ts.loc[:,t].dropna()
+        plot_K = actual_data.index
+        derman_fit = derman_test_ts.loc[plot_K,t]
+        fig = plot_term_structure(plot_K,actual_data,derman_fit,
+            title = f"Derman approximation for {t} day maturity")
+    except Exception:
+        raise ValueError(f"issue with {t} day maturity") 
+        
+    continue
 """
 creating vol surface
 
@@ -138,10 +137,10 @@ def plot_derman_rotate():
     n_K = 20
     K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
     
-    derman_ts = otm_derman_vols
+    derman_rotate_ds = derman_callvols
     
-    T = derman_ts.columns.astype(float)
-    K = derman_ts.index
+    T = derman_rotate_ds.columns.astype(float)
+    K = derman_rotate_ds.index
     T = T[(
             ( T > 0 )
             &
@@ -150,7 +149,7 @@ def plot_derman_rotate():
     
     expiration_dates = ms.compute_ql_maturity_dates(T)
     
-    implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_ts)
+    implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_rotate_ds)
     black_var_surface = ms.make_black_var_surface(
         expiration_dates, K, implied_vols_matrix)
     
@@ -158,4 +157,8 @@ def plot_derman_rotate():
         black_var_surface,K,T,'Derman approximation of volatility surface')
     return fig
 
+fig = plot_derman_rotate()
 
+print(f"\nspot price:\n{ms.s}")
+
+print(f"\nK:\n{ms.calibration_K}")

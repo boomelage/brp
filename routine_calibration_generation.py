@@ -62,38 +62,40 @@ puts['moneyness'] = puts['strike_price'] - puts['spot_price']
 bivariate interpolation
 
 """
-from bivariate_interpolation import bilinear_vol_row
+# from bivariate_interpolation import bilinear_vol_row
 
-calls = calls.apply(bilinear_vol_row,axis=1)
-puts = puts.apply(bilinear_vol_row,axis=1)
+# calls = calls.apply(bilinear_vol_row,axis=1)
+# puts = puts.apply(bilinear_vol_row,axis=1)
 
 
 """
 Derman approximation
 """
 
-# from derman_test import plot_derman_rotate, call_dermans, put_dermans, \
-#     call_atmvols, put_atmvols
+from derman_test import plot_derman_rotate, call_dermans, put_dermans, \
+    call_atmvols, put_atmvols
     
     
-# def apply_derman_vols(row,coef_df,atm_vols):
+def apply_derman_vols(row,coef_df,atm_vols):
     
-#     t = row['days_to_maturity']
-#     moneyness = row['moneyness']
-#     b = call_dermans.loc['b',t]
-#     atm_vol = call_dermans.loc['atm_vol',t]
-#     volatility = atm_vol + b*moneyness
-#     row['volatility'] = volatility
-#     return row
+    t = row['days_to_maturity']
+    moneyness = row['moneyness']
+    b = call_dermans.loc['b',t]
+    atm_vol = call_dermans.loc['atm_vol',t]
+    volatility = atm_vol + b*moneyness
+    row['volatility'] = volatility
+    return row
 
-# calls = calls.apply(
-#     apply_derman_vols, axis=1, coef_df=call_dermans, atm_vols=call_atmvols)
-# puts = puts.apply(
-#     apply_derman_vols,axis = 1, coef_df=put_dermans, atm_vols = put_atmvols)
-# surf = plot_derman_rotate()
-
+calls = calls.apply(
+    apply_derman_vols, axis=1, coef_df=call_dermans, atm_vols = call_atmvols)
+puts = puts.apply(
+    apply_derman_vols,axis = 1, coef_df=call_dermans, atm_vols = call_atmvols)
 
 
+# from bilinear_interpolation import bilinear_vol_row
+
+# calls = calls.apply(bilinear_vol_row,axis=1)
+# puts = puts.apply(bilinear_vol_row,axis=1)
 
 features = pd.concat([calls,puts],ignore_index=True)
 contract_details = features.copy()

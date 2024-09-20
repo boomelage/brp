@@ -43,7 +43,7 @@ def plot_term_structure(
         title = ""
         ):
     plt.rcParams['figure.figsize']=(6,4)
-    K = K.astype(int)
+    # K = K.astype(int)
     fig, ax = plt.subplots()
     ax.plot(K, est_ts)
     ax.plot(K, real_ts, "o")
@@ -54,7 +54,7 @@ def plot_term_structure(
     return fig
 
 def plot_rotate(black_var_surface,K,T,title="",elev=30):
-    azims = np.arange(0,360,15)
+    azims = np.arange(0,360,30)
     for a in azims:
         fig = plot_volatility_surface(black_var_surface, K, T,title=title, elev=30, azim=a)
     return fig

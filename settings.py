@@ -17,44 +17,68 @@ class model_settings():
     
     def __init__(self):
         
-        
         """
         from settings import model_settings
         ms = model_settings()
         """
-        
-        self.day_count          =    ql.Actual365Fixed()
-        self.calendar           =    ql.UnitedStates(m=1)
-        self.calculation_date   =    ql.Date.todaysDate()
-        self.csvs               =    dirdatacsv()
-        self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
-        self.s                  =    5630
+        self.s                  =    5625
         self.n_k                =    int(1e3)
 
         from routine_ivol_collection import raw_calls, raw_puts
         
         self.raw_calls = raw_calls
         self.raw_puts = raw_puts
+        self.raw_call_K = raw_calls.index
+        self.raw_put_K = raw_puts.index
         
         self.call_atmvols = raw_calls.loc[self.s,:].replace(0,np.nan).dropna()
         self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
         
         self.T = self.call_atmvols.index
-        self.T = self.T[~(self.T==36)]
+        self.T =  [
+            
+            2,   3,   
+            
+            7,   
+            
+            8,   9,  10,  
+            
+            14,  
+            
+            15,  16,  17,  21,  22,  23, 24,  
+            
+            28,
+            
+            29,  
+            
+            30,  
+            31, 
+            
+            # 37,  39,  46, 60,  74, 95, 
+            
+            # 106, 
+            
+            # 158, 165, 186, 196, 242, 277, 287, 305, 368, 459, 487, 640
+            ]
         # sep 16th
+        
         self.call_K = raw_calls.index[raw_calls.index>self.s]
         self.put_K = raw_puts.index[raw_puts.index<self.s]
         
         self.calibration_call_K = self.call_K[:3]
         self.calibration_put_K = self.put_K[-3:]
+        
+        
         self.calibration_K = np.array(
             [self.calibration_put_K,self.calibration_call_K]).flatten().tolist()
         
-        self.call_ts = raw_calls.loc[self.call_K,self.T]
-        self.put_ts = raw_puts.loc[self.put_K,self.T]
-        
-        self.otm_ts = pd.concat([self.put_ts,self.call_ts])
+       
+        self.day_count          =    ql.Actual365Fixed()
+        self.calendar           =    ql.UnitedStates(m=1)
+        self.calculation_date   =    ql.Date.todaysDate()
+        self.csvs               =    dirdatacsv()
+        self.xlsxs              =    dirdata()
         
         ql.Settings.instance().evaluationDate = self.calculation_date
         
@@ -102,9 +126,9 @@ class model_settings():
         
         call, put = ql.Option.Call, ql.Option.Put
         option_type = call if w == 'call' else put
-        
+        expiration_date = self.calculation_date + ql.Period(t,ql.Days)
         payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(t)
+        exercise = ql.EuropeanExercise(expiration_date)
         european_option = ql.VanillaOption(payoff, exercise)
         flat_ts = self.make_ts_object(r)
         dividend_ts = self.make_ts_object(g)
