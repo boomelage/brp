@@ -45,8 +45,6 @@ S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
 
 risk_free_rate = 0.05
 dividend_rate = 0.02
-
-
 flat_ts = ms.make_ts_object(risk_free_rate)
 dividend_ts = ms.make_ts_object(dividend_rate)
 

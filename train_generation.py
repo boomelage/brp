@@ -31,39 +31,16 @@ def generate_features(K,T,s,flag):
                   ])
     return features
 
-from derman_test import call_dermans, put_dermans
-
-def apply_derman_vols(row):
-    t = row['days_to_maturity']
-    moneyness = row['moneyness']
-    
-    if row['w'] == 'call':
-        b = call_dermans.loc['b',t]
-        atm_vol = call_dermans.loc['atm_vol',t]
-        
-    elif row['w'] == 'put':
-        b = put_dermans.loc['b',t]
-        atm_vol = put_dermans.loc['atm_vol',t]
-        
-    else:
-        print('flag error')
-    
-    volatility = atm_vol + b*moneyness
-    
-    row['volatility'] = volatility
-    return row
-
 
 from settings import model_settings
 ms = model_settings()
 import numpy as np
 s = ms.s
-call_K = ms.call_K[:5]
-put_K = ms.put_K[-5:]
+call_K = ms.call_K[:7]
+put_K = ms.put_K[-7:]
 
-number_of_contracts = 100
 
-n_strikes = int(10000)
+n_strikes = int(100)
 n_maturities = int(100)
 
 n_contracts = int(n_maturities*n_strikes*2)
@@ -108,7 +85,6 @@ features = features.apply(compute_moneyness_row,axis = 1)
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
-
 from routine_calibration_global import heston_parameters
 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
@@ -117,26 +93,19 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-# features = features.apply(apply_derman_vols,axis=1).reset_index(drop=True)
-# features.describe()
-
-from bilinear_interpolation import bilinear_vol_row
-features = features.apply(bilinear_vol_row,axis=1)
-
 progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
 progress_bar.update(1)
 
-from pricing import black_scholes_price, noisyfier, heston_price_vanilla_row
-bs_features = features.apply(black_scholes_price,axis=1)
+from pricing import  noisyfier, heston_price_vanilla_row
 
-heston_features = bs_features.apply(heston_price_vanilla_row,axis=1)
-
+heston_features = features.apply(heston_price_vanilla_row,axis=1)
 
 ml_data = noisyfier(heston_features)
 
-
 progress_bar.update(1)
 progress_bar.close()
+
+
 
 # pd.set_option('display.max_rows',None)
 
