@@ -21,8 +21,8 @@ ms = model_settings()
 atm_volvec = ms.call_atmvols
 T = ms.T
 s = ms.s
-
-from derman_test import derman_test_ts, real_test_ts
+from plot_surface import plot_rotate
+from derman_test import derman_test_ts
 
 ts_df = derman_test_ts
 K = ts_df.index
@@ -45,27 +45,30 @@ def bicubic_vol_row(row):
     return row
 
 
-TT = T
-KK = K
-KK = np.linspace(min(K),max(K),1000)
 
-bicubic_ts = pd.DataFrame(
-    [[bilin_vol(t,k, True) for t in TT] for k in KK],
-    columns=TT,
-    index=KK)
-
-ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
-
-
-for i, k in enumerate(KK):
-    for j, t in enumerate(TT):
-        ql_bicubic[i][j] = bicubic_ts.loc[k,t]
-
-from plot_surface import plot_rotate
-
-expiration_dates = ms.compute_ql_maturity_dates(TT)
-black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bicubic)
 
 def plot_bicubic_rotate():
+    TT = T
+    KK = K
+    TT = np.arange(1,365,1).astype(float)
+    KK = np.linspace(min(K),max(K),500)
+
+    bicubic_ts = pd.DataFrame(
+        [[bilin_vol(t,k, True) for t in TT] for k in KK],
+        columns=TT,
+        index=KK)
+
+    ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
+
+
+    for i, k in enumerate(KK):
+        for j, t in enumerate(TT):
+            ql_bicubic[i][j] = bicubic_ts.loc[k,t]
+
+
+
+    expiration_dates = ms.compute_ql_maturity_dates(TT)
+    black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bicubic)
     fig = plot_rotate(black_var_surface, KK, TT, title='bicubic interpolation of volatility surface approimated via Derman')
     return fig
+

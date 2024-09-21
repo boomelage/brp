@@ -88,8 +88,8 @@ for i, row in historical_data.iterrows():
         calibration dataset construction
         """
         n = 4
-        call_K = np.linspace(s,s*1.025, n)
-        put_K  = np.linspace(s*0.975, s, n)
+        call_K = np.linspace(s*1.01,s*1.03, n)
+        put_K  = np.linspace(s*0.97, s*0.99, n)
         
         calls = generate_features(call_K, T, s)
         calls = calls[calls['days_to_maturity'].isin(T)].copy()
@@ -118,10 +118,10 @@ for i, row in historical_data.iterrows():
         """
         generation
         """
-        # train_T = np.arange(1,7,1)
-        train_T = [1,7,14,28,30,31]
-        n = 1000
-        gen_K = np.linspace(s*(1+0.025), s*(1+0.050), n)
+        train_T = np.arange(1,14,1)
+        # train_T = [1,7,14,28,30,31]
+        n = 50
+        gen_K = np.linspace(s*1.01, s*1.03, n)
         
         # call_features = generate_train_features(gen_K,train_T,s,['call'])
         # features = call_features

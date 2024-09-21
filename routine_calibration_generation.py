@@ -20,7 +20,6 @@ ms = model_settings()
 s = ms.s
 calibration_call_K = ms.calibration_call_K
 calibration_put_K = ms.calibration_put_K
-
 T = ms.T
 
 
@@ -55,8 +54,6 @@ puts = generate_features(calibration_put_K, T, s)
 puts = puts[puts['days_to_maturity'].isin(T)].copy()
 puts['w'] = 'put'
 puts['moneyness'] = puts['strike_price'] - puts['spot_price']
-
-
 
 
 
@@ -112,11 +109,11 @@ contract_details['dividend_rate'] = 0.001
 
 # pd.set_option('display.max_rows',None)
 # pd.set_option('display.max_columns',None)
-
-print(f"\ncalibration dataset:\n{contract_details}")
-
 pd.reset_option('display.max_rows')
 pd.reset_option('display.max_columns')
+print(f"\ncalibration dataset:\n{contract_details}")
+
+
 
 
 

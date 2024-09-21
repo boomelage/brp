@@ -19,12 +19,10 @@ import numpy as np
 import pandas as pd
 from settings import model_settings
 ms = model_settings()
-
 day_count = ms.day_count
-calculation_date = ms.calculation_date
 calendar = ms.calendar
 
-def calibrate_heston(contract_details, s):
+def calibrate_heston(contract_details, s, calculation_date):
     calibration_dataset = contract_details
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     
