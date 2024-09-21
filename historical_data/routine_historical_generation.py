@@ -76,9 +76,9 @@ for i, row in historical_data.iterrows():
         expiry_dates = np.array([
                 calculation_date + ql.Period(30,ql.Days), 
                 calculation_date + ql.Period(60,ql.Days), 
-                calculation_date + ql.Period(3,ql.Months), 
-                  calculation_date + ql.Period(6,ql.Months),
-                #  calculation_date + ql.Period(12,ql.Months), 
+                # calculation_date + ql.Period(3,ql.Months), 
+                # calculation_date + ql.Period(6,ql.Months),
+                # calculation_date + ql.Period(12,ql.Months), 
                 # calculation_date + ql.Period(18,ql.Months), 
                 # calculation_date + ql.Period(24,ql.Months)
               ],dtype=object)
@@ -87,9 +87,9 @@ for i, row in historical_data.iterrows():
         """
         calibration dataset construction
         """
-        
-        call_K = np.linspace(s, s*1.01, 5)
-        put_K  =   np.arange(s*0.99, s, 5)
+        n = 4
+        call_K = np.linspace(s,s*1.025, n)
+        put_K  = np.linspace(s*0.975, s, n)
         
         calls = generate_features(call_K, T, s)
         calls = calls[calls['days_to_maturity'].isin(T)].copy()
@@ -113,20 +113,24 @@ for i, row in historical_data.iterrows():
         
         features['risk_free_rate'] = 0.04
         heston_parameters = calibrate_heston(features,s)
+        print('calibrated')
         
         """
         generation
         """
-        train_T = np.linspace(1,7,20)
-        strike_spread = 0.05
-        call_K_interp = np.linspace(s, s*(1+strike_spread),1000)
-        put_K_interp = np.linspace(s*(1-strike_spread),s,1000)
+        # train_T = np.arange(1,7,1)
+        train_T = [1,7,14,28,30,31]
+        n = 1000
+        gen_K = np.linspace(s*(1+0.025), s*(1+0.050), n)
         
-        call_features = generate_train_features(call_K_interp,train_T,s,['call'])
-        put_features = generate_train_features(put_K_interp,train_T,s,['put'])
+        # call_features = generate_train_features(gen_K,train_T,s,['call'])
+        # features = call_features
         
-        features = pd.concat(
-            [call_features,put_features],ignore_index=True).reset_index(drop=True)
+        put_features = generate_train_features(gen_K,train_T,s,['put'])
+        features = put_features
+        
+        # features = pd.concat(
+        #     [call_features,put_features],ignore_index=True).reset_index(drop=True)   
         
         features['sigma'] = heston_parameters['sigma'].iloc[0]
         features['theta'] = heston_parameters['theta'].iloc[0]
@@ -140,7 +144,8 @@ for i, row in historical_data.iterrows():
         heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
-
+        print(f"\n{historical_option_data.describe()}")
+        print(f"\n{i}/{historical_data.shape[0]}")
     except Exception as e:
         print(f"\n\n\n\nerror: {calculation_date}\ndetails: {e}\n\n\n\n")
         pass
@@ -149,4 +154,9 @@ print(f"\n{historical_option_data.describe()}")
 file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
 file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
-historical_option_data.to_csv(f"outputs/{file_timetag}.csv")
+
+historical_option_data.to_csv(f"hist_outputs/{file_timetag}.csv")
+
+
+
+

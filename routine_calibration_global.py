@@ -70,7 +70,7 @@ def calibrate_heston(contract_details, s):
     
     
     model.calibrate(heston_helpers, lm,
-                      ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+                      ql.EndCriteria(1000, 50, 1.0e-8,1.0e-8, 1.0e-8))
     
     theta, kappa, sigma, rho, v0 = model.params()
     

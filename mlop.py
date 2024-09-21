@@ -33,8 +33,8 @@ class mlop:
         
         self.random_state = None
         self.test_size = 0.10
-        self.max_iter = 10000
-        self.hidden_layer_sizes = (10,10,10)
+        self.max_iter = int(1e6)
+        self.hidden_layer_sizes = (100,100,100)
         self.solver = [
                     # "lbfgs",
                     "sgd", 

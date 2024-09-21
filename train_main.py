@@ -7,6 +7,7 @@ import os
 import sys
 import time
 from datetime import datetime
+import pandas as pd
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('term_structure')
 sys.path.append('contract_details')
@@ -21,7 +22,6 @@ print(f"\n{train_start_tag}\n")
 
 # from train_generation import ml_data
 from routine_historical_generation import historical_option_data
-
 from mlop import mlop
 mlop = mlop(user_dataset=historical_option_data)
 
@@ -35,7 +35,6 @@ print('\ntraining...')
 print(f"\ntransformers:\n{mlop.transformers}")
 
 print(f"\nfeatures:\n{mlop.feature_set}")
-
 
 
 """
