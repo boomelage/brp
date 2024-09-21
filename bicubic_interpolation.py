@@ -34,41 +34,53 @@ for i, k in enumerate(ql_K):
     for j, t in enumerate(ql_T):
         ql_vols[i][j] = ts_df.loc[k,t]
 
-bilin_vol = ql.BicubicSpline(ql_T, ql_K, ql_vols)
-
-def bicubic_vol(t,k):
-    vol = bilin_vol(t,k, True) 
-    return vol
+bicubic_vol = ql.BicubicSpline(ql_T, ql_K, ql_vols)
 
 def bicubic_vol_row(row):
     row['volatility'] = bicubic_vol(row['days_to_maturity'], row['strike_price'])
     return row
 
+TT = T
+KK = K
+TT = np.arange(1,365,1).astype(float)
+KK = np.linspace(min(K),max(K),500)
+
+bicubic_ts = pd.DataFrame(
+    [[bicubic_vol(t,k, True) for t in TT] for k in KK],
+    columns=TT,
+    index=KK)
+
+ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
+
+
+for i, k in enumerate(KK):
+    for j, t in enumerate(TT):
+        ql_bicubic[i][j] = bicubic_ts.loc[k,t]
 
 
 
-def plot_bicubic_rotate():
-    TT = T
-    KK = K
-    TT = np.arange(1,365,1).astype(float)
-    KK = np.linspace(min(K),max(K),500)
-
-    bicubic_ts = pd.DataFrame(
-        [[bilin_vol(t,k, True) for t in TT] for k in KK],
-        columns=TT,
-        index=KK)
-
-    ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
 
 
-    for i, k in enumerate(KK):
-        for j, t in enumerate(TT):
-            ql_bicubic[i][j] = bicubic_ts.loc[k,t]
+T = np.arange(1,365,1).astype(float)
+K = np.linspace(min(K),max(K),5000)
+
+bicubic_ts = pd.DataFrame(
+    [[bicubic_vol(t,k, True) for t in T] for k in K],
+    columns=T,
+    index=K)
+
+ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
 
 
+for i, k in enumerate(K):
+    for j, t in enumerate(T):
+        ql_bicubic[i][j] = bicubic_ts.loc[k,t]
+        
+expiration_dates = ms.compute_ql_maturity_dates(T)
+black_var_surface = ms.make_black_var_surface(expiration_dates, K, ql_bicubic)
+    
+    
+    
 
-    expiration_dates = ms.compute_ql_maturity_dates(TT)
-    black_var_surface = ms.make_black_var_surface(expiration_dates, KK, ql_bicubic)
-    fig = plot_rotate(black_var_surface, KK, TT, title='bicubic interpolation of volatility surface approimated via Derman')
-    return fig
+
 

@@ -129,35 +129,35 @@ creating vol surface
 
 """
 
-from plot_surface import plot_rotate
-def plot_derman_rotate():
-    upper_moneyness = s*1.2
-    lower_moneyness = s*0.8
+# from plot_surface import plot_rotate
+# def plot_derman_rotate():
+#     upper_moneyness = s*1.2
+#     lower_moneyness = s*0.8
     
-    n_K = 20
-    K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
+#     n_K = 20
+#     K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
     
-    derman_rotate_ds = derman_callvols
+#     derman_rotate_ds = derman_callvols
     
-    T = derman_rotate_ds.columns.astype(float)
-    K = derman_rotate_ds.index
-    T = T[(
-            ( T > 0 )
-            &
-            ( T < 37000 )
-    )]
+#     T = derman_rotate_ds.columns.astype(float)
+#     K = derman_rotate_ds.index
+#     T = T[(
+#             ( T > 0 )
+#             &
+#             ( T < 37000 )
+#     )]
     
-    expiration_dates = ms.compute_ql_maturity_dates(T)
+#     expiration_dates = ms.compute_ql_maturity_dates(T)
     
-    implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_rotate_ds)
-    black_var_surface = ms.make_black_var_surface(
-        expiration_dates, K, implied_vols_matrix)
+#     implied_vols_matrix = ms.make_implied_vols_matrix(K, T, derman_rotate_ds)
+#     black_var_surface = ms.make_black_var_surface(
+#         expiration_dates, K, implied_vols_matrix)
     
-    fig = plot_rotate(
-        black_var_surface,K,T,'Derman approximation of volatility surface')
-    return fig
+#     fig = plot_rotate(
+#         black_var_surface,K,T,'Derman approximation of volatility surface')
+#     return fig
 
-fig = plot_derman_rotate()
+# fig = plot_derman_rotate()
 
 print(f"\nspot price:\n{ms.s}")
 
