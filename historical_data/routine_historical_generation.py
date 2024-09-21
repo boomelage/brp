@@ -84,7 +84,7 @@ for i, row in historical_data.iterrows():
         T = expiry_dates - calculation_date
         
         """
-        calibration
+        calibration dataset construction
         """
         
         call_K = np.linspace(s, s*1.01, 5)
@@ -132,13 +132,14 @@ for i, row in historical_data.iterrows():
         features['kappa'] = heston_parameters['kappa'].iloc[0]
         features['rho'] = heston_parameters['rho'].iloc[0]
         features['v0'] = heston_parameters['v0'].iloc[0]
+        features['avgAbsRelErr'] = heston_parameters['avgAbsRelErr'].iloc[0]
         features['risk_free_rate'] = 0.04
         features['dividend_rate'] = row['dividend_rate']
         heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
         print(dtdate)
-    except Exception:
-        print(f"\n{dtdate}\n")
+    except Exception as e:
+        print(f"\n\n\n\nerror: {dtdate}\ndetails: {e}\n\n\n\n")
         pass
 

@@ -11,6 +11,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
+sys.path.append('historical_data')
 
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
@@ -18,10 +19,11 @@ train_start_tag = train_start_datetime.strftime('%c')
 print(f"\n{train_start_tag}\n")
 
 
-from train_generation import ml_data
+# from train_generation import ml_data
+from routine_historical_generation import historical_option_data
 
 from mlop import mlop
-mlop = mlop(user_dataset=ml_data)
+mlop = mlop(user_dataset=historical_option_data)
 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
