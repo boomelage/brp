@@ -54,8 +54,6 @@ n_contracts = int(n_maturities*n_strikes*2)
 
 print(f"pricing {n_contracts} contracts...")
 
-progress_bar = tqdm(total=2, desc="generatingFeatures", leave=False,
-                    bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
 # call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
 # put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
@@ -66,7 +64,11 @@ put_K_interp = call_K_interp
 T = np.linspace(1,7,n_maturities).astype(int)
 # T = np.linspace(min(T),max(T),n_maturities)
 
-
+print(f"\n\ntrain s: {s}")
+print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
+print(f"maturities between {int(min(T))} and {int(max(T))} days")
+progress_bar = tqdm(total=2, desc="generating", leave=False,
+                    bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
 call_features = generate_features(call_K_interp, T, s, ['call'])
 put_features = generate_features(put_K_interp, T, s, ['put'])
@@ -98,15 +100,13 @@ features = features.apply(compute_moneyness_row,axis = 1)
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
-
-
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
+progress_bar.set_description('pricing')
 progress_bar.update(1)
 
 
@@ -115,15 +115,11 @@ ml_data = noisyfier(heston_features)
 progress_bar.update(1)
 progress_bar.close()
 
-# pd.set_option('display.max_rows',None)
 
+# pd.set_option('display.max_rows',None)
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
-print(f"\n\ntrain s: {s}")
-print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
-print(f"maturities between {int(min(T))} and {int(max(T))}")
 pd.reset_option('display.max_columns')
-
 # pd.reset_option('display.max_rows')
 
