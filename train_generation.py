@@ -40,28 +40,28 @@ def generate_features(K,T,s,flag):
 
 
 s = ms.s
+
 call_K = ms.call_K
 put_K = ms.put_K
-train_call_K = call_K[call_K<=5725]
-train_put_K = put_K[put_K>=5525]
 
 
-n_strikes = int(1000)
-n_maturities = int(n_strikes)
+
+n= 1000
+n_strikes = int(n)
+n_maturities = int(n)
+
+T = np.linspace(1,7,n_maturities).astype(int)
 
 n_contracts = int(n_maturities*n_strikes*2)
 
 print(f"\n\npricing {n_contracts} contracts...")
 
 
-call_K_interp = np.linspace(min(train_call_K), max(train_call_K),int(n_strikes))
-put_K_interp = np.linspace(min(train_put_K),max(train_put_K),int(n_strikes))
 
-# call_K_interp = np.linspace(s*0.99,s*1.01,int(n_strikes))
-# put_K_interp = call_K_interp
+pricing_spread = 0.002
+call_K_interp = np.linspace(s, s*(1+pricing_spread),int(n_strikes))
+put_K_interp = np.linspace(s*(1-pricing_spread),s,int(n_strikes))
 
-T = np.linspace(1,7,n_maturities).astype(int)
-# T = np.linspace(min(T),max(T),n_maturities)
 
 print(f"\ntrain s: {s}")
 print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")

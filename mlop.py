@@ -36,16 +36,16 @@ class mlop:
         self.max_iter = 10000
         self.hidden_layer_sizes = (10,10,10)
         self.solver = [
-                    "lbfgs",
-                    # "sgd", 
+                    # "lbfgs",
+                    "sgd", 
                     # "adam"
                     ]
         
         self.alpha = 0.0001
         self.learning_rate = [
             
-            'adaptive',
-            # 'constant'
+            # 'adaptive',
+            'constant'
             
             ]
         
@@ -53,8 +53,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -68,7 +68,9 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
+            
             'w'
+            
             ]
         
         self.numerical_features = [
@@ -89,13 +91,12 @@ class mlop:
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            # ("encode", OneHotEncoder(),self.categorical_features)
+            ("encode", OneHotEncoder(),self.categorical_features)
             ]   
         
         
         self.security_tag = 'vanilla options'
         self.user_dataset = user_dataset
-        self.model_scaler = StandardScaler()
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
@@ -187,7 +188,7 @@ class mlop:
             ("polynomial", PolynomialFeatures(degree=5, 
                                     interaction_only=False, 
                                     include_bias=True)),
-            ("scaler", self.model_scaler),
+            ("scaler", StandardScaler()),
             ("regressor", Lasso(alpha=0.01))])
 
         lm_fit = lm_pipeline.fit(train_X, train_y)
@@ -198,7 +199,8 @@ class mlop:
 # =============================================================================
                                                                 # Model Testing
                                                                 
-    def compute_predictive_performance(self,test_data,test_X,model_fit, model_name):
+    def compute_predictive_performance(
+            self,test_data, test_X, model_fit, model_name):
         predictive_performance = (pd.concat(
             [test_data.reset_index(drop=True), 
              pd.DataFrame({f"{model_name}": model_fit.predict(test_X)})

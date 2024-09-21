@@ -28,19 +28,52 @@ train_data, train_X, train_y, \
 
 preprocessor = mlop.preprocess()
 
-print('training...')
+print('\ntraining...')
 
+print(f"\ntransformers:\n{mlop.transformers}")
+
+print(f"\nfeatures:\n{mlop.feature_set}")
+
+
+
+"""
+single layer network
+"""
+
+# print(f"\nactivation: {mlop.activation_function}")
+# print(f"solver: {mlop.solver}")
+# print(f"learning rate: {mlop.learning_rate}")
 # model_name = "Single Layer Network"
+# print(model_name)
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
+"""
+deep neural network
+"""
+
+print(f"\nactivation: {mlop.activation_function}")
+print(f"solver: {mlop.solver}")
+print(f"learning rate: {mlop.learning_rate}")
+print(f"hidden layers: {mlop.hidden_layer_sizes}")
 model_name = "Deep Neural Network"
+print(model_name)
 model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
+"""
+random forest
+"""
+
 # model_name = "Random Forest"
+# print(model_name)
 # model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
+"""
+lasso regression
+"""
+
 # model_name = "Lasso Regression"
-# model_fit = mlop.run_lm(train_X,train_y)
+# print(model_name)
+# model_fit, runtime = mlop.run_lm(train_X,train_y)
 
 
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
@@ -52,4 +85,3 @@ train_end = time.time()
 train_time = train_end - train_start
 
 print(f"\nruntime: {int(train_time)} seconds")
-
