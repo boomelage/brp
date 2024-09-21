@@ -191,4 +191,6 @@ class model_settings():
         row['heston_price'] = h_price
         return row
         
-        
+ms = model_settings()
+
+ms.s
