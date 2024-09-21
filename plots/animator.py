@@ -9,28 +9,28 @@ import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-os.chdir(current_dir)
 sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from settings import model_settings
 ms = model_settings()
 import time
-
 from PIL import Image
+from tqdm import tqdm
+os.chdir(current_dir)
 
-from plot_surface import plot_rotate
+
+"""
+generate frames
+
+"""
 from bicubic_interpolation import KK,TT,black_var_surface
-
 K = KK
 T = TT
-
-plt.rcParams['figure.figsize']=(15,7)
-plt.rcParams['figure.figsize']=(15,7)
+plt.rcParams['figure.figsize'] = (10, 10)
 K = K.astype(int)
 plot_maturities = np.sort(np.array(T,dtype=float)/365)
 plot_strikes = np.sort(K).astype(float)
@@ -38,13 +38,14 @@ X, Y = np.meshgrid(plot_strikes, plot_maturities)
 Z = np.array([[
     black_var_surface.blackVol(y, x) for x in plot_strikes] 
     for y in plot_maturities])
-
-
 azims = np.arange(0,360,1)
 
-for azim in azims:
+progress_bar = tqdm(total=360, desc="generatingImages", ncols=360)
+
+
+for i, azim in enumerate(azims):
     fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    ax = fig.add_subplot(111,projection='3d')
     ax.view_init(elev=30, azim=azim)  
     ax.set_title('bicubic interpolation of volatility surface approimated via Derman')
     surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
@@ -53,11 +54,12 @@ for azim in azims:
     ax.set_xlabel("Strikes", size=9)
     ax.set_ylabel("Maturities (Years)", size=9)
     ax.set_zlabel("Volatility", size=9)
-    fig.savefig(f'{int(time.time()*10)}.png')
+    
     time.sleep(0.001)
     plt.show()
-    plt.cla()
-    plt.clf()
+    fig.savefig(f'{int(i+1)}.png')
+    plt.close(fig)
+    progress_bar.update(1)
 
 
 
@@ -83,4 +85,4 @@ def create_stop_motion_gif_from_directory(output_path, durations, loop=0):
     print(f"GIF saved as {output_path}")
 
 
-
+create_stop_motion_gif_from_directory(r'vol_surf.gif', durations=0.015, loop=0)
