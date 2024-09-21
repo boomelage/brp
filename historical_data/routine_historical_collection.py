@@ -9,12 +9,16 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-sys.path.append(os.path.join(parent_dir,'term_Structure'))
+# sys.path.append(os.path.join(parent_dir,'term_Structure'))
 import pandas as pd
 import numpy as np
+from itertools import product
 from settings import model_settings
 ms = model_settings()
 
+"""
+data collection and cleaning
+"""
 
 os.chdir(current_dir)
 csvs = ms.csvs
@@ -28,10 +32,10 @@ pd.reset_option("display.max_rows")
 
 
 historical_impvols = pd.DataFrame()
+
 for file in csvs:
     raw = pd.read_csv(file)
     raw.columns = raw.loc[2]
-    
     
     df = raw.loc[4:].reset_index(drop=True)
     
@@ -52,13 +56,6 @@ for file in csvs:
         'End of Day Risk Free Rate Mid':"risk_free_rate", 
         'Mid Price':"spot_price",
         }, inplace=True)
-    # Assuming 'df' is your DataFrame
-
-    df = df.astype({
-        # 'date': 'datetime64ns',     # Convert 'column1' to integer
-        # 'column2': 'float',   # Convert 'column2' to float
-        # 'column3': 'category' # Convert 'column3' to categorical
-    })
 
     df['date'] = pd.to_datetime(df['date'], format='%d/%m/%Y',errors='coerce')
     df = df.infer_objects(copy=False) 
@@ -67,10 +64,5 @@ for file in csvs:
     
     historical_impvols = pd.concat([historical_impvols,df],ignore_index=True)
 
-historical_impvols
-
-trading_day = historical_impvols.loc[0]
-
-trading_day
 
 

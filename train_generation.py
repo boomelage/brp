@@ -14,14 +14,14 @@ sys.path.append('misc')
 import pandas as pd
 from itertools import product
 from tqdm import tqdm
-from routine_calibration_global import heston_parameters
 from pricing import noisyfier
 from settings import model_settings
+from routine_calibration_global import calibrate_heston
 ms = model_settings()
 import numpy as np
 
 
-def generate_features(K,T,s,flag):
+def generate_train_features(K,T,s,flag):
     features = pd.DataFrame(
         product(
             [s],
@@ -46,7 +46,7 @@ put_K = ms.put_K
 
 
 
-n= 1000
+n= 10
 n_strikes = int(n)
 n_maturities = int(n)
 
@@ -69,8 +69,8 @@ print(f"maturities between {int(min(T))} and {int(max(T))} days")
 progress_bar = tqdm(total=2, desc="generating", leave=False,
                     bar_format='{l_bar}{bar} | {n_fmt}/{total_fmt}')
 
-call_features = generate_features(call_K_interp, T, s, ['call'])
-put_features = generate_features(put_K_interp, T, s, ['put'])
+call_features = generate_train_features(call_K_interp, T, s, ['call'])
+put_features = generate_train_features(put_K_interp, T, s, ['put'])
 
 train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
 
@@ -99,6 +99,8 @@ features = features.apply(compute_moneyness_row,axis = 1)
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
+from 
+heston_parameters = calibrate_heston(features)
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
