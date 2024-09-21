@@ -27,8 +27,6 @@ pd.reset_option("display.max_rows")
 # pd.reset_option("display.max_columns")
 
 
-
-
 def collect_historical_data():
     historical_data = pd.DataFrame()
     for file in csvs:
@@ -36,8 +34,6 @@ def collect_historical_data():
         raw.columns = raw.loc[2]
         
         df = raw.loc[4:].reset_index(drop=True)
-        
-        df = df.replace(0,np.nan).dropna(subset=['Mid Price'])
         
         df.columns
         
@@ -54,12 +50,16 @@ def collect_historical_data():
             'End of Day Risk Free Rate Mid':"risk_free_rate", 
             'Mid Price':"spot_price",
             }, inplace=True)
-    
+        
         df['date'] = pd.to_datetime(df['date'], format='%d/%m/%Y',errors='coerce')
         df = df.infer_objects(copy=False) 
         df[df.columns[1:]] = df[df.columns[1:]].astype(float)
         df.iloc[:, 1:] = df.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
         
         historical_data = pd.concat([historical_data,df],ignore_index=True)
+        historical_data = historical_data.dropna(how='all',axis=0)
+        historical_data = historical_data.dropna(how='all',axis=1)
+        historical_data = historical_data.dropna(how='any',axis=0)
     return historical_data
+
 

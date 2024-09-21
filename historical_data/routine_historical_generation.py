@@ -71,17 +71,16 @@ for i, row in historical_data.iterrows():
     try:
         s = row['spot_price']
         dtdate = row['date']
-        
+        print(f"\n\n{dtdate}")
         calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
-        
         expiry_dates = np.array([
-               calculation_date + ql.Period(30,ql.Days), 
+                calculation_date + ql.Period(30,ql.Days), 
                 calculation_date + ql.Period(60,ql.Days), 
                 calculation_date + ql.Period(3,ql.Months), 
-                 calculation_date + ql.Period(6,ql.Months),
-               #  calculation_date + ql.Period(12,ql.Months), 
-               # calculation_date + ql.Period(18,ql.Months), 
-               # calculation_date + ql.Period(24,ql.Months)
+                  calculation_date + ql.Period(6,ql.Months),
+                #  calculation_date + ql.Period(12,ql.Months), 
+                # calculation_date + ql.Period(18,ql.Months), 
+                # calculation_date + ql.Period(24,ql.Months)
               ],dtype=object)
         T = expiry_dates - calculation_date
         
@@ -118,13 +117,13 @@ for i, row in historical_data.iterrows():
         """
         generation
         """
+        train_T = np.linspace(1,7,20)
+        strike_spread = 0.05
+        call_K_interp = np.linspace(s, s*(1+strike_spread),1000)
+        put_K_interp = np.linspace(s*(1-strike_spread),s,1000)
         
-        pricing_spread = 0.005
-        call_K_interp = np.linspace(s, s*(1+pricing_spread),1000)
-        put_K_interp = np.linspace(s*(1-pricing_spread),s,1000)
-        
-        call_features = generate_train_features(call_K_interp,T,s,['call'])
-        put_features = generate_train_features(put_K_interp,T,s,['put'])
+        call_features = generate_train_features(call_K_interp,train_T,s,['call'])
+        put_features = generate_train_features(put_K_interp,train_T,s,['put'])
         
         features = pd.concat(
             [call_features,put_features],ignore_index=True).reset_index(drop=True)
@@ -137,16 +136,17 @@ for i, row in historical_data.iterrows():
         features['avgAbsRelErr'] = heston_parameters['avgAbsRelErr'].iloc[0]
         features['risk_free_rate'] = 0.04
         features['dividend_rate'] = row['dividend_rate']
+        features['days_to_maturity'] = features['days_to_maturity'].astype(int)
         heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
-        print(dtdate)
+
     except Exception as e:
-        print(f"\n\n\n\nerror: {dtdate}\ndetails: {e}\n\n\n\n")
+        print(f"\n\n\n\nerror: {calculation_date}\ndetails: {e}\n\n\n\n")
         pass
 
-
+print(f"\n{historical_option_data.describe()}")
 file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
 file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
-historical_option_data.to_csv(f"{file_timetag}.csv")
+historical_option_data.to_csv(f"outputs/{file_timetag}.csv")
