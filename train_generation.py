@@ -42,29 +42,28 @@ def generate_features(K,T,s,flag):
 s = ms.s
 call_K = ms.call_K
 put_K = ms.put_K
-mats = 5
-call_K = call_K[:mats]
-put_K = put_K[-mats:]
+train_call_K = call_K[call_K<=5725]
+train_put_K = put_K[put_K>=5525]
 
 
 n_strikes = int(1000)
-n_maturities = int(700)
+n_maturities = int(n_strikes)
 
 n_contracts = int(n_maturities*n_strikes*2)
 
-print(f"pricing {n_contracts} contracts...")
+print(f"\n\npricing {n_contracts} contracts...")
 
 
-# call_K_interp = np.linspace(min(call_K), max(call_K),int(n_strikes))
-# put_K_interp = np.linspace(min(put_K),max(put_K),int(n_strikes))
+call_K_interp = np.linspace(min(train_call_K), max(train_call_K),int(n_strikes))
+put_K_interp = np.linspace(min(train_put_K),max(train_put_K),int(n_strikes))
 
-call_K_interp = np.linspace(s*0.99,s*1.01,int(n_strikes))
-put_K_interp = call_K_interp
+# call_K_interp = np.linspace(s*0.99,s*1.01,int(n_strikes))
+# put_K_interp = call_K_interp
 
 T = np.linspace(1,7,n_maturities).astype(int)
 # T = np.linspace(min(T),max(T),n_maturities)
 
-print(f"\n\ntrain s: {s}")
+print(f"\ntrain s: {s}")
 print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
 print(f"maturities between {int(min(T))} and {int(max(T))} days")
 progress_bar = tqdm(total=2, desc="generating", leave=False,
@@ -73,7 +72,7 @@ progress_bar = tqdm(total=2, desc="generating", leave=False,
 call_features = generate_features(call_K_interp, T, s, ['call'])
 put_features = generate_features(put_K_interp, T, s, ['put'])
 
-train_K = np.sort(np.array([put_K,call_K],dtype=int).flatten())
+train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
 
 features = pd.concat(
     [call_features,put_features],ignore_index=True).reset_index(drop=True)
@@ -114,6 +113,7 @@ heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
 ml_data = noisyfier(heston_features)
 progress_bar.update(1)
 progress_bar.close()
+
 
 
 # pd.set_option('display.max_rows',None)
