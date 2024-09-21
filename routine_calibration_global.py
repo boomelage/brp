@@ -14,7 +14,6 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 sys.path.append('term_structure')
-
 import QuantLib as ql
 import numpy as np
 import pandas as pd
@@ -111,3 +110,6 @@ def calibrate_heston(contract_details, s):
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
     return heston_parameters
+
+
+

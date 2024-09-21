@@ -12,6 +12,8 @@ sys.path.append(parent_dir)
 import pandas as pd
 import numpy as np
 import QuantLib as ql
+import time
+from datetime import datetime
 from itertools import product
 from bicubic_interpolation import bicubic_vol_row
 from routine_calibration_global import calibrate_heston
@@ -143,3 +145,8 @@ for i, row in historical_data.iterrows():
         print(f"\n\n\n\nerror: {dtdate}\ndetails: {e}\n\n\n\n")
         pass
 
+
+file_time = time.time()
+file_dt = datetime.fromtimestamp(file_time)
+file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
+historical_option_data.to_csv(f"{file_timetag}.csv")
