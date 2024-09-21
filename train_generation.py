@@ -99,8 +99,7 @@ features = features.apply(compute_moneyness_row,axis = 1)
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
-from 
-heston_parameters = calibrate_heston(features)
+heston_parameters = calibrate_heston(features,s)
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
