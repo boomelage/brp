@@ -14,6 +14,12 @@ sys.path.append('misc')
 import pandas as pd
 from itertools import product
 from tqdm import tqdm
+from routine_calibration_global import heston_parameters
+from pricing import noisyfier
+from settings import model_settings
+ms = model_settings()
+import numpy as np
+
 
 def generate_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -32,9 +38,7 @@ def generate_features(K,T,s,flag):
     return features
 
 
-from settings import model_settings
-ms = model_settings()
-import numpy as np
+
 s = ms.s
 call_K = ms.call_K
 put_K = ms.put_K
@@ -94,7 +98,7 @@ features = features.apply(compute_moneyness_row,axis = 1)
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
 
-from routine_calibration_global import heston_parameters
+
 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
@@ -105,7 +109,7 @@ features['v0'] = heston_parameters['v0'].iloc[0]
 progress_bar.set_description(f'pricing{int(n_contracts)}contracts')
 progress_bar.update(1)
 
-from pricing import noisyfier
+
 heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
 ml_data = noisyfier(heston_features)
 progress_bar.update(1)

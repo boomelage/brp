@@ -36,8 +36,8 @@ class mlop:
         self.max_iter = 10000
         self.hidden_layer_sizes = (10,10,10)
         self.solver = [
-                    # "lbfgs",
-                    "sgd",
+                    "lbfgs",
+                    # "sgd", 
                     # "adam"
                     ]
         
@@ -53,8 +53,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -67,7 +67,8 @@ class mlop:
             
             'spot_price', 
             'strike_price', 
-            'days_to_maturity', 
+            'days_to_maturity',
+            'w'
             ]
         
         self.numerical_features = [
@@ -80,7 +81,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'w'
+            'w'
             
             ]
         
