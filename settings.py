@@ -11,7 +11,6 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
-import pandas as pd
 from data_query import dirdatacsv, dirdata
 class model_settings():
     
@@ -22,7 +21,7 @@ class model_settings():
         ms = model_settings()
         """
         self.ticker             =    'SPX'
-        self.s                  =    5710
+        self.s                  =    5625
         self.n_k                =    int(1e3)
 
         from routine_ivol_collection import raw_calls, raw_puts
@@ -36,49 +35,49 @@ class model_settings():
         self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
         
         self.T = self.call_atmvols.index
-        # self.T =  [
+        self.T =  [
             
-        #     # 2, 3,   
+            # 2, 3,   
             
-        #     7,
+            7,
             
-        #     # 8,   9,  10,  
+            # 8,   9,  10,  
             
-        #     14,  
+            14,  
             
-        #     # 15,  16,  17,  21,  22,  23, 24,  
+            # 15,  16,  17,  21,  22,  23, 24,  
             
-        #     # 28,
+            # 28,
             
-        #     # 29,  
+            # 29,  
             
-        #     30,  
+            30,  
             
-        #     # 31, 
+            # 31, 
             
-        #     # 37,  39,  46, 
+            # 37,  39,  46, 
             
-        #     60,  
+            60,  
             
-        #     # 74, 
+            # 74, 
             
-        #     95, 
+            95, 
             
-        #     # 106, 
+            # 106, 
             
-        #     158, 
+            158, 
             
-        #     # 165, 
+            # 165, 
             
-        #     186, 
+            186, 
             
-        #     # 196, 242, 277, 287, 305, 
+            # 196, 242, 277, 287, 305, 
             
-        #     368, 
+            368, 
             
-        #     # 459, 487, 640
+            # 459, 487, 640
             
-        #     ]
+            ]
         # sep 16th
         
         self.call_K = raw_calls.index[raw_calls.index>self.s]
