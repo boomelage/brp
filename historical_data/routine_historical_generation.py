@@ -18,6 +18,7 @@ ms = model_settings()
 from routine_historical_collection import historical_impvols
 from bicubic_interpolation import bicubic_vol_row
 from routine_calibration_global import calibrate_heston
+from pricing import noisyfier
 # pd.set_option("display.max_rows",None)
 pd.set_option("display.max_columns",None)
 
@@ -78,10 +79,10 @@ expiry_dates = np.array([
       ],dtype=object)
 T = expiry_dates - calculation_date
 
-
 """
 calibration
 """
+
 call_K = np.linspace(s, s*1.01, 5)
 put_K  =   np.arange(s*0.99, s, 5)
 
@@ -99,30 +100,39 @@ calls = calls.apply(bicubic_vol_row,axis=1)
 puts = puts.apply(bicubic_vol_row,axis=1)
 
 features = pd.concat([calls,puts],ignore_index=True)
-
 features['dividend_rate'] = row['dividend_rate']
+
+"""
+calibration output (assuming fixed risk free rate for now)
+"""
+
 features['risk_free_rate'] = 0.04
 heston_parameters = calibrate_heston(features,s)
 
 """
 generation
 """
-features['sigma'] = heston_parameters['sigma'].iloc[0]
-features['theta'] = heston_parameters['theta'].iloc[0]
-features['kappa'] = heston_parameters['kappa'].iloc[0]
-features['rho'] = heston_parameters['rho'].iloc[0]
-features['v0'] = heston_parameters['v0'].iloc[0]
-
-heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
-
-contract_details = heston_features.copy()
 
 pricing_spread = 0.005
 call_K_interp = np.linspace(s, s*(1+pricing_spread),100)
 put_K_interp = np.linspace(s*(1-pricing_spread),s,100)
 
-train_calls = generate_train_features(call_K,T,s,['call'])
-train_puts = generate_train_features(put_K,T,s,['put'])
+call_features = generate_train_features(call_K_interp,T,s,['call'])
+put_features = generate_train_features(put_K_interp,T,s,['put'])
+
+features = pd.concat(
+    [call_features,put_features],ignore_index=True).reset_index(drop=True)
+
+features['sigma'] = heston_parameters['sigma'].iloc[0]
+features['theta'] = heston_parameters['theta'].iloc[0]
+features['kappa'] = heston_parameters['kappa'].iloc[0]
+features['rho'] = heston_parameters['rho'].iloc[0]
+features['v0'] = heston_parameters['v0'].iloc[0]
+features['risk_free_rate'] = 0.04
+features['dividend_rate'] = row['dividend_rate']
+heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
+ml_data = noisyfier(heston_features)
 
 
 
+ml_data
