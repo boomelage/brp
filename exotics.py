@@ -139,7 +139,7 @@ down_features['updown'] = 'Down'
 
 n_contracts = 4*n*len(T)*len(K)
 
-print(f"\ngenerating {n_contracts} contracts\n")
+print(f"\ngenerating {n_contracts} contracts...\n")
 
 features = pd.concat([up_features,down_features]).reset_index(drop=True)
 features['sigma'] = heston_parameters['sigma'].iloc[0]

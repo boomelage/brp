@@ -69,9 +69,9 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            # 'barrierType',
-            # 'outin',
-            # 'updown',
+            'barrierType',
+            'outin',
+            'updown',
             
             'w'
             
@@ -89,15 +89,16 @@ class mlop:
             
             'w'
             
-            # 'barrierType',
-            # 'barrierType',
-            # 'outin',
-            # 'updown',
+            'barrierType',
+            'barrierType',
+            'outin',
+            'updown',
 
             
             ]
         
-        self.security_tag = 'vanilla options'
+        # self.security_tag = 'vanilla options'
+        self.security_tag = 'barrier options'
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
@@ -235,7 +236,7 @@ class mlop:
             facet_wrap("Model") + 
             labs(x="Percentage moneyness (S/K)", 
                  y=f"Absolute percentage error ({round(runtime,4)} second runtime)",
-                 title=f'Prediction error for {self.security_tag} under Heston') + 
+                 title=f'Prediction error for {self.security_tag}') + 
             theme(legend_position="")
             )
         predictive_performance_plot.show()
