@@ -9,16 +9,18 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
+sys.path.append(os.path.join('term_structure',parent_dir))
 import pandas as pd
 import numpy as np
 import QuantLib as ql
 import time
 from datetime import datetime
 from itertools import product
-from bicubic_interpolation import bicubic_vol_row
+from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
 from routine_calibration_global import calibrate_heston
 from pricing import noisyfier
 from settings import model_settings
+from derman_test import call_dermans, make_derman_surface
 ms = model_settings()
 os.chdir(current_dir)
 from routine_historical_collection import collect_historical_data
@@ -76,12 +78,13 @@ for i, row in historical_data.iterrows():
         expiry_dates = np.array([
                 calculation_date + ql.Period(30,ql.Days), 
                 calculation_date + ql.Period(60,ql.Days), 
-                # calculation_date + ql.Period(3,ql.Months), 
-                # calculation_date + ql.Period(6,ql.Months),
-                # calculation_date + ql.Period(12,ql.Months), 
+                calculation_date + ql.Period(3,ql.Months), 
+                calculation_date + ql.Period(6,ql.Months),
+                calculation_date + ql.Period(12,ql.Months), 
                 # calculation_date + ql.Period(18,ql.Months), 
                 # calculation_date + ql.Period(24,ql.Months)
               ],dtype=object)
+        
         T = expiry_dates - calculation_date
         
         """
@@ -100,37 +103,57 @@ for i, row in historical_data.iterrows():
         puts = puts[puts['days_to_maturity'].isin(T)].copy()
         puts['w'] = 'put'
         puts['moneyness'] = puts['strike_price'] - puts['spot_price']
+
+        derman_T = [30, 60, 95, 186, 368]
+        atm_volvec = row[row.index[1:-4]]
+        atm_volvec.index = derman_T
         
-        calls = calls.apply(bicubic_vol_row,axis=1)
-        puts = puts.apply(bicubic_vol_row,axis=1)
+        derman_K = np.unique(np.array([put_K, call_K],dtype=float).flatten())
+        derman_ts = make_derman_surface(atm_volvec, call_dermans, derman_K, s)
+        
+        bicvol = make_bicubic_functional(derman_ts,derman_K,derman_T)
+        
         
         features = pd.concat([calls,puts],ignore_index=True)
         features['dividend_rate'] = row['dividend_rate']
+        
+        def apply_bicvol(row):
+            t = row['days_to_maturity']
+            k = row['strike_price']
+            volatility = bicvol(t,k, allowExtrapolation = False)
+            row['volatility'] = volatility
+            return row
+        
+        
+        features = features.apply(apply_bicvol, axis = 1)
+        
         
         """
         calibration output (assuming fixed risk free rate for now)
         """
         
         features['risk_free_rate'] = 0.04
-        heston_parameters = calibrate_heston(features,s)
+        heston_parameters = calibrate_heston(features, s, calculation_date)
         print('calibrated')
         
         """
         generation
         """
-        train_T = np.arange(1,14,1)
-        # train_T = [1,7,14,28,30,31]
+        train_T = np.arange(1,7,1)
         n = 50
-        gen_K = np.linspace(s*1.01, s*1.03, n)
         
-        # call_features = generate_train_features(gen_K,train_T,s,['call'])
-        # features = call_features
+        n = 4
+        call_K = np.linspace(s*1.01,s*1.02, n)
+        put_K  = np.linspace(s*0.98, s*0.99, n)
         
-        put_features = generate_train_features(gen_K,train_T,s,['put'])
+        call_features = generate_train_features(call_K,train_T,s,['call'])
+        features = call_features
+        
+        put_features = generate_train_features(put_K,train_T,s,['put'])
         features = put_features
         
-        # features = pd.concat(
-        #     [call_features,put_features],ignore_index=True).reset_index(drop=True)   
+        features = pd.concat(
+            [call_features,put_features],ignore_index=True).reset_index(drop=True)   
         
         features['sigma'] = heston_parameters['sigma'].iloc[0]
         features['theta'] = heston_parameters['theta'].iloc[0]
@@ -141,12 +164,15 @@ for i, row in historical_data.iterrows():
         features['risk_free_rate'] = 0.04
         features['dividend_rate'] = row['dividend_rate']
         features['days_to_maturity'] = features['days_to_maturity'].astype(int)
+
         heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
         print(f"\n{historical_option_data.describe()}")
         print(f"\n{i}/{historical_data.shape[0]}")
+        
     except Exception as e:
+        
         print(f"\n\n\n\nerror: {calculation_date}\ndetails: {e}\n\n\n\n")
         pass
 

@@ -18,8 +18,11 @@ from matplotlib import cm
 from settings import model_settings
 ms = model_settings()
 import time
+from datetime import datetime
 from PIL import Image
 from tqdm import tqdm
+import QuantLib as ql
+from bicubic_interpolation import K, make_bicubic_ts
 os.chdir(current_dir)
 
 
@@ -27,11 +30,24 @@ os.chdir(current_dir)
 generate frames
 
 """
-from bicubic_interpolation import KK,TT,black_var_surface
-K = KK
-T = TT
+
+T = np.arange(1,360,1).astype(float)
+K = np.linspace(min(K),max(K),5000)
+bicubic_ts = make_bicubic_ts(T,K)
+
+ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
+
+print("space generated")
+
+for i, k in enumerate(K):
+    for j, t in enumerate(T):
+        ql_bicubic[i][j] = bicubic_ts.loc[k,t]
+        
+expiration_dates = ms.compute_ql_maturity_dates(T)
+black_var_surface = ms.make_black_var_surface(expiration_dates, K, ql_bicubic)
+    
+
 plt.rcParams['figure.figsize'] = (10, 10)
-K = K.astype(int)
 plot_maturities = np.sort(np.array(T,dtype=float)/365)
 plot_strikes = np.sort(K).astype(float)
 X, Y = np.meshgrid(plot_strikes, plot_maturities)
@@ -39,15 +55,14 @@ Z = np.array([[
     black_var_surface.blackVol(y, x) for x in plot_strikes] 
     for y in plot_maturities])
 azims = np.arange(0,360,1)
-
-progress_bar = tqdm(total=360, desc="generatingImages", ncols=360)
+print("object generated")
 
 
 for i, azim in enumerate(azims):
     fig = plt.figure()
     ax = fig.add_subplot(111,projection='3d')
     ax.view_init(elev=30, azim=azim)  
-    ax.set_title('bicubic interpolation of volatility surface approimated via Derman')
+    ax.set_title('bicubic interpolation of volatility surface approximated via Derman')
     surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
                     linewidth=0.1)
     fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -55,17 +70,16 @@ for i, azim in enumerate(azims):
     ax.set_ylabel("Maturities (Years)", size=9)
     ax.set_zlabel("Volatility", size=9)
     
-    time.sleep(0.001)
     plt.show()
-    fig.savefig(f'{int(i+1)}.png')
+    fig.savefig(f'{int(azim+1)}.png')
     plt.close(fig)
-    progress_bar.update(1)
-
+    print(f"{int(i+1)}/{len(azims)}")
 
 
 def create_stop_motion_gif_from_directory(output_path, durations, loop=0):
     # Get all PNG files in the current working directory
     image_paths = [f for f in os.listdir() if f.endswith('.png')]
+    image_paths = sorted(image_paths, key=lambda x: int(x.split('.')[0]))
     
     if not image_paths:
         print("No PNG files found in the current directory.")
@@ -84,5 +98,8 @@ def create_stop_motion_gif_from_directory(output_path, durations, loop=0):
     )
     print(f"GIF saved as {output_path}")
 
+gif_time = time.time()
+gif_dtime = datetime.fromtimestamp(gif_time)
+gif_tag = gif_dtime.strftime("%Y-%m-%d %H-%M-%S")
+create_stop_motion_gif_from_directory(f'volsurf {gif_tag}.gif', durations=0.015, loop=0)
 
-create_stop_motion_gif_from_directory(r'vol_surf.gif', durations=0.015, loop=0)
