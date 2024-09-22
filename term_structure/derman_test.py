@@ -14,6 +14,8 @@ sys.path.append(parent_dir)
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from matplotlib import cm
 # =============================================================================
 from routine_ivol_collection import raw_calls, raw_puts
 
@@ -23,15 +25,15 @@ T =  [
             
             2, 
             
-            # 3,   
+            3,   
             
             7,
             
-            # 8,   9,  10,  
+            8,   9,  10,  
             
             14,  
             
-            # 15,  16,  17,  21,  22,  23, 24,  
+            15,  16,  17,  21,  22,  23, 24,  
             
             28,
             
@@ -41,27 +43,27 @@ T =  [
             
             31, 
             
-            # 37,  39,  46, 
+            37,  39,  46, 
             
             60,  
             
-            # 74, 
+            74, 
             
             95, 
             
-            # 106, 
+            106, 
             
-            # 158, 
+            158, 
             
-            # 165, 
+            165, 
             
             186, 
             
-            # 196, 242, 277, 287, 305, 
+            196, 242, 277, 287, 305, 
             
             368, 
             
-            # 459, 487, 640
+            459, 487, 640
             
             ]
         # sep 16th
@@ -116,70 +118,41 @@ surface maker
 
 """
 
-def make_derman_surface(atm_volvec, derman_coefs, K, s):
-    T = derman_coefs.columns
-    derman_ts_np = np.zeros((len(K),len(T)),dtype=float)
-    derman_ts = pd.DataFrame(derman_ts_np)
-    derman_ts.index = K
-    derman_ts.columns = T
-    
-    for i, k in enumerate(K):
-        print(k)
-        moneyness = k-s
-        for j, t in enumerate(T):
-            derman_ts.loc[k,t] = (
-                atm_volvec[t] + \
-                derman_coefs[t] * moneyness
-            )
-        derman_ts = derman_ts[~(derman_ts<0)].dropna(how="any",axis=0)
-    return derman_ts
+T = derman_coefs.index
+derman_ts = pd.DataFrame(np.zeros((len(raw_call_K),len(T)),dtype=float))
+derman_ts.index = raw_call_K
+derman_ts.columns = T
+
+for i, k in enumerate(raw_call_K):
+    moneyness = k-s
+    for j, t in enumerate(T):
+        derman_ts.loc[k,t] = (
+            np.array(call_atmvols,dtype=float)[j] + \
+            np.array(derman_coefs)[j] * moneyness
+        )
+    derman_ts = derman_ts[~(derman_ts<0)].dropna(how="any",axis=0)
 
 
-# derman_callvols = make_derman_surface(call_atmvols, call_dermans, raw_call_K)
-# derman_putvols = make_derman_surface(put_atmvols, put_dermans, raw_put_K)
+"""
+testing approximation fit
+"""
 
-# """
-# testing approximation fit
-# """
 
-# from plot_surface import plot_term_structure
-
-# derman_test_ts = derman_callvols
+# derman_test_ts = derman_ts
 # real_test_ts = raw_calls
 
 # for t in T: 
-#     try:
-#         actual_data = real_test_ts.loc[:,t].dropna()
-#         plot_K = actual_data.index
-#         derman_fit = derman_test_ts.loc[plot_K,t]
-#         fig = plot_term_structure(plot_K,actual_data,derman_fit,
-#             title = f"Derman approximation for {t} day maturity")
-#     except Exception:
-#         raise ValueError(f"issue with {t} day maturity") 
-        
-#     continue
-
-
-# """
-# creating vol surface
-
-# """
-
-# from plot_surface import plot_rotate
-# def plot_derman_rotate():
-#     upper_moneyness = s*1.2
-#     lower_moneyness = s*0.8
+#     actual_data = real_test_ts.loc[:,t].dropna()
+#     plot_K = actual_data.index
+#     derman_fit = derman_test_ts.loc[plot_K,t]
+#     plt.rcParams['figure.figsize']=(6,4)
+#     # K = K.astype(int)
+#     fig, ax = plt.subplots()
+#     ax.plot(raw_call_K, derman_ts)
+#     ax.plot(raw_call_K, raw_calls, "o")
+#     ax.set_title("Derman approximation of implied volatility surface")
+#     plt.show()
+#     plt.cla()
+#     plt.clf()
     
-#     n_K = 20
-#     K = np.linspace(int(lower_moneyness),int(upper_moneyness),int(n_K)).astype(int)
-    
-#     derman_rotate_ds = derman_callvols
-    
-#     T = derman_rotate_ds.columns.astype(float)
-#     K = derman_rotate_ds.index
-#     T = T[(
-#             ( T > 0 )
-#             &
-#             ( T < 37000 )
-#     )]
-    
+

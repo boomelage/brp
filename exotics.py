@@ -110,14 +110,15 @@ hestonModel = ql.HestonModel(hestonProcess)
 
 engine = ql.FdHestonBarrierEngine(hestonModel)
 
-T = [2, 7, 14, 28, 29, 30, 31]
-K = np.linspace(s*0.98, s*1.02, 5)
+T = ms.T
+K = np.linspace(s*0.98, s*1.02, 10)
 
+n = 1000
 
 """
 up options
 """
-n = 3
+
 max_barrier =  1.4
 up_barriers  = np.linspace(s * 1.01, s * max_barrier, n)
 
@@ -135,6 +136,9 @@ down_barriers  = np.linspace(s * min_barrier, s*0.99, n)
 down_features = generate_features(K,T,down_barriers,s)
 down_features['updown'] = 'Down' 
 
+n_contracts = 4*n*len(T)*len(K)
+
+print(f"\ngenerating {n_contracts} contracts\n")
 
 features = pd.concat([up_features,down_features]).reset_index(drop=True)
 features['sigma'] = heston_parameters['sigma'].iloc[0]

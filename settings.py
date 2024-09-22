@@ -12,10 +12,11 @@ sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 import pandas as pd
-from bicubic_interpolation import make_bicubic_functional, make_bicubic_functional
-from derman_test import derman_coefs, make_derman_surface
+from bicubic_interpolation import make_bicubic_functional
+from derman_test import derman_coefs
 from data_query import dirdatacsv, dirdata
-derman_coefs
+
+
 class model_settings():
     
     def __init__(self):
@@ -213,6 +214,3 @@ class model_settings():
         row['heston_price'] = h_price
         return row
 
-ms = model_settings()
-
-ms.bicubic_vol

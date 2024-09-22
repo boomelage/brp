@@ -68,7 +68,7 @@ def plot_rotate(black_var_surface,K,T,title="",elev=30):
         black_var_surface.blackVol(y, x) for x in plot_strikes] 
         for y in plot_maturities])
     
-    azims = np.arange(0,360,1)
+    azims = np.arange(0,360,30)
 
     for azim in azims:
         fig = plt.figure()
