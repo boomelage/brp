@@ -87,12 +87,14 @@ for i, row in historical_data.iterrows():
         
         T = expiry_dates - calculation_date
         
+        
+        
         """
         calibration dataset construction
         """
         n = 4
-        call_K = np.linspace(s*1.01,s*1.03, n)
-        put_K  = np.linspace(s*0.97, s*0.99, n)
+        call_K = np.linspace(s*1.01,s*1.025, n)
+        put_K  = np.linspace(s*0.975, s*0.99, n)
         
         calls = generate_features(call_K, T, s)
         calls = calls[calls['days_to_maturity'].isin(T)].copy()
@@ -111,7 +113,7 @@ for i, row in historical_data.iterrows():
         derman_K = np.unique(np.array([put_K, call_K],dtype=float).flatten())
         derman_ts = make_derman_surface(atm_volvec, call_dermans, derman_K, s)
         
-        bicvol = make_bicubic_functional(derman_ts,derman_K,derman_T)
+        bicvol = make_bicubic_functional(derman_ts,list(derman_K),list(derman_T))
         
         
         features = pd.concat([calls,puts],ignore_index=True)
@@ -139,21 +141,18 @@ for i, row in historical_data.iterrows():
         """
         generation
         """
-        train_T = np.arange(1,7,1)
-        n = 50
+        train_T = np.arange(1,T[1],1)
+        n = 15
         
-        n = 4
-        call_K = np.linspace(s*1.01,s*1.02, n)
-        put_K  = np.linspace(s*0.98, s*0.99, n)
+        # call_K  = np.linspace(s*1.005, s*1.05, n)
+        # call_features = generate_train_features(call_K,train_T,s,['call'])
         
-        call_features = generate_train_features(call_K,train_T,s,['call'])
-        features = call_features
-        
+        put_K  = np.linspace(s*0.99, s*0.991, n)
         put_features = generate_train_features(put_K,train_T,s,['put'])
         features = put_features
         
-        features = pd.concat(
-            [call_features,put_features],ignore_index=True).reset_index(drop=True)   
+        # features = pd.concat(
+        #     [call_features,put_features],ignore_index=True).reset_index(drop=True)   
         
         features['sigma'] = heston_parameters['sigma'].iloc[0]
         features['theta'] = heston_parameters['theta'].iloc[0]
@@ -169,20 +168,18 @@ for i, row in historical_data.iterrows():
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
         print(f"\n{historical_option_data.describe()}")
-        print(f"\n{i}/{historical_data.shape[0]}")
+        print(f"\n{i}/{historical_data.shape[0]+1}")
         
     except Exception as e:
-        
         print(f"\n\n\n\nerror: {calculation_date}\ndetails: {e}\n\n\n\n")
         pass
+pd.set_option("display.max_rows",None)
+pd.set_option("display.max_columns",None)
 
 print(f"\n{historical_option_data.describe()}")
 file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
 file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
-
 historical_option_data.to_csv(f"hist_outputs/{file_timetag}.csv")
-
-
-
-
+pd.reset_option("display.max_rows")
+pd.reset_option("display.max_columns")

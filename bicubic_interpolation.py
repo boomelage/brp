@@ -16,8 +16,8 @@ import pandas as pd
 import QuantLib as ql
 
 def make_bicubic_functional(ts_df,K,T):
-    ql_T = ql.Array(list(T))
-    ql_K = ql.Array(K.tolist())
+    ql_T = ql.Array(T)
+    ql_K = ql.Array(K)
     ql_vols = ql.Matrix(len(K),len(T),0.00)
     
     for i, k in enumerate(ql_K):

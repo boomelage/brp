@@ -16,13 +16,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from settings import model_settings
+from derman_test import derman_callvols
 ms = model_settings()
 import time
 from datetime import datetime
 from PIL import Image
-from tqdm import tqdm
 import QuantLib as ql
-from bicubic_interpolation import K, make_bicubic_ts
+from bicubic_interpolation import make_bicubic_functional, make_bicubic_ts
 os.chdir(current_dir)
 
 
@@ -30,30 +30,44 @@ os.chdir(current_dir)
 generate frames
 
 """
+K = derman_callvols.index
+T = ms.T
+# K = np.arange(min(K),max(K),1).astype(float)
 
+derman_callvols.columns = derman_callvols.columns.astype(float)
+derman_callvols.index = derman_callvols.index.astype(float)
+bicvol = make_bicubic_functional(derman_callvols,list(K),list(T))
+
+
+
+
+
+K = derman_callvols.index
+T = derman_callvols.columns
 T = np.arange(1,360,1).astype(float)
-K = np.linspace(min(K),max(K),5000)
-bicubic_ts = make_bicubic_ts(T,K)
 
-ql_bicubic = ql.Matrix(len(bicubic_ts.index),len(bicubic_ts.columns),0.00)
 
-print("space generated")
+bicubic_ts = make_bicubic_ts(bicvol, T, K)
 
+
+ql_bicubic = ql.Matrix(len(K),len(T),0.00)
 for i, k in enumerate(K):
     for j, t in enumerate(T):
         ql_bicubic[i][j] = bicubic_ts.loc[k,t]
-        
+
 expiration_dates = ms.compute_ql_maturity_dates(T)
 black_var_surface = ms.make_black_var_surface(expiration_dates, K, ql_bicubic)
-    
 
+
+
+plot_T = np.array(T)/365
+plot_K = np.linspace(min(K),max(K),500).astype(float)
 plt.rcParams['figure.figsize'] = (10, 10)
-plot_maturities = np.sort(np.array(T,dtype=float)/365)
-plot_strikes = np.sort(K).astype(float)
-X, Y = np.meshgrid(plot_strikes, plot_maturities)
+
+X, Y = np.meshgrid(plot_K,plot_T)
 Z = np.array([[
-    black_var_surface.blackVol(y, x) for x in plot_strikes] 
-    for y in plot_maturities])
+    black_var_surface.blackVol(y,x) for x in plot_K] 
+    for y in plot_T])
 azims = np.arange(0,360,1)
 print("object generated")
 
@@ -62,7 +76,7 @@ for i, azim in enumerate(azims):
     fig = plt.figure()
     ax = fig.add_subplot(111,projection='3d')
     ax.view_init(elev=30, azim=azim)  
-    ax.set_title('bicubic interpolation of volatility surface approximated via Derman')
+    ax.set_title('Approximate implied volatility surface for SPX 16th September 2024')
     surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
                     linewidth=0.1)
     fig.colorbar(surf, shrink=0.5, aspect=5)

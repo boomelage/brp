@@ -33,8 +33,8 @@ class mlop:
         
         self.random_state = None
         self.test_size = 0.10
-        self.max_iter = int(1e6)
-        self.hidden_layer_sizes = (100,100,100)
+        self.max_iter = int(1e3)
+        self.hidden_layer_sizes = (10,10,10)
         self.solver = [
                     # "lbfgs",
                     "sgd", 
@@ -53,8 +53,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -69,7 +69,7 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            'w'
+            # 'w'
             
             ]
         
@@ -83,7 +83,7 @@ class mlop:
         
         self.categorical_features = [
             
-            'w'
+            # 'w'
             
             ]
         
@@ -91,7 +91,7 @@ class mlop:
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            ("encode", OneHotEncoder(),self.categorical_features)
+            # ("encode", OneHotEncoder(),self.categorical_features)
             ]   
         
         
