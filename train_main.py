@@ -18,11 +18,10 @@ train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
 print(f"\n{train_start_tag}\n")
-# pd.set_option("display.max_rows",None)
-pd.set_option("display.max_columns",None)
+
 
 pd.reset_option("display.max_rows")
-# pd.reset_option("display.max_columns")
+pd.reset_option("display.max_columns")
 
 # from train_generation import ml_data
 
@@ -58,21 +57,21 @@ single layer network
 deep neural network
 """
 
-print(f"\nactivation: {mlop.activation_function}")
-print(f"solver: {mlop.solver}")
-print(f"learning rate: {mlop.learning_rate}")
-print(f"hidden layers: {mlop.hidden_layer_sizes}")
-model_name = "Deep Neural Network"
-print(model_name)
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# print(f"\nactivation: {mlop.activation_function}")
+# print(f"solver: {mlop.solver}")
+# print(f"learning rate: {mlop.learning_rate}")
+# print(f"hidden layers: {mlop.hidden_layer_sizes}")
+# model_name = "Deep Neural Network"
+# print(model_name)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
 """
 
-# model_name = "Random Forest"
-# print(model_name)
-# model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
+model_name = "Random Forest"
+print(model_name)
+model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
 """
 lasso regression
@@ -85,6 +84,7 @@ lasso regression
 """
 model testing
 """
+
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
 
 predictive_performance_plot = mlop.plot_model_performance(df,runtime)

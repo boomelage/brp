@@ -32,7 +32,7 @@ class model_settings():
         self.calculation_date   =    ql.Date.todaysDate()
         self.csvs               =    dirdatacsv()
         self.xlsxs              =    dirdata()
-       
+        ql.Settings.instance().evaluationDate = self.calculation_date
         self.ticker             =    'SPX'
         self.s                  =    1277.92
         self.n_k                =    int(1e3)
@@ -120,7 +120,7 @@ class model_settings():
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T.tolist())
         
-        ql.Settings.instance().evaluationDate = self.calculation_date
+
         
     def make_ql_array(self,nparr):
         qlarr = ql.Array(len(nparr),1)

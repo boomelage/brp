@@ -156,3 +156,4 @@ testing approximation fit
 #     plt.clf()
     
 
+derman_coefs
