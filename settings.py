@@ -61,7 +61,7 @@ class model_settings():
         
         self.atm_vols = [
             
-            19.7389	,
+            19.7389,
             21.2123, 
             21.9319,	
             23.0063, 

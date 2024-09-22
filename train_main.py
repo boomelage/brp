@@ -22,12 +22,12 @@ print(f"\n{train_start_tag}\n")
 pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
 
-from exotics import training_data
-# from train_generation import ml_data
+# from exotics import training_data
+from train_generation import ml_data
 
 
 from mlop import mlop
-mlop = mlop(user_dataset=training_data)
+mlop = mlop(user_dataset=ml_data)
 
 
 print('\ntraining...')

@@ -82,21 +82,10 @@ Derman approximation
 #     apply_derman_vols,axis = 1, coef_df=call_dermans, atm_vols = call_atmvols)
 
 """
-Bilinear interpolation of Derman surface
-"""
-
-# from bilinear_interpolation import bilinear_vol_row, plot_bilinear_rotate
-# calls = calls.apply(bilinear_vol_row,axis=1)
-# puts = puts.apply(bilinear_vol_row,axis=1)
-# fig = plot_bilinear_rotate()
-
-"""
 Bicubic Spline interpolation of Derman surface
 """
 
 from bicubic_interpolation import bicubic_vol_row
-
-
 calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 

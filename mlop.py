@@ -97,6 +97,7 @@ class mlop:
             
             ]
         
+        self.security_tag = 'vanilla options'
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
@@ -105,7 +106,7 @@ class mlop:
             ]   
         
         
-        self.security_tag = 'vanilla options'
+
         self.user_dataset = user_dataset
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
