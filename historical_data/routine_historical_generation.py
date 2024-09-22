@@ -16,21 +16,17 @@ import QuantLib as ql
 import time
 from datetime import datetime
 from itertools import product
-from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
+from bicubic_interpolation import make_bicubic_functional
 from routine_calibration_global import calibrate_heston
 from pricing import noisyfier
 from settings import model_settings
+from tqdm import tqdm
 from derman_test import call_dermans, make_derman_surface
 ms = model_settings()
 os.chdir(current_dir)
 from routine_historical_collection import collect_historical_data
 
 
-# pd.set_option("display.max_rows",None)
-pd.set_option("display.max_columns",None)
-
-# pd.reset_option("display.max_rows")
-# pd.reset_option("display.max_columns")
 
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -68,12 +64,20 @@ historical generation routine
 """
 historical_data = collect_historical_data()
 
+
+
+
+
+total = historical_data.shape[0]
 historical_option_data = pd.DataFrame()
+
+progress_bar = tqdm(
+    desc="generating",total = total,leave=True,unit='days',dynamic_ncols=True)
+
 for i, row in historical_data.iterrows():
     try:
         s = row['spot_price']
         dtdate = row['date']
-        print(f"\n\n{dtdate}")
         calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
         expiry_dates = np.array([
                 calculation_date + ql.Period(30,ql.Days), 
@@ -119,13 +123,6 @@ for i, row in historical_data.iterrows():
         features = pd.concat([calls,puts],ignore_index=True)
         features['dividend_rate'] = row['dividend_rate']
         
-        def apply_bicvol(row):
-            t = row['days_to_maturity']
-            k = row['strike_price']
-            volatility = bicvol(t,k, allowExtrapolation = False)
-            row['volatility'] = volatility
-            return row
-        
         
         features = features.apply(apply_bicvol, axis = 1)
         
@@ -136,18 +133,17 @@ for i, row in historical_data.iterrows():
         
         features['risk_free_rate'] = 0.04
         heston_parameters = calibrate_heston(features, s, calculation_date)
-        print('calibrated')
         
         """
         generation
         """
-        train_T = np.arange(1,T[1],1)
-        n = 15
+        train_T = np.arange(1,7,1)
+        n = 50
         
         # call_K  = np.linspace(s*1.005, s*1.05, n)
         # call_features = generate_train_features(call_K,train_T,s,['call'])
         
-        put_K  = np.linspace(s*0.99, s*0.991, n)
+        put_K  = np.linspace(s*0.99, s*0.999, n)
         put_features = generate_train_features(put_K,train_T,s,['put'])
         features = put_features
         
@@ -167,19 +163,18 @@ for i, row in historical_data.iterrows():
         heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
         ml_data = noisyfier(heston_features)
         historical_option_data = pd.concat([historical_option_data,ml_data])
-        print(f"\n{historical_option_data.describe()}")
-        print(f"\n{i}/{historical_data.shape[0]+1}")
+        progress_bar.update(1)
         
-    except Exception as e:
-        print(f"\n\n\n\nerror: {calculation_date}\ndetails: {e}\n\n\n\n")
+    except Exception:
         pass
-pd.set_option("display.max_rows",None)
-pd.set_option("display.max_columns",None)
-
-print(f"\n{historical_option_data.describe()}")
+    
+# pd.set_option("display.max_rows",None)
+# pd.set_option("display.max_columns",None)
+# print(f"\ntraining data:\n{historical_option_data.describe()}")
+# pd.reset_option("display.max_rows")
+# pd.reset_option("display.max_columns")
 file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
 file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
 historical_option_data.to_csv(f"hist_outputs/{file_timetag}.csv")
-pd.reset_option("display.max_rows")
-pd.reset_option("display.max_columns")
+        

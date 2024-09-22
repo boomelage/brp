@@ -18,12 +18,17 @@ train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
 print(f"\n{train_start_tag}\n")
+# pd.set_option("display.max_rows",None)
+pd.set_option("display.max_columns",None)
+
+pd.reset_option("display.max_rows")
+# pd.reset_option("display.max_columns")
+
+from train_generation import ml_data
 
 
-# from train_generation import ml_data
-from routine_historical_generation import historical_option_data
 from mlop import mlop
-mlop = mlop(user_dataset=historical_option_data)
+mlop = mlop(user_dataset=ml_data)
 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
@@ -76,7 +81,9 @@ lasso regression
 # print(model_name)
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
 
-
+"""
+model testing
+"""
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
 
 predictive_performance_plot = mlop.plot_model_performance(df,runtime)

@@ -16,7 +16,8 @@ from itertools import product
 from pricing import noisyfier
 from settings import model_settings
 from routine_calibration_global import calibrate_heston
-from bicubic_interpolation import bicubic_vol_row
+from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
+from derman_test import derman_callvols
 ms = model_settings()
 import numpy as np
 
@@ -56,8 +57,6 @@ n_contracts = int(n_maturities*n_strikes*2)
 
 print(f"\n\npricing {n_contracts} contracts...")
 
-
-
 pricing_spread = 0.002
 call_K_interp = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),int(n_strikes))
 put_K_interp = np.linspace(s*(1-3*pricing_spread),s*(1-pricing_spread),int(n_strikes))
@@ -93,7 +92,9 @@ def compute_moneyness_row(row):
 
 features = features.apply(compute_moneyness_row,axis = 1)
 
-features = features.apply(bicubic_vol_row,axis=1)
+bicubic_vol = make_bicubic_functional(derman_callvols,train_K,T)
+
+features = features.apply(bicubic_vol_row,axis=1,bicubic_vol=bicubic_vol)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
