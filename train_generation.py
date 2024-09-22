@@ -46,17 +46,20 @@ put_K = ms.calibration_put_K
 
 n_strikes = int(1e4)
 
-# max_maturity = 31
-# T = np.arange(min(ms.T),max_maturity,1).astype(int)
-T = ms.T
+max_maturity = 31
+T = np.arange(1,max_maturity,1).astype(int)
+
 n_contracts = int(len(T)*n_strikes*2)
 
 print(f"\n\npricing {n_contracts} contracts...")
 
 pricing_spread = 0.002
-n_spreads = 5
+
+n_spreads = 3
+
 call_K_interp = np.linspace(
     s*(1+pricing_spread), s*(1+n_spreads*pricing_spread),int(n_strikes))
+
 put_K_interp = np.linspace(
     s*(1-n_spreads*pricing_spread),s*(1-pricing_spread),int(n_strikes))
 
@@ -72,7 +75,7 @@ put_features['moneyness'] = put_features['strike_price']/put_features['spot_pric
 
 train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
 
-features = call_features
+# features = call_features
 
 features = pd.concat(
     [call_features,put_features],ignore_index=True).reset_index(drop=True)
@@ -81,8 +84,8 @@ features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
-
-heston_parameters = calibrate_heston(features,ms.s,ms.calculation_date)
+from routine_calibration_generation import contract_details
+heston_parameters = calibrate_heston(contract_details,ms.s,ms.calculation_date)
 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
@@ -96,6 +99,7 @@ ml_data = noisyfier(heston_features)
 pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
+print(f"\nspot: {s}")
 pd.reset_option('display.max_columns')
 pd.reset_option('display.max_rows')
 

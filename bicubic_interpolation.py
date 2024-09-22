@@ -25,11 +25,10 @@ def make_bicubic_functional(ts_df,K,T):
             ql_vols[i][j] = ts_df.loc[k,t]
     
     bicubic_vol = ql.BicubicSpline(ql_T, ql_K, ql_vols)
-    
     return bicubic_vol
 
 def bicubic_vol_row(row, bicubic_vol):
-    row['volatility'] = bicubic_vol(row['days_to_maturity'], row['strike_price'])
+    row['volatility'] = bicubic_vol(row['days_to_maturity'], row['strike_price'],True)
     return row
 
 
