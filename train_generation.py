@@ -44,7 +44,7 @@ s = ms.s
 call_K = ms.calibration_call_K
 put_K = ms.calibration_put_K
 
-n_strikes = int(1e2)
+n_strikes = int(1e4)
 
 max_maturity = 31
 T = np.arange(min(ms.T),max_maturity,1).astype(int)
@@ -63,12 +63,20 @@ print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
 print(f"maturities between {int(min(T))} and {int(max(T))} days")
 
 call_features = generate_train_features(call_K_interp, T, s, ['call'])
+call_features['moneyness'] = call_features['spot_price']/call_features['strike_price']
+
 put_features = generate_train_features(put_K_interp, T, s, ['put'])
+put_features['moneyness'] = put_features['strike_price']/put_features['spot_price']
 
 train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
 
+
+features = call_features
+
+
 features = pd.concat(
     [call_features,put_features],ignore_index=True).reset_index(drop=True)
+
 
 
 features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)

@@ -68,7 +68,10 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
-            'barrierType',
+            
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
             'w'
             
@@ -83,8 +86,14 @@ class mlop:
             ]
         
         self.categorical_features = [
-            'barrierType',
+            
             'w'
+            
+            # 'barrierType',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
+
             
             ]
         
@@ -204,23 +213,18 @@ class mlop:
             self,test_data, test_X, model_fit, model_name):
         predictive_performance = (pd.concat(
             [test_data.reset_index(drop=True), 
-             pd.DataFrame({f"{model_name}": model_fit.predict(test_X)})
-            ], axis=1)
-          .melt(
-            id_vars=self.user_dataset.columns,
-            var_name="Model",
-            value_name="Predicted"
-          )
-          .assign(
-            moneyness=lambda x: x["spot_price"]*100/x["strike_price"],
-            pricing_error=lambda x: 
-                np.abs(abs(x["Predicted"] - \
-                           x[self.target_name])*100/x[self.target_name])
-          )
-        )
+             pd.DataFrame({f"{model_name}": model_fit.predict(test_X)})], 
+            axis=1).melt(
+                id_vars=self.user_dataset.columns, 
+                var_name="Model", value_name="Predicted")
+                ).assign(pricing_error=lambda x: np.abs(
+                    abs(
+                        x["Predicted"] - x[self.target_name]
+                        )*100/x[self.target_name]))
+            
         predictive_performance = predictive_performance.iloc[:,1:]
+        
         return predictive_performance
-    
     
     def plot_model_performance(self,predictive_performance, runtime):
         predictive_performance_plot = (

@@ -19,27 +19,29 @@ train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
 print(f"\n{train_start_tag}\n")
 
-
 pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
 
+from exotics import training_data
 # from train_generation import ml_data
 
-from exotics import training_data
 
 from mlop import mlop
 mlop = mlop(user_dataset=training_data)
 
-train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data()
-
-preprocessor = mlop.preprocess()
 
 print('\ntraining...')
 
 print(f"\ntransformers:\n{mlop.transformers}")
 
 print(f"\nfeatures:\n{mlop.feature_set}")
+
+
+
+train_data, train_X, train_y, \
+    test_data, test_X, test_y = mlop.split_user_data()
+
+preprocessor = mlop.preprocess()
 
 
 """
@@ -57,21 +59,21 @@ single layer network
 deep neural network
 """
 
-# print(f"\nactivation: {mlop.activation_function}")
-# print(f"solver: {mlop.solver}")
-# print(f"learning rate: {mlop.learning_rate}")
-# print(f"hidden layers: {mlop.hidden_layer_sizes}")
-# model_name = "Deep Neural Network"
-# print(model_name)
-# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+print(f"\nactivation: {mlop.activation_function}")
+print(f"solver: {mlop.solver}")
+print(f"learning rate: {mlop.learning_rate}")
+print(f"hidden layers: {mlop.hidden_layer_sizes}")
+model_name = "Deep Neural Network"
+print(model_name)
+model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
 """
 
-model_name = "Random Forest"
-print(model_name)
-model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
+# model_name = "Random Forest"
+# print(model_name)
+# model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
 """
 lasso regression

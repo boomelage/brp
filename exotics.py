@@ -111,15 +111,16 @@ hestonModel = ql.HestonModel(hestonProcess)
 engine = ql.FdHestonBarrierEngine(hestonModel)
 
 T = ms.T
-K = np.linspace(s*0.98, s*1.02, 10)
+pricing_spread = 0.002
+K = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),5)
 
-n = 1000
+n = 20000
 
 """
 up options
 """
 
-max_barrier =  1.4
+max_barrier =  1.1
 up_barriers  = np.linspace(s * 1.01, s * max_barrier, n)
 
 up_features = generate_features(K,T,up_barriers,s)
@@ -130,7 +131,7 @@ up_features['updown'] = 'Up'
 down options
 """
 
-min_barrier = 0.6
+min_barrier = 0.9
 down_barriers  = np.linspace(s * min_barrier, s*0.99, n)
 
 down_features = generate_features(K,T,down_barriers,s)
@@ -147,6 +148,7 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 features['w'] = 'call'
+features['moneyness'] = features['spot_price']/features['strike_price']
 features['barrierType'] = features['updown'] + features['outin']
 features = features.apply(price_barrier_option_row,axis=1)
 
