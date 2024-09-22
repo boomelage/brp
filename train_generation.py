@@ -42,18 +42,15 @@ def generate_train_features(K,T,s,flag):
 
 s = ms.s
 
-call_K = ms.call_K
-put_K = ms.put_K
+call_K = ms.calibration_call_K
+put_K = ms.calibration_put_K
 
+n_strikes = int(1e2)
 
+max_maturity = 31
+T = np.arange(min(ms.T),max_maturity,1).astype(int)
 
-n= 100
-n_strikes = int(n*10)
-n_maturities = int(n)
-
-T = np.linspace(1,7,n_maturities).astype(int)
-
-n_contracts = int(n_maturities*n_strikes*2)
+n_contracts = int(len(T)*n_strikes*2)
 
 print(f"\n\npricing {n_contracts} contracts...")
 
@@ -89,12 +86,15 @@ def compute_moneyness_row(row):
     else:
         raise ValueError('\n\n\nflag error')
 
-
 features = features.apply(compute_moneyness_row,axis = 1)
 
-bicubic_vol = make_bicubic_functional(derman_callvols,train_K,T)
+vol_object = make_bicubic_functional(
+    derman_callvols,
+    derman_callvols.index.tolist(),
+    derman_callvols.columns.tolist()
+    )
 
-features = features.apply(bicubic_vol_row,axis=1,bicubic_vol=bicubic_vol)
+features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
@@ -114,8 +114,8 @@ ml_data = noisyfier(heston_features)
 
 
 
-# pd.set_option('display.max_rows',None)
-# pd.set_option('display.max_columns',None)
+pd.set_option('display.max_rows',None)
+pd.set_option('display.max_columns',None)
 print(f"\n\ntraining dataset:\n{ml_data}")
 print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
 pd.reset_option('display.max_columns')

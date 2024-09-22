@@ -68,8 +68,9 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
+            'barrierType',
             
-            # 'w'
+            'w'
             
             ]
         
@@ -82,8 +83,8 @@ class mlop:
             ]
         
         self.categorical_features = [
-            
-            # 'w'
+            'barrierType',
+            'w'
             
             ]
         
@@ -91,7 +92,7 @@ class mlop:
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            # ("encode", OneHotEncoder(),self.categorical_features)
+            ("encode", OneHotEncoder(),self.categorical_features)
             ]   
         
         

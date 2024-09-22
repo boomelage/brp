@@ -28,7 +28,7 @@ def make_bicubic_functional(ts_df,K,T):
     
     return bicubic_vol
 
-def bicubic_vol_row(bicubic_vol, row):
+def bicubic_vol_row(row, bicubic_vol):
     row['volatility'] = bicubic_vol(row['days_to_maturity'], row['strike_price'])
     return row
 

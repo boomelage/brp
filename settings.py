@@ -33,7 +33,7 @@ class model_settings():
         
         self.call_atmvols = raw_calls.loc[self.s,:].replace(0,np.nan).dropna()
         self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
-        
+        self.atm_vols = []
         self.T = self.call_atmvols.index
         self.T =  [
             
@@ -85,9 +85,20 @@ class model_settings():
         self.call_K = raw_calls.index[raw_calls.index>self.s]
         self.put_K = raw_puts.index[raw_puts.index<self.s]
         
-        self.calibration_call_K = self.call_K[:3]
-        self.calibration_put_K = self.put_K[-3:]
+        # self.calibration_call_K = self.call_K[:3]
+        # self.calibration_put_K = self.put_K[-3:]
         
+        self.step = self.s*0.005
+        
+        self.calibration_call_K = np.arange(
+            self.s,
+            self.s+4*self.step,
+            self.step)
+        
+        self.calibration_put_K = np.arange(
+            self.s-4*self.step,
+            self.s,
+            self.step)
         
         self.calibration_K = np.array(
             [self.calibration_put_K,self.calibration_call_K]).flatten().tolist()
@@ -193,6 +204,3 @@ class model_settings():
         row['heston_price'] = h_price
         return row
         
-ms = model_settings()
-
-ms.s

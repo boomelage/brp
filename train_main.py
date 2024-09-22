@@ -24,11 +24,12 @@ pd.set_option("display.max_columns",None)
 pd.reset_option("display.max_rows")
 # pd.reset_option("display.max_columns")
 
-from train_generation import ml_data
+# from train_generation import ml_data
 
+from exotics import training_data
 
 from mlop import mlop
-mlop = mlop(user_dataset=ml_data)
+mlop = mlop(user_dataset=training_data)
 
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()

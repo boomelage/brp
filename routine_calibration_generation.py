@@ -93,10 +93,17 @@ Bilinear interpolation of Derman surface
 Bicubic Spline interpolation of Derman surface
 """
 
-from bicubic_interpolation import bicubic_vol_row, plot_bicubic_rotate
-calls = calls.apply(bicubic_vol_row,axis=1)
-puts = puts.apply(bicubic_vol_row,axis=1)
-fig = plot_bicubic_rotate()
+from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
+from derman_test import derman_callvols
+
+vol_object = make_bicubic_functional(
+    derman_callvols, 
+    K = derman_callvols.index.tolist(), 
+    T = ms.T
+    )
+
+calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
+puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
 
 """
 wip
@@ -107,10 +114,10 @@ contract_details['risk_free_rate'] = 0.04
 contract_details['dividend_rate'] = 0.001
 
 
-# pd.set_option('display.max_rows',None)
-# pd.set_option('display.max_columns',None)
-pd.reset_option('display.max_rows')
-pd.reset_option('display.max_columns')
+pd.set_option('display.max_rows',None)
+pd.set_option('display.max_columns',None)
+# pd.reset_option('display.max_rows')
+# pd.reset_option('display.max_columns')
 print(f"\ncalibration dataset:\n{contract_details}")
 
 
