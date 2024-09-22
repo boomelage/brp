@@ -21,6 +21,7 @@ s = ms.s
 calibration_call_K = ms.calibration_call_K
 calibration_put_K = ms.calibration_put_K
 T = ms.T
+derman_ts = ms.derman_ts
 
 
 
@@ -93,17 +94,11 @@ Bilinear interpolation of Derman surface
 Bicubic Spline interpolation of Derman surface
 """
 
-from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
-from derman_test import derman_callvols
+from bicubic_interpolation import bicubic_vol_row
 
-vol_object = make_bicubic_functional(
-    derman_callvols, 
-    K = derman_callvols.index.tolist(), 
-    T = ms.T
-    )
 
-calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
-puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
+calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
+puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 
 """
 wip

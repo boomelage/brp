@@ -16,8 +16,7 @@ from itertools import product
 from pricing import noisyfier
 from settings import model_settings
 from routine_calibration_global import calibrate_heston
-from bicubic_interpolation import bicubic_vol_row, make_bicubic_functional
-from derman_test import derman_callvols
+from bicubic_interpolation import bicubic_vol_row
 ms = model_settings()
 import numpy as np
 
@@ -71,30 +70,8 @@ train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
 features = pd.concat(
     [call_features,put_features],ignore_index=True).reset_index(drop=True)
 
-def compute_moneyness_row(row):
-    s = row['spot_price']
-    k = row['strike_price']
-    
-    if row['w'] == 'call':
-        call_moneyness = s-k
-        row['moneyness'] = call_moneyness
-        return row
-    elif row['w'] == 'put':
-        put_moneyness = k-s
-        row['moneyness'] = put_moneyness
-        return row
-    else:
-        raise ValueError('\n\n\nflag error')
 
-features = features.apply(compute_moneyness_row,axis = 1)
-
-vol_object = make_bicubic_functional(
-    derman_callvols,
-    derman_callvols.index.tolist(),
-    derman_callvols.columns.tolist()
-    )
-
-features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = vol_object)
+features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04

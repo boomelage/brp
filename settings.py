@@ -11,7 +11,11 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
+import pandas as pd
+from bicubic_interpolation import make_bicubic_functional, make_bicubic_functional
+from derman_test import derman_coefs, make_derman_surface
 from data_query import dirdatacsv, dirdata
+derman_coefs
 class model_settings():
     
     def __init__(self):
@@ -19,96 +23,101 @@ class model_settings():
         """
         from settings import model_settings
         ms = model_settings()
+        ms.
         """
-        self.ticker             =    'SPX'
-        self.s                  =    5625
-        self.n_k                =    int(1e3)
-
-        from routine_ivol_collection import raw_calls, raw_puts
         
-        self.raw_calls = raw_calls
-        self.raw_puts = raw_puts
-        self.raw_call_K = raw_calls.index
-        self.raw_put_K = raw_puts.index
-        
-        self.call_atmvols = raw_calls.loc[self.s,:].replace(0,np.nan).dropna()
-        self.put_atmvols = raw_puts.loc[self.s,:].replace(0,np.nan).dropna()
-        self.atm_vols = []
-        self.T = self.call_atmvols.index
-        self.T =  [
-            
-            2, 
-            
-            # 3,   
-            
-            7,
-            
-            # 8,   9,  10,  
-            
-            14,  
-            
-            # 15,  16,  17,  21,  22,  23, 24,  
-            
-            28,
-            
-            29,  
-            
-            30,  
-            
-            31, 
-            
-            # 37,  39,  46, 
-            
-            60,  
-            
-            # 74, 
-            
-            95, 
-            
-            # 106, 
-            
-            # 158, 
-            
-            # 165, 
-            
-            186, 
-            
-            # 196, 242, 277, 287, 305, 
-            
-            368, 
-            
-            # 459, 487, 640
-            
-            ]
-        # sep 16th
-        
-        self.call_K = raw_calls.index[raw_calls.index>self.s]
-        self.put_K = raw_puts.index[raw_puts.index<self.s]
-        
-        # self.calibration_call_K = self.call_K[:3]
-        # self.calibration_put_K = self.put_K[-3:]
-        
-        self.step = self.s*0.005
-        
-        self.calibration_call_K = np.arange(
-            self.s,
-            self.s+4*self.step,
-            self.step)
-        
-        self.calibration_put_K = np.arange(
-            self.s-4*self.step,
-            self.s,
-            self.step)
-        
-        self.calibration_K = np.array(
-            [self.calibration_put_K,self.calibration_call_K]).flatten().tolist()
-        
-       
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
         self.csvs               =    dirdatacsv()
         self.xlsxs              =    dirdata()
+       
+        self.ticker             =    'SPX'
+        self.s                  =    1277.92
+        self.n_k                =    int(1e3)
+
+
+        
+        self.step = self.s*0.005
+        
+        self.calibration_call_K = np.arange(
+            self.s,
+            self.s+5*self.step,
+            self.step)
+        
+        self.calibration_put_K = np.arange(
+            self.s-5*self.step,
+            self.s,
+            self.step)
+        
+        self.calibration_K = np.unique(np.array(
+            [
+                self.calibration_put_K,self.calibration_call_K
+             ]
+            ).flatten().astype(int).tolist())
+        
+        self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
+        
+        self.atm_vols = [
+            
+            19.7389	,
+            21.2123, 
+            21.9319,	
+            23.0063, 
+            23.6643, 
+            # 24.1647,  
+            # 24.4341
+            ]
+    
+        
+        self.ql_T = [
+            
+            ql.Period(30,ql.Days), 
+            ql.Period(60,ql.Days), 
+            ql.Period(3,ql.Months), 
+            ql.Period(6,ql.Months), 
+            ql.Period(12,ql.Months), 
+            # ql.Period(18,ql.Months), 
+            # ql.Period(24,ql.Months)
+            
+            ]
+        
+        self.expiration_dates = np.empty(len(self.ql_T),dtype=object)
+        for i, p in enumerate(self.ql_T):
+            self.expiration_dates[i] = self.calculation_date + p
+        
+        self.T = np.zeros(len(self.ql_T),dtype=int)
+        for i, date in enumerate(self.expiration_dates):
+            self.T[i] = date - self.calculation_date
+        
+        self.atm_vols = pd.DataFrame(self.atm_vols)/100
+        
+        self.atm_vols.index = self.T
+        
+        self.derman_coefs = derman_coefs.loc[[30,60,95,186,368]]
+        self.derman_coefs.index = self.T
+        
+        
+        self.derman_ts = pd.DataFrame(
+            np.zeros((len(self.surf_K),len(self.T)),dtype=float))
+        
+        self.derman_ts.index = self.surf_K.astype(int)
+        
+        self.derman_ts.columns = self.T.astype(int)
+
+        for i, k in enumerate(self.surf_K):
+            moneyness = k-self.s
+            for j, t in enumerate(self.T):
+                self.derman_ts.loc[k,t] = (
+                    self.atm_vols.loc[t,0] + \
+                    self.derman_coefs.loc[t,0] * moneyness
+                )
+        self.derman_ts = self.derman_ts.dropna(how="any",axis=0)
+        self.derman_ts = self.derman_ts.dropna(how="any",axis=1)
+
+        
+        self.bicubic_vol = make_bicubic_functional(
+            self.derman_ts, self.surf_K.tolist(), self.T.tolist())
         
         ql.Settings.instance().evaluationDate = self.calculation_date
         
@@ -203,4 +212,7 @@ class model_settings():
         h_price = european_option.NPV()
         row['heston_price'] = h_price
         return row
-        
+
+ms = model_settings()
+
+ms.bicubic_vol
