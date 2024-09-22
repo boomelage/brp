@@ -114,7 +114,7 @@ T = ms.T
 pricing_spread = 0.002
 K = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),5)
 
-n = 20
+n = 200
 
 """
 up options

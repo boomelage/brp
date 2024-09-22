@@ -31,10 +31,10 @@ class mlop:
     '''
     def __init__(self,user_dataset):
         
-        self.random_state = None
-        self.test_size = 0.10
+        self.random_state = 42
+        self.test_size = 0.01
         self.max_iter = int(1e3)
-        self.hidden_layer_sizes = (10,10,10)
+        self.hidden_layer_sizes = (100,100,100)
         self.solver = [
                     # "lbfgs",
                     "sgd", 
@@ -44,8 +44,8 @@ class mlop:
         self.alpha = 0.0001
         self.learning_rate = [
             
-            # 'adaptive',
-            'constant'
+            'adaptive',
+            # 'constant'
             
             ]
         
@@ -53,8 +53,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -69,9 +69,9 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            'barrierType',
-            'outin',
-            'updown',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
             'w'
             
@@ -89,16 +89,16 @@ class mlop:
             
             'w'
             
-            'barrierType',
-            'barrierType',
-            'outin',
-            'updown',
+            # 'barrierType',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
 
             
             ]
         
-        # self.security_tag = 'vanilla options'
-        self.security_tag = 'barrier options'
+        self.security_tag = 'vanilla options'
+        # self.security_tag = 'barrier options'
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
@@ -112,7 +112,13 @@ class mlop:
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
-
+        print(f"\n{self.security_tag}")
+        print(f"\ntransformers:\n{self.transformers}")
+        print(f"\nactivation: {self.activation_function}")
+        print(f"solver: {self.solver}")
+        print(f"learning rate: {self.learning_rate}")
+        print(f"hidden layers: {self.hidden_layer_sizes}")
+        print(f"\nfeatures:\n{self.feature_set}")
 # =============================================================================
                                                                 # Preprocessing
 

@@ -23,19 +23,18 @@ pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
 
 from exotics import training_data
+
 # from train_generation import ml_data
 
+# imported_data = pd.read_csv(r'600kvanillas.csv')
+# imported_data = imported_data.drop(columns=imported_data.columns[0])
 
 from mlop import mlop
 mlop = mlop(user_dataset=training_data)
 
 
+
 print('\ntraining...')
-
-print(f"\ntransformers:\n{mlop.transformers}")
-
-print(f"\nfeatures:\n{mlop.feature_set}")
-
 
 
 train_data, train_X, train_y, \
@@ -48,9 +47,6 @@ preprocessor = mlop.preprocess()
 single layer network
 """
 
-# print(f"\nactivation: {mlop.activation_function}")
-# print(f"solver: {mlop.solver}")
-# print(f"learning rate: {mlop.learning_rate}")
 # model_name = "Single Layer Network"
 # print(model_name)
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
@@ -59,10 +55,7 @@ single layer network
 deep neural network
 """
 
-print(f"\nactivation: {mlop.activation_function}")
-print(f"solver: {mlop.solver}")
-print(f"learning rate: {mlop.learning_rate}")
-print(f"hidden layers: {mlop.hidden_layer_sizes}")
+
 model_name = "Deep Neural Network"
 print(model_name)
 model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
