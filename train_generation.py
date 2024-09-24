@@ -100,7 +100,10 @@ for i, row in features.iterrows():
     h_price = european_option.NPV()
     progress_bar.update(1)
     features.at[i, 'heston_price'] = h_price
+    
+progress_bar.close()
 
 ml_data = noisyfier(features)
 
+print(f"\n{ml_data}\n{ml_data.describe()}\n")
 

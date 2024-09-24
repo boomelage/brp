@@ -166,39 +166,35 @@ class model_settings():
         return h_price
     
     def heston_price_vanilla_row(self,row):
-        try:
-            s = row['spot_price']
-            k = row['strike_price']
-            t = row['days_to_maturity']
-            r = row['risk_free_rate']
-            g = row['dividend_rate']
-            v0 = row['v0']
-            kappa = row['kappa']
-            theta = row['theta']
-            sigma = row['sigma']
-            rho = row['rho']
-            w = row['w']
-            
-            date = self.calculation_date + ql.Period(t,ql.Days)
-            option_type = ql.Option.Call if w == 'call' else ql.Option.Put
-            
-            payoff = ql.PlainVanillaPayoff(option_type, k)
-            exercise = ql.EuropeanExercise(date)
-            european_option = ql.VanillaOption(payoff, exercise)
-            flat_ts = self.make_ts_object(r)
-            dividend_ts = self.make_ts_object(g)
-            
-            heston_process = ql.HestonProcess(
-                flat_ts,dividend_ts, 
-                ql.QuoteHandle(ql.SimpleQuote(s)), 
-                v0, kappa, theta, sigma, rho)
-            
-            engine = ql.AnalyticHestonEngine(
-                ql.HestonModel(heston_process), 0.01, 1000)
-            european_option.setPricingEngine(engine)
-            h_price = european_option.NPV()
-            row['heston_price'] = h_price
-            return row
-        except Exception:
-            print()
-
+        s = row['spot_price']
+        k = row['strike_price']
+        t = row['days_to_maturity']
+        r = row['risk_free_rate']
+        g = row['dividend_rate']
+        v0 = row['v0']
+        kappa = row['kappa']
+        theta = row['theta']
+        sigma = row['sigma']
+        rho = row['rho']
+        w = row['w']
+        
+        date = self.calculation_date + ql.Period(t,ql.Days)
+        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+        
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        exercise = ql.EuropeanExercise(date)
+        european_option = ql.VanillaOption(payoff, exercise)
+        flat_ts = self.make_ts_object(r)
+        dividend_ts = self.make_ts_object(g)
+        
+        heston_process = ql.HestonProcess(
+            flat_ts,dividend_ts, 
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            v0, kappa, theta, sigma, rho)
+        
+        engine = ql.AnalyticHestonEngine(
+            ql.HestonModel(heston_process), 0.01, 1000)
+        european_option.setPricingEngine(engine)
+        h_price = european_option.NPV()
+        row['heston_price'] = h_price
+        return row
