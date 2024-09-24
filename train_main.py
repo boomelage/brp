@@ -87,7 +87,8 @@ lasso regression
                                 model testing
 """
 
-df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
+df = mlop.compute_predictive_performance(
+    test_data,test_X,model_fit, model_name)
 
 predictive_performance_plot = mlop.plot_model_performance(df,runtime)
 
