@@ -4,6 +4,13 @@
 Created on Tue Sep 10 17:55:16 2024
 
 """
+
+import os
+import sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('term_structure')
+sys.path.append('contract_details')
+sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 from settings import model_settings
@@ -14,12 +21,13 @@ pd.reset_option("display.max_rows")
 ms = model_settings()
 from routine_calibration_global import calibrate_heston
 from pricing import noisyfier
+from tqdm import tqdm
 calculation_date = ql.Date().todaysDate()
 day_count = ql.Actual365Fixed()
 
 
 
-def price_barrier_option_row(row):
+def price_barrier_option_row(row,progress_bar):
     
     barrier_type_name = row['barrierType']
     try:
@@ -49,6 +57,7 @@ def price_barrier_option_row(row):
         barrier_price = barrierOption.NPV()
         
         row['barrier_price'] = barrier_price
+        progress_bar.update(1)
         return row
     except Exception:
         print(barrier_type_name)
@@ -148,7 +157,11 @@ features['v0'] = heston_parameters['v0'].iloc[0]
 features['w'] = 'call'
 features['moneyness'] = features['spot_price']/features['strike_price']
 features['barrierType'] = features['updown'] + features['outin']
-features = features.apply(price_barrier_option_row,axis=1)
+
+progress_bar = tqdm(
+    desc="pricing",total=features.shape[0],unit="contracts",leave=False)
+features = features.apply(price_barrier_option_row,axis=1,progress_bar=progress_bar)
+progress_bar.close()
 
 training_data = noisyfier(features)
 
