@@ -21,7 +21,6 @@ import numpy as np
 import QuantLib as ql
 from routine_calibration_global import heston_parameters
 
-
 def generate_train_features(K,T,s,flag):
     features = pd.DataFrame(
         product(
@@ -38,11 +37,9 @@ def generate_train_features(K,T,s,flag):
                   ])
     return features
 
-
-
 s = ms.s
 
-K = np.linspace(s*0.9,s*1.1,4000)
+K = np.linspace(s*0.9,s*1.1,40)
 
 T = ms.T
 
@@ -76,7 +73,6 @@ for i, row in features.iterrows():
     rho = row['rho']
     w = row['w']
     
-    
     date = ms.calculation_date + ql.Period(t,ql.Days)
     option_type = ql.Option.Call if w == 'call' else ql.Option.Put
     
@@ -105,5 +101,7 @@ progress_bar.close()
 
 ml_data = noisyfier(features)
 
-print(f"\n{ml_data}\n{ml_data.describe()}\n")
+print(f"\n{ml_data}\n")
+pd.set_option("display.max_columns",None)
+print(f"{ml_data.describe()}\n")
 
