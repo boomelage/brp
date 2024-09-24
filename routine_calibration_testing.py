@@ -118,7 +118,5 @@ error_df.rename(columns={'heston': 'calibration_price',
                     'heston_price': 'test_price'}, inplace=True)
 
 avg = np.average(error_df['absRelError'])*100/error_df.shape[0]
-print(f"\ncalibration test dataset:\n{test_features}\n")
-print(f"\noriginal calibration prices:\n{calibration_dataset}\n")
 print(f"\nerrors:\n{error_df}")
-print(f"\naverage absolute relative calibration error: {round(avg,4)}%")
+print(f"average absolute relative calibration testing error: {round(avg,4)}%")

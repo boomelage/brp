@@ -120,7 +120,7 @@ engine = ql.FdHestonBarrierEngine(hestonModel)
 T = ms.T
 spread = 0.005
 n_spreads = 10
-n_strikes = 5
+n_strikes = 100
 up_K = np.linspace(
     s*(1+spread), 
     s*(1+n_spreads*spread),
@@ -294,6 +294,7 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
+features = features.sort_values(by='days_to_maturity',ascending=False)
 pricing_bar = tqdm(
     desc="pricing",total=features.shape[0],unit="contracts",leave=True)
 features = features.apply(price_barrier_option_row,axis=1,progress_bar=pricing_bar)

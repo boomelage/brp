@@ -24,9 +24,9 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-# from train_generation_barriers import training_data
+from train_generation_barriers import training_data
 
-from train_generation_vanillas import training_data
+# from train_generation_vanillas import training_data
 
 """
 # =============================================================================
@@ -50,17 +50,17 @@ preprocessor = mlop.preprocess()
 single layer network
 """
 
-# model_name = "Single Layer Network"
-# print(model_name)
-# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+model_name = "Single Layer Network"
+print(model_name)
+model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-model_name = "Deep Neural Network"
-print(model_name)
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_name = "Deep Neural Network"
+# print(model_name)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
@@ -85,7 +85,7 @@ lasso regression
 
 df = mlop.test_model(test_X,test_y,model_fit)
 
-# predictive_performance_plot = mlop.plot_model_performance(df,runtime)
+predictive_performance_plot = mlop.plot_model_performance(df,runtime)
 
 """
 # =============================================================================

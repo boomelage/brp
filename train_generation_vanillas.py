@@ -19,7 +19,7 @@ from settings import model_settings
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
-from routine_calibration_global import heston_parameters
+from routine_calibration_testing import heston_parameters
 
 
 ms = model_settings()
@@ -47,7 +47,7 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.9,s*1.1,3)
+K = np.linspace(s*0.9,s*1.1,100)
 
 T = ms.T
 
