@@ -16,6 +16,7 @@ from itertools import product
 from pricing import noisyfier
 from settings import model_settings
 ms = model_settings()
+from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
 from routine_calibration_global import heston_parameters
@@ -41,9 +42,13 @@ def generate_train_features(K,T,s,flag):
 
 s = ms.s
 
-K = np.linspace(s*0.5,s*1.5,10)
+K = np.linspace(s*0.9,s*1.1,4000)
 
 T = ms.T
+
+T = np.arange(min(T),max(T),1)
+
+print(f"\ngenerating {2*len(K)*len(T)} contracts...\n")
 
 features = generate_train_features(K, T, s, ['call','put'])
 
@@ -55,6 +60,8 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 features['heston_price'] = 0.00
+
+progress_bar = tqdm(desc="pricing",total=features.shape[0],unit="contracts")
 
 for i, row in features.iterrows():
     s = row['spot_price']
@@ -91,6 +98,7 @@ for i, row in features.iterrows():
     european_option.setPricingEngine(engine)
     
     h_price = european_option.NPV()
+    progress_bar.update(1)
     features.at[i, 'heston_price'] = h_price
 
 ml_data = noisyfier(features)

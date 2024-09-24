@@ -85,7 +85,6 @@ def heston_price_vanilla_row(row):
     
     return row
 
-
 # Binary
 # Barrier
 # Asian arith/geo 

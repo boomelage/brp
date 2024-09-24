@@ -31,7 +31,7 @@ class mlop:
     '''
     def __init__(self,user_dataset):
         
-        self.random_state = 42
+        self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (100,100,100)
@@ -216,7 +216,7 @@ class mlop:
 
 # =============================================================================
                                                                 # Model Testing
-                                                                
+                 
     def compute_predictive_performance(
             self,test_data, test_X, model_fit, model_name):
         predictive_performance = (pd.concat(
@@ -226,13 +226,12 @@ class mlop:
                 id_vars=self.user_dataset.columns, 
                 var_name="Model", value_name="Predicted")
                 ).assign(pricing_error=lambda x: np.abs(
-                    abs(
                         x["Predicted"] - x[self.target_name]
-                        )*100/x[self.target_name]))
-            
+                        )*100/x[self.target_name]
+                ).assign(moneyness=lambda x: x['strike_price']/x['spot_price'])
         predictive_performance = predictive_performance.iloc[:,1:]
-        
         return predictive_performance
+
     
     def plot_model_performance(self,predictive_performance, runtime):
         predictive_performance_plot = (
@@ -249,6 +248,7 @@ class mlop:
         plt.cla()
         plt.clf()
         return predictive_performance_plot    
-    
-    
+
+
+
     
