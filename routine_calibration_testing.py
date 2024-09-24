@@ -13,9 +13,7 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
 from itertools import product
-from pricing import noisyfier
 from settings import model_settings
-
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
@@ -23,7 +21,6 @@ from routine_calibration_global import \
     heston_parameters, performance_df, calibration_dataset
 ms = model_settings()
 s = ms.s
-
 
 def generate_train_features(K,T,s,flag):
     features = pd.DataFrame(

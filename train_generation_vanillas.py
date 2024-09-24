@@ -20,6 +20,8 @@ from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
 from routine_calibration_global import heston_parameters
+
+
 ms = model_settings()
 s = ms.s
 
@@ -45,7 +47,7 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.9,s*1.1,5)
+K = np.linspace(s*0.95,s*1.05,5000)
 
 T = ms.T
 
@@ -116,4 +118,3 @@ pd.set_option("display.max_columns",None)
 print(training_data.describe())
 pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
-

@@ -73,17 +73,21 @@ engine = ql.MCDiscreteArithmeticAPHestonEngine(hestonProcess, rng, requiredSampl
 
 import pandas as pd
 from itertools import product
-def generate_features(K,T,s):
+def generate_features(K,T,B,s):
     features = pd.DataFrame(
         product(
             [s],
             K,
             T,
+            B,
+            ['In','Out']
             ),
         columns=[
             "spot_price", 
             "strike_price",
             "days_to_maturity",
+            "barrier",
+            "outin"
                   ])
     return features
 
@@ -110,15 +114,11 @@ hestonModel = ql.HestonModel(hestonProcess)
 
 engine = ql.FdHestonBarrierEngine(hestonModel)
 
-
-"""
-generating OTM call barrier options
-"""
 # T = ms.T
 T = [1]
 pricing_spread = 0.005
 n_spread_steps = 10
-n_strikes = 5
+n_strikes = 10
 K = np.linspace(
     s*(1+pricing_spread), 
     s*(1+n_spread_steps*pricing_spread),
@@ -126,64 +126,49 @@ K = np.linspace(
 
 
 
-initial_features = generate_features(K,T,s)
-initial_features
-
-def generate_features_with_barriers(s,K,T,B):
-    features_with_barriers = pd.DataFrame(
-        product(
-            [s],
-            K,
-            T,
-            B,
-            ['out','in']
-            ),
-        columns=[
-            "spot_price", 
-            "strike_price",
-            "days_to_maturity",
-                  ])
-    return features_with_barriers
-
-
+"""
+up options
+"""
 n_barriers = 5
-features_with_barriers = pd.DataFrame()
-for i, row in initial_features.iterrows():
-    col_names = [
-        'spot_price', 'strike_price', 'days_to_maturity','barrier','outin']
-    strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
-    strike_wise_out = pd.DataFrame(strike_wise_np).copy()
-    strike_wise_in = pd.DataFrame(strike_wise_np).copy()
-    strike_wise_out.columns = col_names
-    strike_wise_in.columns = col_names
-    
-    print(strike_wise_out)
-    
-    
-    
+max_barrier =  1.1
+up_barriers  = np.linspace(s * 1.01, s * max_barrier, n_barriers)
+
+up_features = generate_features(K,T,up_barriers,s)
+up_features['updown'] = 'Up' 
 
 
+"""
+down options
 
+"""
+n_barreirs = 5
+min_barrier = 0.9
+down_barriers  = np.linspace(s * min_barrier, s*0.99, n_barreirs)
 
+down_features = generate_features(K,T,down_barriers,s)
+down_features['updown'] = 'Down' 
 
+n_contracts = 4*n_barreirs*len(T)*len(K)
 
-# features = pd.concat([up_features,down_features]).reset_index(drop=True)
-# features['sigma'] = heston_parameters['sigma'].iloc[0]
-# features['theta'] = heston_parameters['theta'].iloc[0]
-# features['kappa'] = heston_parameters['kappa'].iloc[0]
-# features['rho'] = heston_parameters['rho'].iloc[0]
-# features['v0'] = heston_parameters['v0'].iloc[0]
-# features['w'] = 'call'
-# features['moneyness'] = features['spot_price']/features['strike_price']
-# features['barrierType'] = features['updown'] + features['outin']
+print(f"\ngenerating {n_contracts} contracts...\n")
 
-# progress_bar = tqdm(
-#     desc="pricing",total=features.shape[0],unit="contracts",leave=False)
-# features = features.apply(price_barrier_option_row,axis=1,progress_bar=progress_bar)
-# progress_bar.close()
+features = pd.concat([up_features,down_features]).reset_index(drop=True)
+features['sigma'] = heston_parameters['sigma'].iloc[0]
+features['theta'] = heston_parameters['theta'].iloc[0]
+features['kappa'] = heston_parameters['kappa'].iloc[0]
+features['rho'] = heston_parameters['rho'].iloc[0]
+features['v0'] = heston_parameters['v0'].iloc[0]
+features['w'] = 'call'
+features['moneyness'] = features['spot_price']/features['strike_price']
+features['barrierType'] = features['updown'] + features['outin']
 
-# training_data = noisyfier(features)
+progress_bar = tqdm(
+    desc="pricing",total=features.shape[0],unit="contracts",leave=False)
+features = features.apply(price_barrier_option_row,axis=1,progress_bar=progress_bar)
+progress_bar.close()
 
-# pd.set_option("display.max_columns",None)
-# print(f'\n{training_data}\n')
-# pd.reset_option("display.max_columns")
+training_data = noisyfier(features)
+
+pd.set_option("display.max_columns",None)
+print(f'\n{training_data}\n')
+pd.reset_option("display.max_columns")
