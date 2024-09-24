@@ -8,7 +8,6 @@ Created on Mon Sep  2 16:24:36 2024
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
@@ -93,7 +92,6 @@ class mlop:
             # 'barrierType',
             # 'outin',
             # 'updown',
-
             
             ]
         
@@ -222,10 +220,24 @@ class mlop:
             axis=1).melt(
                 id_vars=self.user_dataset.columns, 
                 var_name="Model", value_name="Predicted")
+                
                 ).assign(pricing_error=lambda x: np.abs(
                         x["Predicted"] - x[self.target_name]
                         )*100/x[self.target_name]
-                ).assign(moneyness=lambda x: x['strike_price']/x['spot_price'])
+                ).assign(
+                        moneyness=lambda x: np.select(
+                            [
+                                x['w'] == 'call',
+                                x['w'] == 'put'
+                            ],
+                            [
+                                round((x['spot_price']/x['strike_price']-1),4),
+                                round((x['strike_price']/x['spot_price']-1),4),
+                            ],
+                            print('flag error')
+                        )
+                    )
+
         predictive_performance = predictive_performance.iloc[:,1:]
         return predictive_performance
 

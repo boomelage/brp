@@ -55,7 +55,8 @@ test_features['rho'] = heston_parameters['rho'].iloc[0]
 test_features['v0'] = heston_parameters['v0'].iloc[0]
 test_features['heston_price'] = 0.00
 test_features['w'] = 'call'
-progress_bar = tqdm(desc="pricing",total=test_features.shape[0],unit= "contracts")
+progress_bar = tqdm(
+    desc="pricing",total=test_features.shape[0],unit= "contracts")
 
 for i, row in test_features.iterrows():
     s = row['spot_price']

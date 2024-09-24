@@ -17,8 +17,6 @@ mlop = mlop()
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
-
-
 print(f"\n{train_start_tag}\n")
 
 """
@@ -28,19 +26,16 @@ print(f"\n{train_start_tag}\n")
 
 # from train_generation_barriers import training_data
 
-from train_generation_vanillas import training_data
+# from train_generation_vanillas import training_data
 
 """
 # =============================================================================
 """
-
 mlop.user_dataset = training_data
 print('\ntraining...')
-
-
 """
 # =============================================================================
-                                preprocessing data
+                            preprocessing data
 """
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
@@ -50,7 +45,8 @@ preprocessor = mlop.preprocess()
 """
 # =============================================================================
                               model selection                
-
+"""
+"""
 single layer network
 """
 
