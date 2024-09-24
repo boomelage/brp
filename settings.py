@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """
+
 Created on Mon Sep  9 13:54:57 2024
 
 """
@@ -22,9 +23,10 @@ class model_settings():
     def __init__(self):
         
         """
+        
         from settings import model_settings
         ms = model_settings()
-        ms.
+        
         """
         
         self.day_count          =    ql.Actual365Fixed()
@@ -32,30 +34,14 @@ class model_settings():
         self.calculation_date   =    ql.Date.todaysDate()
         self.csvs               =    dirdatacsv()
         self.xlsxs              =    dirdata()
-        ql.Settings.instance().evaluationDate = self.calculation_date
         self.ticker             =    'SPX'
         self.s                  =    1277.92
         self.n_k                =    int(1e3)
-
-
+        ql.Settings.instance().evaluationDate = self.calculation_date
         
-        self.step = self.s*0.005
+        self.step = self.s*0.01
         
-        self.calibration_call_K = np.arange(
-            self.s,
-            self.s+5*self.step,
-            self.step)
-        
-        self.calibration_put_K = np.arange(
-            self.s-5*self.step,
-            self.s,
-            self.step)
-        
-        self.calibration_K = np.unique(np.array(
-            [
-                self.calibration_put_K,self.calibration_call_K
-             ]
-            ).flatten().astype(int).tolist())
+        self.calibration_K = np.linspace(self.s*0.9, self.s*1.1,5)
         
         self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
         
@@ -69,7 +55,6 @@ class model_settings():
             # 24.1647,  
             # 24.4341
             ]
-    
         
         self.ql_T = [
             
@@ -98,7 +83,6 @@ class model_settings():
         self.derman_coefs = derman_coefs.loc[[30,60,95,186,368]]
         self.derman_coefs.index = self.T
         
-        
         self.derman_ts = pd.DataFrame(
             np.zeros((len(self.surf_K),len(self.T)),dtype=float))
         
@@ -115,7 +99,6 @@ class model_settings():
                 )
         self.derman_ts = self.derman_ts.dropna(how="any",axis=0)
         self.derman_ts = self.derman_ts.dropna(how="any",axis=1)
-
         
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T.tolist())
@@ -152,7 +135,7 @@ class model_settings():
 
     def make_ts_object(self,rate):
         ts_object = ql.YieldTermStructureHandle(ql.FlatForward(
-            self.calculation_date, ql.QuoteHandle(ql.SimpleQuote(rate)), self.day_count))
+            self.calculation_date, rate, self.day_count))
         return ts_object
 
     def compute_maturity_date(self,row):
@@ -183,34 +166,39 @@ class model_settings():
         return h_price
     
     def heston_price_vanilla_row(self,row):
-        s = row['spot_price']
-        k = row['strike_price']
-        t = row['days_to_maturity']
-        r = row['risk_free_rate']
-        g = row['dividend_rate']
-        v0 = row['v0']
-        kappa = row['kappa']
-        theta = row['theta']
-        sigma = row['sigma']
-        rho = row['rho']
-        w = row['w']
-        
-        date = self.calculation_date + ql.Period(t,ql.Days)
-        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
-        
-        payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(date)
-        european_option = ql.VanillaOption(payoff, exercise)
-        flat_ts = self.make_ts_object(r)
-        dividend_ts = self.make_ts_object(g)
-        heston_process = ql.HestonProcess(
-            flat_ts,dividend_ts, 
-            ql.QuoteHandle(ql.SimpleQuote(s)), 
-            v0, kappa, theta, sigma, rho)
-        engine = ql.AnalyticHestonEngine(
-            ql.HestonModel(heston_process), 0.01, 1000)
-        european_option.setPricingEngine(engine)
-        h_price = european_option.NPV()
-        row['heston_price'] = h_price
-        return row
+        try:
+            s = row['spot_price']
+            k = row['strike_price']
+            t = row['days_to_maturity']
+            r = row['risk_free_rate']
+            g = row['dividend_rate']
+            v0 = row['v0']
+            kappa = row['kappa']
+            theta = row['theta']
+            sigma = row['sigma']
+            rho = row['rho']
+            w = row['w']
+            
+            date = self.calculation_date + ql.Period(t,ql.Days)
+            option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+            
+            payoff = ql.PlainVanillaPayoff(option_type, k)
+            exercise = ql.EuropeanExercise(date)
+            european_option = ql.VanillaOption(payoff, exercise)
+            flat_ts = self.make_ts_object(r)
+            dividend_ts = self.make_ts_object(g)
+            
+            heston_process = ql.HestonProcess(
+                flat_ts,dividend_ts, 
+                ql.QuoteHandle(ql.SimpleQuote(s)), 
+                v0, kappa, theta, sigma, rho)
+            
+            engine = ql.AnalyticHestonEngine(
+                ql.HestonModel(heston_process), 0.01, 1000)
+            european_option.setPricingEngine(engine)
+            h_price = european_option.NPV()
+            row['heston_price'] = h_price
+            return row
+        except Exception:
+            print()
 

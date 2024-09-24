@@ -15,10 +15,10 @@ import pandas as pd
 from itertools import product
 from pricing import noisyfier
 from settings import model_settings
-from routine_calibration_global import calibrate_heston
-from bicubic_interpolation import bicubic_vol_row
 ms = model_settings()
 import numpy as np
+import QuantLib as ql
+from routine_calibration_global import heston_parameters
 
 
 def generate_train_features(K,T,s,flag):
@@ -41,65 +41,58 @@ def generate_train_features(K,T,s,flag):
 
 s = ms.s
 
-call_K = ms.calibration_call_K
-put_K = ms.calibration_put_K
+K = np.linspace(s*0.5,s*1.5,10)
 
-n_strikes = int(1e4)
+T = ms.T
 
-max_maturity = 31
-T = np.arange(1,max_maturity,1).astype(int)
-
-n_contracts = int(len(T)*n_strikes*2)
-
-print(f"\n\npricing {n_contracts} contracts...")
-
-pricing_spread = 0.002
-
-n_spreads = 3
-
-call_K_interp = np.linspace(
-    s*(1+pricing_spread), s*(1+n_spreads*pricing_spread),int(n_strikes))
-
-put_K_interp = np.linspace(
-    s*(1-n_spreads*pricing_spread),s*(1-pricing_spread),int(n_strikes))
-
-print(f"\ntrain s: {s}")
-print(f"strikes between {int(min(put_K_interp))} and {int(max(call_K_interp))}")
-print(f"maturities between {int(min(T))} and {int(max(T))} days")
-
-call_features = generate_train_features(call_K_interp, T, s, ['call'])
-call_features['moneyness'] = call_features['spot_price']/call_features['strike_price']
-
-put_features = generate_train_features(put_K_interp, T, s, ['put'])
-put_features['moneyness'] = put_features['strike_price']/put_features['spot_price']
-
-train_K = np.sort(np.array([put_K_interp,call_K_interp],dtype=int).flatten())
-
-# features = call_features
-
-features = pd.concat(
-    [call_features,put_features],ignore_index=True).reset_index(drop=True)
-
-features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
+features = generate_train_features(K, T, s, ['call','put'])
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
-from routine_calibration_generation import contract_details
-heston_parameters = calibrate_heston(contract_details,ms.s,ms.calculation_date)
-
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
+features['heston_price'] = 0.00
 
-heston_features = features.apply(ms.heston_price_vanilla_row,axis=1)
-ml_data = noisyfier(heston_features)
+for i, row in features.iterrows():
+    s = row['spot_price']
+    k = row['strike_price']
+    t = int(row['days_to_maturity'])
+    r = row['risk_free_rate']
+    g = row['dividend_rate']
+    v0 = row['v0']
+    kappa = row['kappa']
+    theta = row['theta']
+    sigma = row['sigma']
+    rho = row['rho']
+    w = row['w']
+    
+    
+    date = ms.calculation_date + ql.Period(t,ql.Days)
+    option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+    
+    payoff = ql.PlainVanillaPayoff(option_type, k)
+    exercise = ql.EuropeanExercise(date)
+    european_option = ql.VanillaOption(payoff, exercise)
+    flat_ts = ms.make_ts_object(r)
+    dividend_ts = ms.make_ts_object(g)
+    
+    heston_process = ql.HestonProcess(
+        flat_ts,dividend_ts, 
+        ql.QuoteHandle(ql.SimpleQuote(s)), 
+        v0, kappa, theta, sigma, rho)
+    
+    heston_model = ql.HestonModel(heston_process)
+    
+    engine = ql.AnalyticHestonEngine(heston_model)
+    
+    european_option.setPricingEngine(engine)
+    
+    h_price = european_option.NPV()
+    features.at[i, 'heston_price'] = h_price
 
-pd.set_option('display.max_columns',None)
-print(f"\n\ntraining dataset:\n{ml_data}")
-print(f"\n\ndescriptive statistics:\n{ml_data.describe()}")
-print(f"\nspot: {s}")
-pd.reset_option('display.max_columns')
-pd.reset_option('display.max_rows')
+ml_data = noisyfier(features)
+
 

@@ -49,6 +49,7 @@ def calibrate_heston(contract_details, s, calculation_date):
     
     for row_idx, row in calibration_dataset.iterrows():
         t = row['days_to_maturity']
+        
         date = calculation_date + ql.Period(int(t),ql.Days)
         dt = (date - calculation_date)
         p = ql.Period(dt, ql.Days)
@@ -108,6 +109,9 @@ def calibrate_heston(contract_details, s, calculation_date):
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
     return heston_parameters
+s = ms.s
+calculation_date = ms.calculation_date
 
+from routine_calibration_generation import contract_details
 
-
+heston_parameters = calibrate_heston(contract_details, s, calculation_date)

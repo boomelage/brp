@@ -88,9 +88,6 @@ from routine_calibration_generation import contract_details
 s = ms.s
 heston_parameters = calibrate_heston(contract_details, s, calculation_date)
 
-t = 7
-k = ms.s
-barrier = ms.s-ms.s+1
 rebate = 0.
 
 
@@ -114,7 +111,7 @@ T = ms.T
 pricing_spread = 0.002
 K = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),5)
 
-n = 200
+n = 2
 
 """
 up options
@@ -129,6 +126,7 @@ up_features['updown'] = 'Up'
 
 """
 down options
+
 """
 
 min_barrier = 0.9

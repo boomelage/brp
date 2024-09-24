@@ -18,8 +18,6 @@ from itertools import product
 from settings import model_settings
 ms = model_settings()
 s = ms.s
-calibration_call_K = ms.calibration_call_K
-calibration_put_K = ms.calibration_put_K
 T = ms.T
 derman_ts = ms.derman_ts
 
@@ -44,18 +42,20 @@ def generate_features(K,T,s):
 """
 
 
-calls = generate_features(calibration_call_K, T, s)
-calls = calls[calls['days_to_maturity'].isin(T)].copy()
-calls['w'] = 'call'
-calls['moneyness'] = calls['spot_price'] - calls['strike_price']
+# calls = generate_features(calibration_call_K, T, s)
+# calls = calls[calls['days_to_maturity'].isin(T)].copy()
+# calls['w'] = 'call'
+# calls['moneyness'] = calls['spot_price'] - calls['strike_price']
 
 
 
-puts = generate_features(calibration_put_K, T, s)
-puts = puts[puts['days_to_maturity'].isin(T)].copy()
-puts['w'] = 'put'
-puts['moneyness'] = puts['strike_price'] - puts['spot_price']
+# puts = generate_features(calibration_put_K, T, s)
+# puts = puts[puts['days_to_maturity'].isin(T)].copy()
+# puts['w'] = 'put'
+# puts['moneyness'] = puts['strike_price'] - puts['spot_price']
 
+
+features = generate_features(ms.calibration_K, T, s)
 
 
 """
@@ -86,13 +86,14 @@ Bicubic Spline interpolation of Derman surface
 """
 
 from bicubic_interpolation import bicubic_vol_row
-calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
-puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
+# calls = calls.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
+# puts = puts.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
+features = features.apply(bicubic_vol_row,axis=1,bicubic_vol = ms.bicubic_vol)
 
 """
 wip
 """
-features = pd.concat([calls,puts],ignore_index=True)
+# features = pd.concat([calls,puts],ignore_index=True)
 contract_details = features.copy()
 contract_details['risk_free_rate'] = 0.04
 contract_details['dividend_rate'] = 0.001
