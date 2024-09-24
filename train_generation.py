@@ -19,7 +19,10 @@ ms = model_settings()
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
-from routine_calibration_global import heston_parameters
+from routine_calibration_global import \
+    heston_parameters, performance_df, calibration_dataset
+s = ms.s
+
 
 def generate_train_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -37,30 +40,24 @@ def generate_train_features(K,T,s,flag):
                   ])
     return features
 
-s = ms.s
+"""
+checking calibration accuracy
+"""
 
-K = np.linspace(s*0.9,s*1.1,40)
+test_features = calibration_dataset.copy()
+test_features['dividend_rate'] = 0.02
+test_features['risk_free_rate'] = 0.04
+test_features['sigma'] = heston_parameters['sigma'].iloc[0]
+test_features['theta'] = heston_parameters['theta'].iloc[0]
+test_features['kappa'] = heston_parameters['kappa'].iloc[0]
+test_features['rho'] = heston_parameters['rho'].iloc[0]
+test_features['v0'] = heston_parameters['v0'].iloc[0]
+test_features['heston_price'] = 0.00
+test_features['w'] = 'call'
+progress_bar = tqdm(desc="pricing",total=test_features.shape[0],unit= "contracts")
 
-T = ms.T
 
-T = np.arange(min(T),max(T),1)
-
-print(f"\ngenerating {2*len(K)*len(T)} contracts...\n")
-
-features = generate_train_features(K, T, s, ['call','put'])
-
-features['dividend_rate'] = 0.02
-features['risk_free_rate'] = 0.04
-features['sigma'] = heston_parameters['sigma'].iloc[0]
-features['theta'] = heston_parameters['theta'].iloc[0]
-features['kappa'] = heston_parameters['kappa'].iloc[0]
-features['rho'] = heston_parameters['rho'].iloc[0]
-features['v0'] = heston_parameters['v0'].iloc[0]
-features['heston_price'] = 0.00
-
-progress_bar = tqdm(desc="pricing",total=features.shape[0],unit= "contracts")
-
-for i, row in features.iterrows():
+for i, row in test_features.iterrows():
     s = row['spot_price']
     k = row['strike_price']
     t = int(row['days_to_maturity'])
@@ -95,13 +92,48 @@ for i, row in features.iterrows():
     
     h_price = european_option.NPV()
     progress_bar.update(1)
-    features.at[i, 'heston_price'] = h_price
-    
+    test_features.at[i, 'heston_price'] = h_price
+
+
 progress_bar.close()
 
-ml_data = noisyfier(features)
+test_features.at[0,'heston_price']
 
-print(f"\n{ml_data}\n")
-pd.set_option("display.max_columns",None)
-print(f"{ml_data.describe()}\n")
+black_scholes_prices = performance_df['black_scholes']
+calibration_prices = performance_df['heston']
+test_prices = test_features['heston_price']
+error = test_prices/calibration_prices - 1
+error_series = pd.DataFrame({'absRelError':error})
 
+error_df = pd.concat(
+    [
+      black_scholes_prices,
+      calibration_prices,
+      test_prices,
+      error_series
+      ],
+    axis = 1
+    )
+error_df
+
+error_df.rename(columns={'heston': 'calibration_price', 
+                    'heston_price': 'test_price'}, inplace=True)
+
+avg = np.average(error_df['absRelError'])*100/error_df.shape[0]
+print(f"\ncalibration test dataset:\n{test_features}\n")
+print(f"\noriginal calibration prices:\n{calibration_dataset}\n")
+print(f"\nerrors:\n{error_df}")
+print(f"\naverage absolute relative error: {round(avg,4)}%")
+
+"""
+generating training dataset
+"""
+K = np.linspace(s*0.9,s*1.1,5)
+
+T = ms.T
+
+T = np.arange(min(T),max(T),1)
+
+print(f"\ngenerating {2*len(K)*len(T)} contracts...")
+
+features = generate_train_features(K, T, s, ['call','put'])

@@ -108,10 +108,11 @@ def calibrate_heston(contract_details, s, calculation_date):
     print(f"\n{heston_parameters}")
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
-    return heston_parameters
+    return heston_parameters, performance_df
 s = ms.s
 calculation_date = ms.calculation_date
 
-from routine_calibration_generation import contract_details
+from routine_calibration_generation import calibration_dataset
 
-heston_parameters = calibrate_heston(contract_details, s, calculation_date)
+heston_parameters, performance_df = calibrate_heston(calibration_dataset, s, calculation_date)
+performance_df
