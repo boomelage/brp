@@ -7,43 +7,50 @@ import os
 import sys
 import time
 from datetime import datetime
-import pandas as pd
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 sys.path.append('historical_data')
-
+from mlop import mlop
+mlop = mlop()
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
+
+
 print(f"\n{train_start_tag}\n")
 
-pd.reset_option("display.max_rows")
-pd.reset_option("display.max_columns")
+"""
+# =============================================================================
+                                importing data
+"""
 
-from exotics import training_data
+# from train_generation_barriers import training_data
 
-# from train_generation import ml_data
+from train_generation_vanillas import training_data
 
-# imported_data = pd.read_csv(r'600kvanillas.csv')
-# imported_data = imported_data.drop(columns=imported_data.columns[0])
+"""
+# =============================================================================
+"""
 
-from mlop import mlop
-mlop = mlop(user_dataset=training_data)
-
-
-
+mlop.user_dataset = training_data
 print('\ntraining...')
 
 
+"""
+# =============================================================================
+                                preprocessing data
+"""
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
 
 preprocessor = mlop.preprocess()
 
-
 """
+# =============================================================================
+                              model selection                
+
 single layer network
 """
 
@@ -54,7 +61,6 @@ single layer network
 """
 deep neural network
 """
-
 
 model_name = "Deep Neural Network"
 print(model_name)
@@ -77,16 +83,19 @@ lasso regression
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
 
 """
-model testing
+# =============================================================================
+                                model testing
 """
 
 df = mlop.compute_predictive_performance(test_data,test_X,model_fit, model_name)
 
 predictive_performance_plot = mlop.plot_model_performance(df,runtime)
 
-train_end = time.time()
+"""
+# =============================================================================
+"""
 
+train_end = time.time()
 train_time = train_end - train_start
 
 print(f"\nruntime: {int(train_time)} seconds")
- 

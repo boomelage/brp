@@ -29,8 +29,8 @@ class mlop:
     Machine Learning Option Pricing with sklearn
     
     '''
-    def __init__(self,user_dataset):
-        
+    def __init__(self):
+        self.user_dataset = None
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
@@ -105,10 +105,7 @@ class mlop:
             # ("scale2",QuantileTransformer(),self.numerical_features),
             ("encode", OneHotEncoder(),self.categorical_features)
             ]   
-        
-        
 
-        self.user_dataset = user_dataset
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]

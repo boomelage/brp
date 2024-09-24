@@ -19,9 +19,9 @@ import time
 pd.set_option("display.max_columns",None)
 pd.reset_option("display.max_rows")
 ms = model_settings()
-from routine_calibration_global import calibrate_heston
 from pricing import noisyfier
 from tqdm import tqdm
+from routine_calibration_testing import heston_parameters
 calculation_date = ql.Date().todaysDate()
 day_count = ql.Actual365Fixed()
 
@@ -93,13 +93,11 @@ def generate_features(K,T,B,s):
 
 start = time.time()
 
-from routine_calibration_generation import contract_details
+
+
 s = ms.s
-heston_parameters = calibrate_heston(contract_details, s, calculation_date)
 
 rebate = 0.
-
-
 
 spotHandle = ql.QuoteHandle(ql.SimpleQuote(s))
 
@@ -118,9 +116,9 @@ engine = ql.FdHestonBarrierEngine(hestonModel)
 
 T = ms.T
 pricing_spread = 0.002
-K = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),5)
+K = np.linspace(s*(1+pricing_spread), s*(1+3*pricing_spread),200)
 
-n = 20
+n = 500
 
 """
 up options
