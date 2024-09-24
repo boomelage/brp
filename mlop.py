@@ -35,8 +35,8 @@ class mlop:
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (100,100,100)
         self.solver = [
-                    # "lbfgs",
-                    "sgd", 
+                    "lbfgs",
+                    # "sgd", 
                     # "adam"
                     ]
         
@@ -68,9 +68,9 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            'barrierType',
-            'outin',
-            'updown',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
             'w'
             
@@ -86,17 +86,16 @@ class mlop:
         
         self.categorical_features = [
             
-            'w',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
-            'barrierType',
-            'barrierType',
-            'outin',
-            'updown',
+            'w'
             
             ]
         
-        # self.security_tag = 'vanilla options'
-        self.security_tag = 'barrier options'
+        self.security_tag = 'vanilla options'
+        # self.security_tag = 'barrier options'
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
@@ -211,43 +210,25 @@ class mlop:
 
 # =============================================================================
                                                                 # Model Testing
-                 
-    def compute_predictive_performance(
-            self,test_data, test_X, model_fit, model_name):
-        predictive_performance = (pd.concat(
-            [test_data.reset_index(drop=True), 
-             pd.DataFrame({f"{model_name}": model_fit.predict(test_X)})], 
-            axis=1).melt(
-                id_vars=self.user_dataset.columns, 
-                var_name="Model", value_name="Predicted")
-                
-                ).assign(pricing_error=lambda x: np.abs(
-                        x["Predicted"] - x[self.target_name]
-                        )*100/x[self.target_name]
-                ).assign(
-                        moneyness=lambda x: np.select(
-                            [
-                                x['w'] == 'call',
-                                x['w'] == 'put'
-                            ],
-                            [
-                                round((x['spot_price']/x['strike_price']-1),4),
-                                round((x['strike_price']/x['spot_price']-1),4),
-                            ],
-                            print('flag error')
-                        )
-                    )
 
-        predictive_performance = predictive_performance.iloc[:,1:]
-        return predictive_performance
+    def test_model(self,test_X,test_y,model_fit):
+        training_results = test_X.copy()
+        training_results.loc[
+            training_results['w'] == 'call', 'moneyness'
+            ] = training_results['spot_price'] / training_results['strike_price'] - 1
+        training_results.loc[
+            training_results['w'] == 'put', 'moneyness'
+            ] = training_results['strike_price'] / training_results['spot_price'] - 1
+        training_results['target'] = test_y
+        training_results['prediciton'] = model_fit.predict(test_X)
+        training_results['absRelError'] = abs(training_results['prediciton']/training_results['target']-1)
+        return training_results
 
-    
     def plot_model_performance(self,predictive_performance, runtime):
         predictive_performance_plot = (
             ggplot(predictive_performance, 
-                   aes(x="moneyness", y="pricing_error")) + 
+                   aes(x="moneyness", y="absRelError")) + 
             geom_point(alpha=0.05) + 
-            facet_wrap("Model") + 
             labs(x="Percentage moneyness (S/K)", 
                  y=f"Absolute percentage error ({round(runtime,4)} second runtime)",
                  title=f'Prediction error for {self.security_tag}') + 

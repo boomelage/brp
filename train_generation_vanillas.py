@@ -47,7 +47,7 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.95,s*1.05,5000)
+K = np.linspace(s*0.9,s*1.1,3)
 
 T = ms.T
 

@@ -24,9 +24,9 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-from train_generation_barriers import training_data
+# from train_generation_barriers import training_data
 
-# from train_generation_vanillas import training_data
+from train_generation_vanillas import training_data
 
 """
 # =============================================================================
@@ -83,10 +83,9 @@ lasso regression
                                 model testing
 """
 
-df = mlop.compute_predictive_performance(
-    test_data,test_X,model_fit, model_name)
+df = mlop.test_model(test_X,test_y,model_fit)
 
-predictive_performance_plot = mlop.plot_model_performance(df,runtime)
+# predictive_performance_plot = mlop.plot_model_performance(df,runtime)
 
 """
 # =============================================================================
@@ -96,3 +95,4 @@ train_end = time.time()
 train_time = train_end - train_start
 
 print(f"\nruntime: {int(train_time)} seconds")
+
