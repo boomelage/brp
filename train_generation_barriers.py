@@ -19,48 +19,31 @@ import time
 pd.set_option("display.max_columns",None)
 pd.reset_option("display.max_rows")
 ms = model_settings()
-from pricing import noisyfier
 from tqdm import tqdm
 from routine_calibration_testing import heston_parameters
-calculation_date = ql.Date().todaysDate()
-day_count = ql.Actual365Fixed()
+calculation_date = ms.calculation_date
+day_count = ms.day_count
 
 
 
-def price_barrier_option_row(row,progress_bar):
-    
-    barrier_type_name = row['barrierType']
-    try:
-        if barrier_type_name == 'UpOut':
-            barrierType = ql.Barrier.UpOut
-        elif barrier_type_name == 'DownOut':
-            barrierType = ql.Barrier.DownOut
-        elif barrier_type_name == 'UpIn':
-            barrierType = ql.Barrier.UpIn
-        elif barrier_type_name == 'DownIn':
-            barrierType = ql.Barrier.DownIn
-        else:
-            print('barrier flag error')
-
-        t = row['days_to_maturity']
-        calculation_date = ms.calculation_date
-        expiration_date = calculation_date + ql.Period(int(t), ql.Days)
-        
-        K = row['strike_price']
-        barrier = row['barrier']
-        
-        exercise = ql.EuropeanExercise(expiration_date)
-        
-        payoff = ql.PlainVanillaPayoff(ql.Option.Call, K)
-        barrierOption = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
-        barrierOption.setPricingEngine(engine)
-        barrier_price = barrierOption.NPV()
-        
-        row['barrier_price'] = barrier_price
-        progress_bar.update(1)
-        return row
-    except Exception:
-        print(barrier_type_name)
+def price_barrier_option(t,k,calculation_date,barrier_type_name,barrier):
+    if barrier_type_name == 'UpOut':
+        barrierType = ql.Barrier.UpOut
+    elif barrier_type_name == 'DownOut':
+        barrierType = ql.Barrier.DownOut
+    elif barrier_type_name == 'UpIn':
+        barrierType = ql.Barrier.UpIn
+    elif barrier_type_name == 'DownIn':
+        barrierType = ql.Barrier.DownIn
+    else:
+        print('barrier flag error')
+    expiration_date = calculation_date + ql.Period(int(t), ql.Days)
+    exercise = ql.EuropeanExercise(expiration_date)
+    payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
+    barrierOption = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
+    barrierOption.setPricingEngine(engine)
+    barrier_price = barrierOption.NPV()
+    return barrier_price
 
 """
 # Geometric Asian Option
@@ -118,52 +101,30 @@ engine = ql.FdHestonBarrierEngine(hestonModel)
 
 
 # T = ms.T
-# spread = 0.005
-# n_spreads = 10
-# n_strikes = 300
-# up_K = np.linspace(
-#     s*(1+spread), 
-#     s*(1+n_spreads*spread),
-#     n_strikes)
-
-# down_K = np.linspace(
-#     s*(1-spread), 
-#     s*(1-n_spreads*spread),
-#     n_strikes
-#     )
-
-# n_barriers = n_strikes
-# barrier_spread = spread
-# n_barrier_spreads = n_spreads
-
-
-"""
-small example
-"""
 T = [1]
-spread = 0.005
-n_spreads = 5
-n_strikes = 2
-up_K = np.linspace(
-    s*(1+spread), 
-    s*(1+n_spreads*spread),
-    n_strikes)
 
-down_K = np.linspace(
-    s*(1-spread), 
-    s*(1-n_spreads*spread),
-    n_strikes
-    )
+n_strikes = 20
 
-n_barriers = 2
+down_k_spread = 0.01
+up_k_spread = down_k_spread
+
+
+n_barriers = 5
 barrier_spread = 0.005
-n_barrier_spreads = 2
+n_barrier_spreads = 5
+
+
 
 
 """
 # =============================================================================
                                 up options
 """
+
+up_K = np.linspace(
+    s, 
+    s*(1+up_k_spread),
+    n_strikes)
 initial_up_features = generate_features(up_K,T,s)
 up_features = pd.DataFrame()
 up_bar = tqdm(
@@ -172,16 +133,20 @@ up_bar = tqdm(
     unit='sets',
     leave=True)
 for i, row in initial_up_features.iterrows():
+    
     s = row['spot_price']
     k = row['strike_price']
     t = row['days_to_maturity']
+    
     col_names = [
         'spot_price', 'strike_price', 'days_to_maturity','barrier','outin','w']
     strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
+    
     strike_wise_out = pd.DataFrame(strike_wise_np).copy()
     strike_wise_in = pd.DataFrame(strike_wise_np).copy()
     strike_wise_out.columns = col_names
     strike_wise_in.columns = col_names
+    
     strike_wise_out['strike_price'] = k
     strike_wise_in['strike_price'] = k
     strike_wise_out['spot_price'] = s
@@ -189,11 +154,9 @@ for i, row in initial_up_features.iterrows():
     strike_wise_out['days_to_maturity'] = t
     strike_wise_in['days_to_maturity'] = t
     
-    
     strike_wise_out['w'] = 'call'
     strike_wise_out['updown'] = 'Up'
     strike_wise_out['outin'] = 'Out'
-    
     
     strike_wise_in['w'] = 'call'
     strike_wise_in['updown'] = 'Up'
@@ -224,6 +187,11 @@ up_bar.close()
                                 down options
 """
 
+down_K = np.linspace(
+    s*(1-down_k_spread),
+    s,
+    n_strikes
+    )
 initial_down_features = generate_features(down_K,T,s)
 down_features = pd.DataFrame()
 down_bar = tqdm(
@@ -232,16 +200,20 @@ down_bar = tqdm(
     unit='sets',
     leave=True)
 for i, row in initial_down_features.iterrows():
+    
     s = row['spot_price']
     k = row['strike_price']
     t = row['days_to_maturity']
+    
     col_names = [
         'spot_price', 'strike_price', 'days_to_maturity','barrier','outin','w']
     strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
+    
     strike_wise_out = pd.DataFrame(strike_wise_np).copy()
     strike_wise_in = pd.DataFrame(strike_wise_np).copy()
     strike_wise_out.columns = col_names
     strike_wise_in.columns = col_names
+    
     strike_wise_out['strike_price'] = k
     strike_wise_in['strike_price'] = k
     strike_wise_out['spot_price'] = s
@@ -252,7 +224,6 @@ for i, row in initial_down_features.iterrows():
     strike_wise_out['w'] = 'put'
     strike_wise_out['updown'] = 'Down'
     strike_wise_out['outin'] = 'Out'
-    
     
     strike_wise_in['w'] = 'put'
     strike_wise_in['updown'] = 'Down'
@@ -287,22 +258,36 @@ features = pd.concat(
     [up_features,down_features],
     ignore_index=True)
 
-features['barrierType'] = features['updown'] + features['outin'] 
+features['barrier_type_name'] = features['updown'] + features['outin'] 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-features = features.sort_values(by='days_to_maturity',ascending=False)
+features['barrier_price'] = np.nan
 pricing_bar = tqdm(
-    desc="pricing",total=features.shape[0],unit="contracts",leave=True)
-features = features.apply(price_barrier_option_row,axis=1,progress_bar=pricing_bar)
-
-
+    desc="pricing",
+    total=features.shape[0],
+    unit='contracts',
+    leave=True)
+for i, row in features.iterrows():
+    barrier_type_name = row['barrier_type_name']
+    barrier = row['barrier']
+    s = row['spot_price']
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    calculation_date = ms.calculation_date
+    barrier_price = price_barrier_option(
+        t, k, calculation_date, barrier_type_name, barrier)
+    features.at[i,'barrier_price'] = barrier_price
+    pricing_bar.update(1)
 pricing_bar.close()
 
-training_data = noisyfier(features)
+training_data = features.copy()
+
+
+training_data = ms.noisyfier(training_data)
 
 pd.set_option("display.max_columns",None)
 print(f'\n{training_data}\n')

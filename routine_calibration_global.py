@@ -82,14 +82,14 @@ def calibrate_heston(calibration_dataset, s, calculation_date):
     
     theta, kappa, sigma, rho, v0 = model.params()
     
-    perfcols = ['black_scholes','model','relative_error']
+    perfcols = ['market','model','relative_error']
     performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
     performance_df = pd.DataFrame(performance_np)
     performance_df.columns = perfcols
     
     for i in range(len(heston_helpers)):
         opt = heston_helpers[i]
-        performance_df.loc[i,'black_scholes'] = opt.marketValue()
+        performance_df.loc[i,'market'] = opt.marketValue()
         performance_df.loc[i,'model'] = opt.modelValue()
         performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
     

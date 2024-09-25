@@ -13,9 +13,7 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
 from itertools import product
-from pricing import noisyfier
 from settings import model_settings
-
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
@@ -47,7 +45,7 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.9,s*1.1,100)
+K = np.linspace(s*0.95,s*1.1,3000)
 
 T = ms.T
 
@@ -110,7 +108,7 @@ for i, row in features.iterrows():
 progress_bar.close()
 
 training_data = features.copy()
-training_data = noisyfier(training_data)
+training_data = ms.noisyfier(training_data)
 
 print(f"\ntraining data:\n{training_data}\ndescriptive statistics:\n")
 pd.set_option("display.max_rows",None)

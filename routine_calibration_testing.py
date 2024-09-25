@@ -13,7 +13,6 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
 import numpy as np
-import QuantLib as ql
 from settings import model_settings
 ms = model_settings()
 
@@ -33,7 +32,6 @@ calculation_date = ms.calculation_date
 
 heston_parameters, performance_df = calibrate_heston(
     calibration_dataset, s, calculation_date)
-
 
 test_features = calibration_dataset.copy()
 test_features['dividend_rate'] = 0.02
@@ -64,8 +62,6 @@ for i,row in test_features.iterrows():
     g = row['dividend_rate']
     volatility = row['volatility']
     w = row['w']
-
-    print(f"\n{row}\n")    
     ql_bsp = ms.ql_black_scholes(s,t,k,r,g,volatility,calculation_date,w)
     test_features.at[i,'ql_black_scholes'] =  ql_bsp
     

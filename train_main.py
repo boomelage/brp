@@ -24,10 +24,9 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-from train_generation_barriers import training_data
+# from train_generation_barriers import training_data
 
-# from train_generation_vanillas import training_data
-
+from train_generation_vanillas import training_data
 
 """
 # =============================================================================

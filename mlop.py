@@ -217,13 +217,14 @@ class mlop:
             ] = training_results['strike_price'] / training_results['spot_price'] - 1
         training_results['target'] = test_y
         training_results['prediciton'] = model_fit.predict(test_X)
-        training_results['absRelError'] = abs(training_results['prediciton']/training_results['target']-1)
+        training_results['abs_relative_error'] = abs(
+            training_results['prediciton']/training_results['target']-1)
         return training_results
 
     def plot_model_performance(self,predictive_performance, runtime):
         predictive_performance_plot = (
             ggplot(predictive_performance, 
-                   aes(x="moneyness", y="absRelError")) + 
+                   aes(x="moneyness", y="abs_relative_error")) + 
             geom_point(alpha=0.05) + 
             labs(x="Percentage moneyness (S/K)", 
                  y=f"Absolute percentage error ({round(runtime,4)} second runtime)",
