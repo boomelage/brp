@@ -104,10 +104,10 @@ def test_heston_calibration(
 """
 example use
 """
-from routine_calibration_global import \
-    heston_parameters, performance_df, calibration_dataset
+# from routine_calibration_global import \
+#     heston_parameters, performance_df, calibration_dataset
 
-s = ms.s
+# s = ms.s
 
-error_df = test_heston_calibration(
-    calibration_dataset,heston_parameters,performance_df,s)
+# error_df = test_heston_calibration(
+#     calibration_dataset,heston_parameters,performance_df,s)

@@ -96,8 +96,11 @@ for i, row in historical_data.iterrows():
     heston_parameters, performance_df = calibrate_heston(
         calibration_dataset, s, calculation_date)
     
-    error_df = test_heston_calibration(calibration_dataset,s)
-    
+    error_df = test_heston_calibration(
+        calibration_dataset,heston_parameters,performance_df,s)
+    """
+    train data generation
+    """
     n_hist_spreads = 5
     historical_spread = 0.005
     n_strikes = 5
@@ -171,12 +174,6 @@ for i, row in historical_data.iterrows():
         
         h_price = european_option.NPV()
         features.at[i, 'heston_price'] = h_price
-        
-        pd.set_option("display.max_rows",None)
-        pd.set_option("display.max_columns",None)
-        print(f"\nprices for {calculation_date}:\n{features}\n")
-        pd.reset_option("display.max_rows")
-        pd.reset_option("display.max_columns")
                 
         training_data = pd.concat([training_data, features],ignore_index=True)
     
@@ -186,4 +183,4 @@ file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
 file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
 training_data.to_csv(f"hist_outputs/{file_timetag}.csv")
-        
+

@@ -71,6 +71,7 @@ class model_settings():
         self.T = np.zeros(len(self.ql_T),dtype=int)
         for i, date in enumerate(self.expiration_dates):
             self.T[i] = date - self.calculation_date
+        self.T = self.T.tolist()
         
         self.atm_vols = pd.DataFrame(self.atm_vols)/100
         
@@ -84,7 +85,7 @@ class model_settings():
         
         self.derman_ts.index = self.surf_K.astype(int)
         
-        self.derman_ts.columns = self.T.astype(int)
+        self.derman_ts.columns = self.T
 
         for i, k in enumerate(self.surf_K):
             moneyness = k-self.s
@@ -97,7 +98,7 @@ class model_settings():
         self.derman_ts = self.derman_ts.dropna(how="any",axis=1)
         
         self.bicubic_vol = make_bicubic_functional(
-            self.derman_ts, self.surf_K.tolist(), self.T.tolist())
+            self.derman_ts, self.surf_K.tolist(), self.T)
         
 
         

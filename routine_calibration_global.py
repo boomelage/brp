@@ -120,10 +120,10 @@ def calibrate_heston(calibration_dataset, s, calculation_date):
 example use
 """
 
-from routine_calibration_generation import calibration_dataset
-from settings import model_settings
-ms = model_settings()
-heston_parameters, performance_df = calibrate_heston(
-    calibration_dataset, 
-    ms.s, 
-    ms.calculation_date)  
+# from routine_calibration_generation import calibration_dataset
+# from settings import model_settings
+# ms = model_settings()
+# heston_parameters, performance_df = calibrate_heston(
+#     calibration_dataset, 
+#     ms.s, 
+#     ms.calculation_date)  
