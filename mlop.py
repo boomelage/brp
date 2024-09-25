@@ -210,7 +210,7 @@ class mlop:
             ggplot(predictive_performance, 
                    aes(x="moneyness", y="abs_relative_error")) + 
             geom_point(alpha=0.05) + 
-            labs(x="relative moneyness (S/K)", 
+            labs(x="relative moneyness", 
                  y=f"absolute relative error ({round(runtime,4)} second runtime)",
                  title=title) + 
             theme(legend_position="")
