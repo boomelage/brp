@@ -19,10 +19,13 @@ from settings import model_settings
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
-from routine_calibration_global import \
-    heston_parameters, performance_df, calibration_dataset
+from routine_calibration_global import calibrate_heston
 ms = model_settings()
 s = ms.s
+
+from routine_calibration_generation import calibration_dataset
+heston_parameters, performance_df, test_error_df = calibrate_heston(
+    calibration_dataset, s, ms.calculation_date)
 
 
 def generate_train_features(K,T,s,flag):

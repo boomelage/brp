@@ -24,16 +24,10 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-# from train_generation_barriers import training_data
+from train_generation_barriers import training_data
 
 # from train_generation_vanillas import training_data
 
-import pandas as pd
-training_data = pd.read_csv(r'sample_historial_data.csv')
-training_data = training_data.drop(columns= training_data.columns[0])
-training_data = training_data.dropna()
-from pricing import  noisyfier
-training_data = noisyfier(training_data)
 
 """
 # =============================================================================

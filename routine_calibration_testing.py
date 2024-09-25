@@ -12,98 +12,97 @@ sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
-from settings import model_settings
-from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
-from routine_calibration_generation import calibration_dataset
-from routine_calibration_global import calibrate_heston
-
+from settings import model_settings
 ms = model_settings()
-s = ms.s
-calculation_date = ms.calculation_date
-
-heston_parameters, performance_df = calibrate_heston(calibration_dataset, s, calculation_date)
 
 """
 checking calibration accuracy
 """
-
-test_features = calibration_dataset.copy()
-test_features['dividend_rate'] = 0.02
-test_features['risk_free_rate'] = 0.04
-test_features['sigma'] = heston_parameters['sigma'].iloc[0]
-test_features['theta'] = heston_parameters['theta'].iloc[0]
-test_features['kappa'] = heston_parameters['kappa'].iloc[0]
-test_features['rho'] = heston_parameters['rho'].iloc[0]
-test_features['v0'] = heston_parameters['v0'].iloc[0]
-test_features['heston_price'] = 0.00
-test_features['w'] = 'call'
-progress_bar = tqdm(
-    desc="pricing",total=test_features.shape[0],unit= "contracts")
-
-for i, row in test_features.iterrows():
-    s = row['spot_price']
-    k = row['strike_price']
-    t = int(row['days_to_maturity'])
-    r = row['risk_free_rate']
-    g = row['dividend_rate']
-    v0 = row['v0']
-    kappa = row['kappa']
-    theta = row['theta']
-    sigma = row['sigma']
-    rho = row['rho']
-    w = row['w']
+def test_heston_calibration(
+        calibration_dataset,heston_parameters,performance_df,s):
+    test_features = calibration_dataset.copy()
+    test_features['dividend_rate'] = 0.02
+    test_features['risk_free_rate'] = 0.04
+    test_features['sigma'] = heston_parameters['sigma'].iloc[0]
+    test_features['theta'] = heston_parameters['theta'].iloc[0]
+    test_features['kappa'] = heston_parameters['kappa'].iloc[0]
+    test_features['rho'] = heston_parameters['rho'].iloc[0]
+    test_features['v0'] = heston_parameters['v0'].iloc[0]
+    test_features['heston_price'] = 0.00
+    test_features['w'] = 'call'
     
-    date = ms.calculation_date + ql.Period(t,ql.Days)
-    option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+    for i, row in test_features.iterrows():
+        s = row['spot_price']
+        k = row['strike_price']
+        t = int(row['days_to_maturity'])
+        r = row['risk_free_rate']
+        g = row['dividend_rate']
+        v0 = row['v0']
+        kappa = row['kappa']
+        theta = row['theta']
+        sigma = row['sigma']
+        rho = row['rho']
+        w = row['w']
+        
+        date = ms.calculation_date + ql.Period(t,ql.Days)
+        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+        
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        exercise = ql.EuropeanExercise(date)
+        european_option = ql.VanillaOption(payoff, exercise)
+        flat_ts = ms.make_ts_object(r)
+        dividend_ts = ms.make_ts_object(g)
+        
+        heston_process = ql.HestonProcess(
+            flat_ts,dividend_ts, 
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            v0, kappa, theta, sigma, rho)
+        
+        heston_model = ql.HestonModel(heston_process)
+        
+        engine = ql.AnalyticHestonEngine(heston_model)
+        
+        european_option.setPricingEngine(engine)
+        
+        h_price = european_option.NPV()
+        test_features.at[i, 'heston_price'] = h_price
     
-    payoff = ql.PlainVanillaPayoff(option_type, k)
-    exercise = ql.EuropeanExercise(date)
-    european_option = ql.VanillaOption(payoff, exercise)
-    flat_ts = ms.make_ts_object(r)
-    dividend_ts = ms.make_ts_object(g)
+    test_features.at[0,'heston_price']
     
-    heston_process = ql.HestonProcess(
-        flat_ts,dividend_ts, 
-        ql.QuoteHandle(ql.SimpleQuote(s)), 
-        v0, kappa, theta, sigma, rho)
+    black_scholes_prices = performance_df['black_scholes']
+    calibration_prices = performance_df['model']
+    test_prices = test_features['heston_price']
+    error = test_prices/calibration_prices - 1
+    error_series = pd.DataFrame({'relative_error':error})
     
-    heston_model = ql.HestonModel(heston_process)
+    error_df = pd.concat(
+        [
+          black_scholes_prices,
+          calibration_prices,
+          test_prices,
+          error_series
+          ],
+        axis = 1
+        )
+    error_df
     
-    engine = ql.AnalyticHestonEngine(heston_model)
+    error_df.rename(columns={'model': 'calibration_price', 
+                        'heston_price': 'test_price'}, inplace=True)
     
-    european_option.setPricingEngine(engine)
+    avg = np.sum(
+        np.abs(
+            error_df['relative_error'])
+        )*100/len(error_df['relative_error'])
     
-    h_price = european_option.NPV()
-    progress_bar.update(1)
-    test_features.at[i, 'heston_price'] = h_price
+    print(f"\nerrors:\n{error_df}")
+    print(f"average absolute relative calibration testing error: {round(avg,4)}%")
+    return error_df
 
+from routine_calibration_global import \
+    heston_parameters, performance_df, calibration_dataset
+    
+s = ms.s
 
-progress_bar.close()
-
-test_features.at[0,'heston_price']
-
-black_scholes_prices = performance_df['black_scholes']
-calibration_prices = performance_df['heston']
-test_prices = test_features['heston_price']
-error = test_prices/calibration_prices - 1
-error_series = pd.DataFrame({'absRelError':error})
-
-error_df = pd.concat(
-    [
-      black_scholes_prices,
-      calibration_prices,
-      test_prices,
-      error_series
-      ],
-    axis = 1
-    )
-error_df
-
-error_df.rename(columns={'heston': 'calibration_price', 
-                    'heston_price': 'test_price'}, inplace=True)
-
-avg = np.average(error_df['absRelError'])*100
-print(f"\nerrors:\n{error_df}")
-print(f"average absolute relative calibration testing error: {round(avg,4)}%")
+error_df = test_heston_calibration(calibration_dataset,heston_parameters,performance_df,s)

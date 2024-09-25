@@ -18,14 +18,13 @@ import QuantLib as ql
 import numpy as np
 import pandas as pd
 from settings import model_settings
+from routine_calibration_testing import test_heston_calibration
 ms = model_settings()
 day_count = ms.day_count
 calendar = ms.calendar
 
-def calibrate_heston(contract_details, s, calculation_date):
-    calibration_dataset = contract_details
+def calibrate_heston(calibration_dataset, s, calculation_date):
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
-    
     risk_free_rate = 0.05
     dividend_rate = 0.02
     flat_ts = ms.make_ts_object(risk_free_rate)
@@ -73,7 +72,7 @@ def calibrate_heston(contract_details, s, calculation_date):
     
     theta, kappa, sigma, rho, v0 = model.params()
     
-    perfcols = ['black_scholes','heston','relative_error']
+    perfcols = ['black_scholes','model','relative_error']
     performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
     performance_df = pd.DataFrame(performance_np)
     performance_df.columns = perfcols
@@ -81,12 +80,15 @@ def calibrate_heston(contract_details, s, calculation_date):
     for i in range(len(heston_helpers)):
         opt = heston_helpers[i]
         performance_df.loc[i,'black_scholes'] = opt.marketValue()
-        performance_df.loc[i,'heston'] = opt.modelValue()
+        performance_df.loc[i,'model'] = opt.modelValue()
         performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
     
-    avgAbsRelErr = np.sum(np.abs(performance_df.loc[i,'relative_error']))/calibration_dataset.shape[0]
+    avg = np.sum(
+        np.abs(
+            performance_df.loc[i,'relative_error'])
+        )*100/performance_df.shape[0]
     
-    param_names = ['spot','theta', 'rho', 'kappa', 'sigma', 'v0', 'avgAbsRelErr']
+    param_names = ['spot','theta', 'rho', 'kappa', 'sigma', 'v0', 'avg']
     
     heston_parameters_np = np.zeros((1,len(param_names)),dtype=float)
     heston_parameters = pd.DataFrame(heston_parameters_np)
@@ -98,14 +100,24 @@ def calibrate_heston(contract_details, s, calculation_date):
     heston_parameters['kappa'] = kappa
     heston_parameters['sigma'] = sigma
     heston_parameters['v0'] = v0
-    heston_parameters['avgAbsRelErr'] = avgAbsRelErr
+    heston_parameters['avg'] = avg
     heston_parameters = heston_parameters.set_index('spot',drop=True)
     
     pd.set_option("display.max_columns",None)
-    pd.set_option("display.max_rows",None)
+    pd.set_option("display.max_rows",None),
     print(f'\n\ncalibration results:\n{performance_df}')
-    print(f"average abs relative error: {round(100*avgAbsRelErr,4)}%")
+    print(f"average abs relative error: {round(100*avg,4)}%")
     print(f"\n{heston_parameters}")
+    
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
     return heston_parameters, performance_df
+
+
+from routine_calibration_generation import calibration_dataset
+from settings import model_settings
+ms = model_settings()
+heston_parameters, performance_df = calibrate_heston(
+    calibration_dataset, 
+    ms.s, 
+    ms.calculation_date)  

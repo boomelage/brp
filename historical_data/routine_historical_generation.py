@@ -18,14 +18,12 @@ from datetime import datetime
 from itertools import product
 from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
+from routine_calibration_testing import test_heston_calibration
 from pricing import noisyfier
 from settings import model_settings
-from tqdm import tqdm
 ms = model_settings()
 os.chdir(current_dir)
 from routine_historical_collection import collect_historical_data
-
-
 
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -50,9 +48,6 @@ historical_data = collect_historical_data()
 
 total = historical_data.shape[0]
 historical_option_data = pd.DataFrame()
-progress_bar = tqdm(
-    desc="generating",total = total,leave=True,unit='days',dynamic_ncols=True)
-
 
 training_data = pd.DataFrame()
 for i, row in historical_data.iterrows():
@@ -101,6 +96,8 @@ for i, row in historical_data.iterrows():
     heston_parameters, performance_df = calibrate_heston(
         calibration_dataset, s, calculation_date)
     
+    error_df = test_heston_calibration(calibration_dataset,s)
+    
     n_hist_spreads = 5
     historical_spread = 0.005
     n_strikes = 5
@@ -128,7 +125,6 @@ for i, row in historical_data.iterrows():
     features['kappa'] = heston_parameters['kappa'].iloc[0]
     features['rho'] = heston_parameters['rho'].iloc[0]
     features['v0'] = heston_parameters['v0'].iloc[0]
-    features['avgAbsRelErr'] = heston_parameters['avgAbsRelErr'].iloc[0]
     features['risk_free_rate'] = 0.00
     features['dividend_rate'] = row['dividend_rate']
     features['days_to_maturity'] = features['days_to_maturity'].astype(int)
@@ -181,15 +177,10 @@ for i, row in historical_data.iterrows():
         print(f"\nprices for {calculation_date}:\n{features}\n")
         pd.reset_option("display.max_rows")
         pd.reset_option("display.max_columns")
-        
-        
+                
         training_data = pd.concat([training_data, features],ignore_index=True)
     
-    progress_bar.update(1)
-progress_bar.close()        
-
-
-
+training_data = noisyfier(training_data)
 
 file_time = time.time()
 file_dt = datetime.fromtimestamp(file_time)
