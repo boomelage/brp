@@ -24,10 +24,6 @@ import time
 
 class mlop:
     
-    '''
-    Machine Learning Option Pricing with sklearn
-    
-    '''
     def __init__(self):
         self.user_dataset = None
         self.random_state = None
@@ -68,9 +64,9 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            # 'barrierType',
-            # 'outin',
-            # 'updown',
+            'barrierType',
+            'outin',
+            'updown',
             
             'w'
             
@@ -86,15 +82,15 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrierType',
-            # 'outin',
-            # 'updown',
+            'barrierType',
+            'outin',
+            'updown',
             
             'w'
             
             ]
         
-        self.security_tag = 'vanilla options'
+        # self.security_tag = 'vanilla options'
         self.security_tag = 'barrier options'
         
         self.transformers = [

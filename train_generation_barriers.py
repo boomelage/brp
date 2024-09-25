@@ -120,7 +120,7 @@ engine = ql.FdHestonBarrierEngine(hestonModel)
 T = ms.T
 spread = 0.005
 n_spreads = 10
-n_strikes = 100
+n_strikes = 300
 up_K = np.linspace(
     s*(1+spread), 
     s*(1+n_spreads*spread),

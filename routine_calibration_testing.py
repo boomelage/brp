@@ -12,7 +12,6 @@ sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
-from itertools import product
 from settings import model_settings
 from tqdm import tqdm
 import numpy as np
@@ -21,22 +20,6 @@ from routine_calibration_global import \
     heston_parameters, performance_df, calibration_dataset
 ms = model_settings()
 s = ms.s
-
-def generate_train_features(K,T,s,flag):
-    features = pd.DataFrame(
-        product(
-            [s],
-            K,
-            T,
-            flag
-            ),
-        columns=[
-            "spot_price", 
-            "strike_price",
-            "days_to_maturity",
-            "w"
-                  ])
-    return features
 
 """
 checking calibration accuracy
@@ -117,6 +100,6 @@ error_df
 error_df.rename(columns={'heston': 'calibration_price', 
                     'heston_price': 'test_price'}, inplace=True)
 
-avg = np.average(error_df['absRelError'])*100/error_df.shape[0]
+avg = np.average(error_df['absRelError'])*100
 print(f"\nerrors:\n{error_df}")
 print(f"average absolute relative calibration testing error: {round(avg,4)}%")
