@@ -1,8 +1,0 @@
-Total model runtime: 0 seconds 
-11092024-103347 estimated with 448 option prices collected
-from the market Selected Parameters:Features:   spot_price
-dividend_rate risk_free_rate days_to_maturity strike_price
-Single Layer Network (QuantileTransformerStandardScaler)
-Target: observed_price Security:  vanilla options Activation
-function: relu Maximum iterations:  10000 11092024-103346
-Total model runtime: 0 seconds
