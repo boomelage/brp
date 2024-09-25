@@ -1,7 +1,7 @@
 
 
 **Machine Learning Option Pricing:**  
-An empirical approach based on S&P500 data
+An empirical approach based on market data
 
 
 # Table of Contents
