@@ -41,3 +41,9 @@ To model the logarithmic price of the underlying security, we use the Heston (19
 
 ```math
 dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
+```
+
+Derman's approximation of implied volatilites:
+```math
+\sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0),
+```
