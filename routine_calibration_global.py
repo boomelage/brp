@@ -18,11 +18,13 @@ import QuantLib as ql
 import numpy as np
 import pandas as pd
 from settings import model_settings
-from routine_calibration_testing import test_heston_calibration
 ms = model_settings()
 day_count = ms.day_count
 calendar = ms.calendar
 
+"""
+calibrating a heston model to contracts from routine_calibration_generation.py
+"""
 def calibrate_heston(calibration_dataset, s, calculation_date):
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     risk_free_rate = 0.05
@@ -113,6 +115,10 @@ def calibrate_heston(calibration_dataset, s, calculation_date):
     pd.reset_option("display.max_rows")
     return heston_parameters, performance_df
 
+
+"""
+example use
+"""
 
 from routine_calibration_generation import calibration_dataset
 from settings import model_settings

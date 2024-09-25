@@ -100,9 +100,14 @@ def test_heston_calibration(
     print(f"average absolute relative calibration testing error: {round(avg,4)}%")
     return error_df
 
+
+"""
+example use
+"""
 from routine_calibration_global import \
     heston_parameters, performance_df, calibration_dataset
-    
+
 s = ms.s
 
-error_df = test_heston_calibration(calibration_dataset,heston_parameters,performance_df,s)
+error_df = test_heston_calibration(
+    calibration_dataset,heston_parameters,performance_df,s)
