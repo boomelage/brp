@@ -31,8 +31,8 @@ class mlop:
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (100,100,100)
         self.solver = [
-                    "lbfgs",
-                    # "sgd", 
+                    # "lbfgs",
+                    "sgd", 
                     # "adam"
                     ]
         
