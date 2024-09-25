@@ -25,35 +25,6 @@ calculation_date = ms.calculation_date
 day_count = ms.day_count
 
 
-
-def price_barrier_option(t,k,calculation_date,barrier_type_name,barrier):
-    if barrier_type_name == 'UpOut':
-        barrierType = ql.Barrier.UpOut
-    elif barrier_type_name == 'DownOut':
-        barrierType = ql.Barrier.DownOut
-    elif barrier_type_name == 'UpIn':
-        barrierType = ql.Barrier.UpIn
-    elif barrier_type_name == 'DownIn':
-        barrierType = ql.Barrier.DownIn
-    else:
-        print('barrier flag error')
-    expiration_date = calculation_date + ql.Period(int(t), ql.Days)
-    exercise = ql.EuropeanExercise(expiration_date)
-    payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
-    barrierOption = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
-    barrierOption.setPricingEngine(engine)
-    barrier_price = barrierOption.NPV()
-    return barrier_price
-
-"""
-# Geometric Asian Option
-rng = "pseudorandom" # could use "lowdiscrepancy"
-numPaths = 100000
-
-engine = ql.MCDiscreteArithmeticAPHestonEngine(hestonProcess, rng, requiredSamples=numPaths)
-"""
-
-
 import pandas as pd
 from itertools import product
 def generate_features(K,T,s):
@@ -72,27 +43,7 @@ def generate_features(K,T,s):
 
 start = time.time()
 
-
-
 s = ms.s
-
-rebate = 0.
-
-spotHandle = ql.QuoteHandle(ql.SimpleQuote(s))
-
-v0, kappa, theta, sigma, rho = heston_parameters['v0'].iloc[0],heston_parameters['kappa'].iloc[0],\
-    heston_parameters['theta'].iloc[0],heston_parameters['sigma'].iloc[0],heston_parameters['rho'].iloc[0]
-
-flatRateTs = ms.make_ts_object(0.04)
-flatDividendTs = ms.make_ts_object(0.04)
-
-hestonProcess = ql.HestonProcess(
-    flatRateTs, flatDividendTs, spotHandle, v0, kappa, theta, sigma, rho)
-
-hestonModel = ql.HestonModel(hestonProcess)
-
-engine = ql.FdHestonBarrierEngine(hestonModel)
-
 
 """
 # =============================================================================
@@ -128,7 +79,7 @@ up_K = np.linspace(
 initial_up_features = generate_features(up_K,T,s)
 up_features = pd.DataFrame()
 up_bar = tqdm(
-    desc="ups",
+    desc="generatingUps",
     total=initial_up_features.shape[0],
     unit='sets',
     leave=True)
@@ -195,7 +146,7 @@ down_K = np.linspace(
 initial_down_features = generate_features(down_K,T,s)
 down_features = pd.DataFrame()
 down_bar = tqdm(
-    desc="downs",
+    desc="generatingDowns",
     total=initial_down_features.shape[0],
     unit='sets',
     leave=True)
@@ -249,7 +200,6 @@ for i, row in initial_down_features.iterrows():
     down_bar.update(1)
 down_bar.close()
     
-    
 """  
 # =============================================================================
 """
@@ -271,21 +221,38 @@ pricing_bar = tqdm(
     total=features.shape[0],
     unit='contracts',
     leave=True)
+
 for i, row in features.iterrows():
+    
     barrier_type_name = row['barrier_type_name']
     barrier = row['barrier']
     s = row['spot_price']
     k = row['strike_price']
     t = row['days_to_maturity']
+    r = 0.04
+    g = 0.001
+    rebate = 0.
+    
     calculation_date = ms.calculation_date
-    barrier_price = price_barrier_option(
-        t, k, calculation_date, barrier_type_name, barrier)
+    
+    v0 = heston_parameters['v0'].iloc[0]
+    kappa = heston_parameters['kappa'].iloc[0] 
+    theta = heston_parameters['theta'].iloc[0] 
+    sigma = heston_parameters['sigma'].iloc[0] 
+    rho = heston_parameters['rho'].iloc[0]
+    
+    barrier_price = ms.ql_barrier_price(
+            s,k,t,r,g,calculation_date,
+            barrier_type_name,barrier,rebate,
+            v0, kappa, theta, sigma, rho)
+    
     features.at[i,'barrier_price'] = barrier_price
+    
     pricing_bar.update(1)
+    
 pricing_bar.close()
 
 training_data = features.copy()
-
 
 training_data = ms.noisyfier(training_data)
 

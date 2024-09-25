@@ -223,3 +223,41 @@ class model_settings():
         
         h_price = european_option.NPV()
         return h_price
+    
+    
+    def ql_barrier_price(self,
+            s,k,t,r,g,calculation_date,
+            barrier_type_name,barrier,rebate,
+            v0, kappa, theta, sigma, rho):
+        
+        flat_ts = self.make_ts_object(r)
+        dividend_ts = self.make_ts_object(g)
+        
+        spotHandle = ql.QuoteHandle(ql.SimpleQuote(s))
+        
+        hestonProcess = ql.HestonProcess(
+            flat_ts, dividend_ts, spotHandle, v0, kappa, theta, sigma, rho)
+        
+        hestonModel = ql.HestonModel(hestonProcess)
+        engine = ql.FdHestonBarrierEngine(hestonModel)
+        
+        if barrier_type_name == 'UpOut':
+            barrierType = ql.Barrier.UpOut
+        elif barrier_type_name == 'DownOut':
+            barrierType = ql.Barrier.DownOut
+        elif barrier_type_name == 'UpIn':
+            barrierType = ql.Barrier.UpIn
+        elif barrier_type_name == 'DownIn':
+            barrierType = ql.Barrier.DownIn
+        else:
+            raise ValueError('barrier flag error')
+            
+        expiration_date = calculation_date + ql.Period(int(t), ql.Days)
+        exercise = ql.EuropeanExercise(expiration_date)
+        payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
+        
+        barrierOption = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
+        barrierOption.setPricingEngine(engine)
+        barrier_price = barrierOption.NPV()
+        
+        return barrier_price
