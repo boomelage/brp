@@ -79,7 +79,7 @@ class model_settings():
         self.derman_ts.index = self.surf_K.astype(int)
         
         self.derman_ts.columns = self.T
-
+            
         for i, k in enumerate(self.surf_K):
             moneyness = k-self.s
             for j, t in enumerate(self.T):
@@ -92,8 +92,6 @@ class model_settings():
         
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T)
-        
-
         
     def make_ql_array(self,nparr):
         qlarr = ql.Array(len(nparr),1)
@@ -145,20 +143,83 @@ class model_settings():
                                 .apply(lambda x: max(x, 0))
         return prices
 
-    def black_scholes_price(self,row): 
-            S =  row['spot_price']
-            K =  row['strike_price']
-            r =  row['risk_free_rate']
-            T =  row['days_to_maturity'] 
-            sigma =  row['volatility'] 
-            w =  row['w']
-            if w == 'call':
-                w = 1
-            else:
-                w = -1
+    def black_scholes_price(self,s,k,t,r,volatility,w): 
+        if w == 'call':
+            w = 1
+        else:
+            w = -1
+        d1 = (np.log(s/k)+(r+volatility**2/2)*t/365)/(volatility*np.sqrt(t/365))
+        d2 = d1-volatility*np.sqrt(t/365)
+        price = w*(s*norm.cdf(w*d1)-k*np.exp(-r*t/365)*norm.cdf(w*d2))
+        return price
+    
+    def ql_black_scholes(self,
+            s,t,k,r,g,
+            volatility,calculation_date,w
+            ):
         
-            d1 = (np.log(S/K)+(r+sigma**2/2)*T/365)/(sigma*np.sqrt(T/365))
-            d2 = d1-sigma*np.sqrt(T/365)
-            price = w*(S*norm.cdf(w*d1)-K*np.exp(-r*T/365)*norm.cdf(w*d2))
-            row['black_scholes'] = price
-            return row
+        if w == 'call':
+            option_type = ql.Option.Call
+        elif w == 'put':
+            option_type = ql.Option.Put
+        else:
+            raise ValueError("flag error")
+        
+        expiration_date = calculation_date + ql.Period(t,ql.Days)
+        flat_ts = self.make_ts_object(r)
+        divident_ts = self.make_ts_object(g)
+        initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
+        
+        volTS = ql.BlackVolTermStructureHandle(
+            ql.BlackConstantVol(
+                calculation_date, 
+                ql.NullCalendar(), 
+                volatility, 
+                ql.Actual365Fixed()
+                )
+            )
+        process = ql.GeneralizedBlackScholesProcess(
+            initialValue, divident_ts, flat_ts, volTS)
+        
+        engine = ql.AnalyticEuropeanEngine(process)
+        
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        europeanExercise = ql.EuropeanExercise(expiration_date)
+        european_option = ql.VanillaOption(payoff, europeanExercise)
+        european_option.setPricingEngine(engine)
+        
+        ql_black_scholes_price = european_option.NPV()
+        return ql_black_scholes_price
+    
+    
+    def ql_heston_price(self,
+            s,k,t,r,g,w,
+            v0,kappa,theta,sigma,rho,
+            calculation_date):
+        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+        
+        date = calculation_date + ql.Period(t,ql.Days)
+
+        payoff = ql.PlainVanillaPayoff(option_type, k)
+        exercise = ql.EuropeanExercise(date)
+        european_option = ql.VanillaOption(payoff, exercise)
+        
+        flat_ts = self.make_ts_object(r)
+        dividend_ts = self.make_ts_object(g)
+        
+        heston_process = ql.HestonProcess(
+            
+            flat_ts,dividend_ts, 
+            
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            
+            v0, kappa, theta, sigma, rho)
+        
+        heston_model = ql.HestonModel(heston_process)
+        
+        engine = ql.AnalyticHestonEngine(heston_model)
+        
+        european_option.setPricingEngine(engine)
+        
+        h_price = european_option.NPV()
+        return h_price

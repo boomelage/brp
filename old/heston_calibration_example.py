@@ -93,6 +93,7 @@ process = ql.HestonProcess(flat_ts, dividend_ts,
                            ql.QuoteHandle(ql.SimpleQuote(spot)),
                            v0, kappa, theta, sigma, rho)
 model = ql.HestonModel(process)
+
 engine = ql.AnalyticHestonEngine(model)
 heston_helpers = []
 black_var_surface.setInterpolation("bicubic")
@@ -112,6 +113,7 @@ for j, s in enumerate(strikes):
 lm = ql.LevenbergMarquardt(1e-8, 1e-8, 1e-8)
 model.calibrate(heston_helpers, lm,
                  ql.EndCriteria(500, 50, 1.0e-8,1.0e-8, 1.0e-8))
+
 theta, kappa, sigma, rho, v0 = model.params()
 
 print ("\ntheta = %f, kappa = %f, sigma = %f, rho = %f, v0 = %f" % (theta, kappa, sigma, rho, v0))
@@ -122,15 +124,17 @@ print ("%15s %15s %15s %20s" % (
      "Model Value", "Relative Error (%)"))
 print ("="*70)
 for i, opt in enumerate(heston_helpers):
-    err = (opt.modelValue()/opt.marketValue() - 1.0)
+    err = (opt.modelValue()/opt.blackPrice(data[11][i]) - 1.0)
     print ("%15.2f %14.5f %15.5f %20.7f " % (
-        strikes[i], opt.marketValue(),
+        strikes[i], opt.blackPrice(data[11][i]),
         opt.modelValue(),
-        100.0*(opt.modelValue()/opt.marketValue() - 1.0)))
+        100.0*(opt.modelValue()/opt.blackPrice(data[11][i]) - 1.0)))
+    
     avg += abs(err)
 avg = avg*100.0/len(heston_helpers)
 print ("-"*70)
 print ("Average Abs Error (%%) : %5.3f" % (avg))
+
 
 
 

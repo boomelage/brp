@@ -27,7 +27,6 @@ def ql_black_scholes_row(row):
     w = row['w']
     option_type = ql.Option.Call if w == 'call' else ql.Option.Put
     expiration_date = calculation_date + ql.Period(t,ql.Days)
-    
     flat_ts = ms.make_ts_object(r)
     initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
     
@@ -51,8 +50,11 @@ def ql_black_scholes_row(row):
     row['ql_black_scholes'] = european_option.NPV()
     return row
 
+
+
 """
 example calibtration
+
 """
 
 from routine_calibration_generation import calibration_dataset
@@ -106,8 +108,6 @@ for i, row in test_features.iterrows():
         
         v0, kappa, theta, sigma, rho)
     
-    
-    
     heston_model = ql.HestonModel(heston_process)
     
     engine = ql.AnalyticHestonEngine(heston_model)
@@ -117,29 +117,19 @@ for i, row in test_features.iterrows():
     h_price = european_option.NPV()
     test_features.at[i, 'heston_price'] = h_price
 
-
 test_features['calculation_date'] = ms.calculation_date
 personal_black_scholes = test_features.apply(ms.black_scholes_price,axis=1)
 ql_personal = test_features.apply(ql_black_scholes_row,axis=1)
 
-
-
 personal_black_scholes_prices = personal_black_scholes['black_scholes']
 ql_personal_bs = ql_personal['ql_black_scholes']
-black_scholes_prices = performance_df['black_scholes']
-calibration_prices = performance_df['model']
 test_prices = test_features['heston_price']
-error = test_prices/calibration_prices - 1
-error_series = pd.DataFrame({'relative_error':error})
 
 error_df = pd.concat(
     [
       personal_black_scholes_prices,
       ql_personal_bs,
       test_prices,
-      black_scholes_prices,
-      calibration_prices,
-      error_series
       ],
     axis = 1,
     )
@@ -147,22 +137,5 @@ error_df.columns = [
         'test_black_scholes',
         'test_ql_black_scholes',
         'test_heston',
-        'model_black_scholes',
-        'model_heston',
-        'relative_error'
         ]
-
-
-avg = np.sum(
-    np.abs(
-        error_df['relative_error'])
-    )*100/len(error_df['relative_error'])
-
-pd.set_option("display.max_columns",None)
-pd.set_option("display.max_rows",None)
-print(f"\nerrors:\n{error_df}")
-print(f"average absolute relative calibration testing error: {round(avg,4)}%")
-pd.reset_option("display.max_columns")
-pd.reset_option("display.max_rows")
-
-
+print(f"\n{error_df}\n")
