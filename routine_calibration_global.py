@@ -84,7 +84,7 @@ def calibrate_heston(contract_details, s, calculation_date):
         performance_df.loc[i,'heston'] = opt.modelValue()
         performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
     
-    avgAbsRelErr = np.mean(abs(performance_df.loc[i,'relative_error']))
+    avgAbsRelErr = np.sum(np.abs(performance_df.loc[i,'relative_error']))/calibration_dataset.shape[0]
     
     param_names = ['spot','theta', 'rho', 'kappa', 'sigma', 'v0', 'avgAbsRelErr']
     
@@ -109,10 +109,3 @@ def calibrate_heston(contract_details, s, calculation_date):
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
     return heston_parameters, performance_df
-s = ms.s
-calculation_date = ms.calculation_date
-
-from routine_calibration_generation import calibration_dataset
-
-heston_parameters, performance_df = calibrate_heston(calibration_dataset, s, calculation_date)
-performance_df

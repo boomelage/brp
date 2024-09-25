@@ -133,7 +133,7 @@ generating training dataset
 
 
 """
-K = np.linspace(s*0.9,s*1.1,1000)
+K = np.linspace(s*0.9,s*1.1,5)
 
 T = ms.T
 

@@ -16,10 +16,14 @@ from settings import model_settings
 from tqdm import tqdm
 import numpy as np
 import QuantLib as ql
-from routine_calibration_global import \
-    heston_parameters, performance_df, calibration_dataset
+from routine_calibration_generation import calibration_dataset
+from routine_calibration_global import calibrate_heston
+
 ms = model_settings()
 s = ms.s
+calculation_date = ms.calculation_date
+
+heston_parameters, performance_df = calibrate_heston(calibration_dataset, s, calculation_date)
 
 """
 checking calibration accuracy

@@ -12,6 +12,7 @@ sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
+import numpy as  np
 from itertools import product
 from bicubic_interpolation import make_bicubic_functional
 from bicubic_interpolation import bicubic_vol_row
@@ -21,7 +22,6 @@ from settings import model_settings
 ms = model_settings()
 s = ms.s
 T = ms.T.astype(int).tolist()
-K = ms.calibration_K.astype(int).tolist()
 
 
 def generate_features(K,T,s):
@@ -40,10 +40,15 @@ def generate_features(K,T,s):
 
 
 
-bicubic_vol = make_bicubic_functional(ms.derman_ts, K, T)
+bicubic_vol = make_bicubic_functional(
+    ms.derman_ts, 
+    ms.derman_ts.index.tolist(), 
+    ms.derman_ts.columns.tolist())
+
+K = np.linspace(s*0.9,s*1.1,5)
 
 features = generate_features(
-    ms.calibration_K, T, s)
+    K, T, s)
 
 features = features.apply(bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
 calibration_dataset = features.copy()

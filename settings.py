@@ -39,10 +39,6 @@ class model_settings():
         self.n_k                =    int(1e3)
         ql.Settings.instance().evaluationDate = self.calculation_date
         
-        self.step = self.s*0.01
-        
-        self.calibration_K = np.linspace(self.s*0.9, self.s*1.1,5)
-        
         self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
         
         self.atm_vols = [
