@@ -21,7 +21,7 @@ from settings import model_settings
 
 ms = model_settings()
 s = ms.s
-T = ms.T.astype(int).tolist()
+T = ms.T
 
 
 def generate_features(K,T,s):

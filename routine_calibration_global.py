@@ -21,17 +21,26 @@ from settings import model_settings
 ms = model_settings()
 day_count = ms.day_count
 calendar = ms.calendar
-
+s = ms.s
 """
 calibrating a heston model to contracts from routine_calibration_generation.py
 """
+
+
+
+
 def calibrate_heston(calibration_dataset, s, calculation_date):
-    S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
     risk_free_rate = 0.05
     dividend_rate = 0.02
     flat_ts = ms.make_ts_object(risk_free_rate)
     dividend_ts = ms.make_ts_object(dividend_rate)
-    
+
+    heston_helpers = []
+
+        
+    S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
+
+
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
     process = ql.HestonProcess(
         flat_ts,                
@@ -43,11 +52,10 @@ def calibrate_heston(calibration_dataset, s, calculation_date):
         sigma,             # Volatility of the volatility
         rho                # Correlation between asset and volatility
     )
-    
+
     model = ql.HestonModel(process)
     engine = ql.AnalyticHestonEngine(model)
-    heston_helpers = []
-    
+
     for row_idx, row in calibration_dataset.iterrows():
         t = row['days_to_maturity']
         
@@ -116,14 +124,3 @@ def calibrate_heston(calibration_dataset, s, calculation_date):
     return heston_parameters, performance_df
 
 
-"""
-example use
-"""
-
-# from routine_calibration_generation import calibration_dataset
-# from settings import model_settings
-# ms = model_settings()
-# heston_parameters, performance_df = calibrate_heston(
-#     calibration_dataset, 
-#     ms.s, 
-#     ms.calculation_date)  

@@ -17,11 +17,12 @@ import QuantLib as ql
 from settings import model_settings
 ms = model_settings()
 
-"""
-checking calibration accuracy
-"""
 def test_heston_calibration(
         calibration_dataset,heston_parameters,performance_df,s):
+    
+    """
+    function for testing calibration accuracy
+    """
     test_features = calibration_dataset.copy()
     test_features['dividend_rate'] = 0.02
     test_features['risk_free_rate'] = 0.04
@@ -101,13 +102,24 @@ def test_heston_calibration(
     return error_df
 
 
-"""
-example use
-"""
-# from routine_calibration_global import \
-#     heston_parameters, performance_df, calibration_dataset
 
-# s = ms.s
 
-# error_df = test_heston_calibration(
-#     calibration_dataset,heston_parameters,performance_df,s)
+
+
+
+"""
+example calibtration
+"""
+
+from routine_calibration_generation import calibration_dataset
+from routine_calibration_global import calibrate_heston
+
+s = ms.s
+calculation_date = ms.calculation_date
+
+heston_parameters, performance_df = calibrate_heston(
+    calibration_dataset, s, calculation_date)
+
+error_df = test_heston_calibration(
+        calibration_dataset,heston_parameters,performance_df,s)
+

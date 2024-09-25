@@ -13,6 +13,7 @@ sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 from bicubic_interpolation import make_bicubic_functional
 from derman_test import derman_coefs
 from data_query import dirdatacsv, dirdata
@@ -22,13 +23,6 @@ class model_settings():
     
     def __init__(self):
         
-        """
-        
-        from settings import model_settings
-        ms = model_settings()
-        
-        """
-        
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
@@ -36,7 +30,6 @@ class model_settings():
         self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
-        self.n_k                =    int(1e3)
         ql.Settings.instance().evaluationDate = self.calculation_date
         
         self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
@@ -119,7 +112,8 @@ class model_settings():
         implied_vols_matrix = ql.Matrix(len(strikes),len(maturities))
         for i, strike in enumerate(strikes):
             for j, maturity in enumerate(maturities):
-                implied_vols_matrix[i][j] = float(term_strucutre.loc[strike,maturity])
+                implied_vols_matrix[i][j] = float(
+                    term_strucutre.loc[strike,maturity])
         return implied_vols_matrix
     
     def make_black_var_surface(
@@ -141,57 +135,30 @@ class model_settings():
             int(row['days_to_maturity']),ql.Days)
         return row
     
-    def heston_price_one_vanilla(
-            self,s,k,t,r,g,v0,kappa,theta,sigma,rho,w):
+    def noisyfier(self,prices):
+        price = prices.columns[-1]
         
-        call, put = ql.Option.Call, ql.Option.Put
-        option_type = call if w == 'call' else put
-        expiration_date = self.calculation_date + ql.Period(t,ql.Days)
-        payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(expiration_date)
-        european_option = ql.VanillaOption(payoff, exercise)
-        flat_ts = self.make_ts_object(r)
-        dividend_ts = self.make_ts_object(g)
-        heston_process = ql.HestonProcess(
-            flat_ts,dividend_ts, 
-            ql.QuoteHandle(ql.SimpleQuote(s)), 
-            v0, kappa, theta, sigma, rho)
-        engine = ql.AnalyticHestonEngine(
-            ql.HestonModel(heston_process), 0.01, 1000)
-        european_option.setPricingEngine(engine)
-        h_price = european_option.NPV()
-        return h_price
-    
-    def heston_price_vanilla_row(self,row):
-        s = row['spot_price']
-        k = row['strike_price']
-        t = row['days_to_maturity']
-        r = row['risk_free_rate']
-        g = row['dividend_rate']
-        v0 = row['v0']
-        kappa = row['kappa']
-        theta = row['theta']
-        sigma = row['sigma']
-        rho = row['rho']
-        w = row['w']
+        prices['observed_price'] = prices[price]\
+                                .apply(lambda x: x + np.random.normal(
+                                    scale=0.15))
+        prices['observed_price'] = prices['observed_price']\
+                                .apply(lambda x: max(x, 0))
+        return prices
+
+    def black_scholes_price(self,row): 
+            S =  row['spot_price']
+            K =  row['strike_price']
+            r =  row['risk_free_rate']
+            T =  row['days_to_maturity'] 
+            sigma =  row['volatility'] 
+            w =  row['w']
+            if w == 'call':
+                w = 1
+            else:
+                w = -1
         
-        date = self.calculation_date + ql.Period(t,ql.Days)
-        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
-        
-        payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(date)
-        european_option = ql.VanillaOption(payoff, exercise)
-        flat_ts = self.make_ts_object(r)
-        dividend_ts = self.make_ts_object(g)
-        
-        heston_process = ql.HestonProcess(
-            flat_ts,dividend_ts, 
-            ql.QuoteHandle(ql.SimpleQuote(s)), 
-            v0, kappa, theta, sigma, rho)
-        
-        engine = ql.AnalyticHestonEngine(
-            ql.HestonModel(heston_process), 0.01, 1000)
-        european_option.setPricingEngine(engine)
-        h_price = european_option.NPV()
-        row['heston_price'] = h_price
-        return row
+            d1 = (np.log(S/K)+(r+sigma**2/2)*T/365)/(sigma*np.sqrt(T/365))
+            d2 = d1-sigma*np.sqrt(T/365)
+            price = w*(S*norm.cdf(w*d1)-K*np.exp(-r*T/365)*norm.cdf(w*d2))
+            row['black_scholes'] = price
+            return row

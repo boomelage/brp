@@ -79,10 +79,15 @@ for i, row in historical_data.iterrows():
         s*(1 + n_hist_spreads * historical_spread),
         n_strikes)
     
+    """
+    NOTE: the make_bicubic_functional function takes the current volatility 
+    surface estimated via Derman only for the coefficients
+    """    
     bicubic_vol = make_bicubic_functional(
         ms.derman_ts, 
         ms.derman_ts.index.tolist(), 
         ms.derman_ts.columns.tolist())
+    
     
     calibration_dataset = generate_features(
         K, T, s)
@@ -150,7 +155,7 @@ for i, row in historical_data.iterrows():
         rho = row['rho']
         w = row['w']
         
-        date = ms.calculation_date + ql.Period(t,ql.Days)
+        date = calculation_date + ql.Period(t,ql.Days)
         option_type = ql.Option.Call if w == 'call' else ql.Option.Put
         
         payoff = ql.PlainVanillaPayoff(option_type, k)

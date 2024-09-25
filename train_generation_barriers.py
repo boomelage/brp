@@ -117,33 +117,10 @@ engine = ql.FdHestonBarrierEngine(hestonModel)
 """
 
 
-T = ms.T
-spread = 0.005
-n_spreads = 10
-n_strikes = 300
-up_K = np.linspace(
-    s*(1+spread), 
-    s*(1+n_spreads*spread),
-    n_strikes)
-
-down_K = np.linspace(
-    s*(1-spread), 
-    s*(1-n_spreads*spread),
-    n_strikes
-    )
-
-n_barriers = n_strikes
-barrier_spread = spread
-n_barrier_spreads = n_spreads
-
-
-"""
-small example
-"""
-# T = [1]
+# T = ms.T
 # spread = 0.005
-# n_spreads = 5
-# n_strikes = 2
+# n_spreads = 10
+# n_strikes = 300
 # up_K = np.linspace(
 #     s*(1+spread), 
 #     s*(1+n_spreads*spread),
@@ -155,9 +132,32 @@ small example
 #     n_strikes
 #     )
 
-# n_barriers = 2
-# barrier_spread = 0.005
-# n_barrier_spreads = 2
+# n_barriers = n_strikes
+# barrier_spread = spread
+# n_barrier_spreads = n_spreads
+
+
+"""
+small example
+"""
+T = [1]
+spread = 0.005
+n_spreads = 5
+n_strikes = 2
+up_K = np.linspace(
+    s*(1+spread), 
+    s*(1+n_spreads*spread),
+    n_strikes)
+
+down_K = np.linspace(
+    s*(1-spread), 
+    s*(1-n_spreads*spread),
+    n_strikes
+    )
+
+n_barriers = 2
+barrier_spread = 0.005
+n_barrier_spreads = 2
 
 
 """
