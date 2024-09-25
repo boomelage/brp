@@ -76,7 +76,7 @@ for i, row in historical_data.iterrows():
     """
 
 
-    n_hist_spreads = 5
+    n_hist_spreads = 10
     historical_spread = 0.005
     n_strikes = 10
     K = np.linspace(
@@ -101,13 +101,19 @@ for i, row in historical_data.iterrows():
     heston_parameters, performance_df = calibrate_heston(
         calibration_dataset, s, calculation_date)
     
-    
+    n_hist_spreads = 5
+    historical_spread = 0.005
+    n_strikes = 5
+    K = np.linspace(
+        s*(1 - n_hist_spreads * historical_spread),
+        s*(1 + n_hist_spreads * historical_spread),
+        n_strikes)
     
     features = pd.DataFrame(
         product(
             [float(s)],
-            np.linspace(s*0.9,s*1.1,10),
-            T[:3],
+            K,
+            T,
             ['call','put']
             ),
         columns=[
@@ -123,7 +129,7 @@ for i, row in historical_data.iterrows():
     features['rho'] = heston_parameters['rho'].iloc[0]
     features['v0'] = heston_parameters['v0'].iloc[0]
     features['avgAbsRelErr'] = heston_parameters['avgAbsRelErr'].iloc[0]
-    features['risk_free_rate'] = 0.04
+    features['risk_free_rate'] = 0.00
     features['dividend_rate'] = row['dividend_rate']
     features['days_to_maturity'] = features['days_to_maturity'].astype(int)
     
@@ -170,10 +176,14 @@ for i, row in historical_data.iterrows():
         h_price = european_option.NPV()
         features.at[i, 'heston_price'] = h_price
         
+        pd.set_option("display.max_rows",None)
+        pd.set_option("display.max_columns",None)
+        print(f"\nprices for {calculation_date}:\n{features}\n")
+        pd.reset_option("display.max_rows")
+        pd.reset_option("display.max_columns")
+        
+        
         training_data = pd.concat([training_data, features],ignore_index=True)
-    
-    pd.set_option("display.max_columns",None)
-    print(f"\n\n\n{training_data}\n\n\n")
     
     progress_bar.update(1)
 progress_bar.close()        
@@ -181,13 +191,8 @@ progress_bar.close()
 
 
 
-# # pd.set_option("display.max_rows",None)
-# # pd.set_option("display.max_columns",None)
-# # print(f"\ntraining data:\n{historical_option_data.describe()}")
-# # pd.reset_option("display.max_rows")
-# # pd.reset_option("display.max_columns")
-# file_time = time.time()
-# file_dt = datetime.fromtimestamp(file_time)
-# file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
-# historical_option_data.to_csv(f"hist_outputs/{file_timetag}.csv")
+file_time = time.time()
+file_dt = datetime.fromtimestamp(file_time)
+file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
+training_data.to_csv(f"hist_outputs/{file_timetag}.csv")
         
