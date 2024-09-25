@@ -64,9 +64,9 @@ class mlop:
             'strike_price', 
             'days_to_maturity',
             
-            'barrierType',
-            'outin',
-            'updown',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
             'w'
             
@@ -82,16 +82,16 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrierType',
-            'outin',
-            'updown',
+            # 'barrierType',
+            # 'outin',
+            # 'updown',
             
             'w'
             
             ]
         
-        # self.security_tag = 'vanilla options'
-        self.security_tag = 'barrier options'
+        self.security_tag = 'vanilla options'
+        # self.security_tag = 'barrier options'
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),

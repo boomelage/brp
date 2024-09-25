@@ -53,6 +53,8 @@ historical_option_data = pd.DataFrame()
 progress_bar = tqdm(
     desc="generating",total = total,leave=True,unit='days',dynamic_ncols=True)
 
+
+training_data = pd.DataFrame()
 for i, row in historical_data.iterrows():
     s = row['spot_price']
     dtdate = row['date']
@@ -76,7 +78,7 @@ for i, row in historical_data.iterrows():
 
     n_hist_spreads = 5
     historical_spread = 0.005
-    n_strikes = 3
+    n_strikes = 10
     K = np.linspace(
         s*(1 - n_hist_spreads * historical_spread),
         s*(1 + n_hist_spreads * historical_spread),
@@ -99,10 +101,12 @@ for i, row in historical_data.iterrows():
     heston_parameters, performance_df = calibrate_heston(
         calibration_dataset, s, calculation_date)
     
+    
+    
     features = pd.DataFrame(
         product(
             [float(s)],
-            K,
+            np.linspace(s*0.9,s*1.1,10),
             T[:3],
             ['call','put']
             ),
@@ -127,7 +131,7 @@ for i, row in historical_data.iterrows():
     group by t and then price to only initialise the heston process once per
     maturity per day
     """
-    training_data = pd.DataFrame()
+    
     for i, row in features.iterrows():
         s = row['spot_price']
         k = row['strike_price']
@@ -167,13 +171,14 @@ for i, row in historical_data.iterrows():
         features.at[i, 'heston_price'] = h_price
         
         training_data = pd.concat([training_data, features],ignore_index=True)
-        
-        print(f"\n\n\n{training_data}\n\n\n")
+    
+    pd.set_option("display.max_columns",None)
+    print(f"\n\n\n{training_data}\n\n\n")
+    
     progress_bar.update(1)
-        
+progress_bar.close()        
 
 
-progress_bar.close()
 
 
 # # pd.set_option("display.max_rows",None)
