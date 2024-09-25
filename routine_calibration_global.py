@@ -19,27 +19,21 @@ import numpy as np
 import pandas as pd
 from settings import model_settings
 ms = model_settings()
-day_count = ms.day_count
-calendar = ms.calendar
-s = ms.s
-"""
-calibrating a heston model to contracts from routine_calibration_generation.py
-"""
 
-
-
-
-def calibrate_heston(calibration_dataset, s, calculation_date):
+def calibrate_heston(calibration_dataset, 
+                     s = ms.s, 
+                     calculation_date = ms.calculation_date,
+                     calendar = ms.calendar,
+                     day_count = ms.day_count
+                     ):
     risk_free_rate = 0.05
     dividend_rate = 0.02
     flat_ts = ms.make_ts_object(risk_free_rate)
     dividend_ts = ms.make_ts_object(dividend_rate)
 
     heston_helpers = []
-
         
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
-
 
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
     process = ql.HestonProcess(

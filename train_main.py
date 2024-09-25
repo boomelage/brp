@@ -13,7 +13,8 @@ sys.path.append('contract_details')
 sys.path.append('misc')
 sys.path.append('historical_data')
 from mlop import mlop
-mlop = mlop()
+from data_query import dirdatacsv
+csvs = dirdatacsv()
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
@@ -24,15 +25,30 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-# from train_generation_barriers import training_data
+from train_generation_barriers import training_data, title
 
-from train_generation_vanillas import training_data
+# from train_generation_vanillas import training_data, title
+
+# import pandas as pd
+# file = csvs[0]
+# training_data = pd.read_csv(file)
+# training_data = training_data.drop(columns=training_data.columns[0])
+# title = f'{file}'
+
+
+updown = 'Down'
+outin = 'Out '
+# training_data = training_data[training_data['updown']==updown]
+# training_data = training_data[training_data['outin']==outin[:-1]]
+
+title = f'{updown}{outin} barrier options'
+
 
 """
 # =============================================================================
 """
 
-mlop.user_dataset = training_data
+mlop = mlop(user_dataset = training_data)
 print('\ntraining...')
 
 """
@@ -81,13 +97,13 @@ lasso regression
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
 
 """
-# =============================================================================
+# ============================================================================
                                 model testing
 """
 
 df = mlop.test_model(test_X,test_y,model_fit)
 
-predictive_performance_plot = mlop.plot_model_performance(df,runtime)
+predictive_performance_plot = mlop.plot_model_performance(df,runtime,title)
 
 """
 # =============================================================================

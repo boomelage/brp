@@ -16,6 +16,7 @@ import numpy as np
 from settings import model_settings
 import pandas as pd
 import time
+from datetime import datetime
 pd.set_option("display.max_columns",None)
 pd.reset_option("display.max_rows")
 ms = model_settings()
@@ -50,14 +51,15 @@ s = ms.s
                     generating OTM call barrier options
 """
 
+title = 'down barrier options'
 
 # T = ms.T
 T = [1]
 
-n_strikes = 20
+n_strikes = 1000
 
-down_k_spread = 0.01
-up_k_spread = down_k_spread
+down_k_spread = 0.05
+up_k_spread = 0
 
 
 n_barriers = 5
@@ -65,8 +67,7 @@ barrier_spread = 0.005
 n_barrier_spreads = 5
 
 
-
-
+n_contracts = len(T)*n_barriers*n_strikes*1
 """
 # =============================================================================
                                 up options
@@ -94,22 +95,20 @@ for i, row in initial_up_features.iterrows():
     strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
     
     strike_wise_out = pd.DataFrame(strike_wise_np).copy()
-    strike_wise_in = pd.DataFrame(strike_wise_np).copy()
     strike_wise_out.columns = col_names
-    strike_wise_in.columns = col_names
-    
     strike_wise_out['strike_price'] = k
-    strike_wise_in['strike_price'] = k
     strike_wise_out['spot_price'] = s
-    strike_wise_in['spot_price'] = s
     strike_wise_out['days_to_maturity'] = t
-    strike_wise_in['days_to_maturity'] = t
-    
-    strike_wise_out['w'] = 'call'
+    strike_wise_out['w'] = 'put'
     strike_wise_out['updown'] = 'Up'
     strike_wise_out['outin'] = 'Out'
     
-    strike_wise_in['w'] = 'call'
+    strike_wise_in = pd.DataFrame(strike_wise_np).copy()
+    strike_wise_in.columns = col_names
+    strike_wise_in['strike_price'] = k
+    strike_wise_in['spot_price'] = s
+    strike_wise_in['days_to_maturity'] = t
+    strike_wise_in['w'] = 'put'
     strike_wise_in['updown'] = 'Up'
     strike_wise_in['outin'] = 'In'
     
@@ -120,6 +119,7 @@ for i, row in initial_up_features.iterrows():
         )
     
     strike_wise_in['barrier'] = barriers
+    
     strike_wise_out['barrier'] = barriers
     
     strike_wise = pd.concat(
@@ -161,32 +161,31 @@ for i, row in initial_down_features.iterrows():
     strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
     
     strike_wise_out = pd.DataFrame(strike_wise_np).copy()
-    strike_wise_in = pd.DataFrame(strike_wise_np).copy()
     strike_wise_out.columns = col_names
-    strike_wise_in.columns = col_names
-    
     strike_wise_out['strike_price'] = k
-    strike_wise_in['strike_price'] = k
     strike_wise_out['spot_price'] = s
-    strike_wise_in['spot_price'] = s
     strike_wise_out['days_to_maturity'] = t
-    strike_wise_in['days_to_maturity'] = t
-    
     strike_wise_out['w'] = 'put'
     strike_wise_out['updown'] = 'Down'
     strike_wise_out['outin'] = 'Out'
     
+    strike_wise_in = pd.DataFrame(strike_wise_np).copy()
+    strike_wise_in.columns = col_names
+    strike_wise_in['strike_price'] = k
+    strike_wise_in['spot_price'] = s
+    strike_wise_in['days_to_maturity'] = t
     strike_wise_in['w'] = 'put'
     strike_wise_in['updown'] = 'Down'
     strike_wise_in['outin'] = 'In'
     
     barriers = np.linspace(
-        k*(1-barrier_spread),
         k*(1-n_barrier_spreads*barrier_spread),
+        k*(1-barrier_spread),
         n_barriers
         )
     
     strike_wise_in['barrier'] = barriers
+    
     strike_wise_out['barrier'] = barriers
     
     strike_wise = pd.concat(
@@ -197,7 +196,9 @@ for i, row in initial_down_features.iterrows():
         [down_features, strike_wise],
         ignore_index=True
         )
+    
     down_bar.update(1)
+    
 down_bar.close()
     
 """  
@@ -207,6 +208,8 @@ down_bar.close()
 features = pd.concat(
     [up_features,down_features],
     ignore_index=True)
+
+# features = down_features.copy()
 
 features['barrier_type_name'] = features['updown'] + features['outin'] 
 features['sigma'] = heston_parameters['sigma'].iloc[0]
@@ -250,6 +253,7 @@ for i, row in features.iterrows():
     
     pricing_bar.update(1)
     
+
 pricing_bar.close()
 
 training_data = features.copy()
@@ -259,3 +263,7 @@ training_data = ms.noisyfier(training_data)
 pd.set_option("display.max_columns",None)
 print(f'\n{training_data}\n')
 pd.reset_option("display.max_columns")
+
+file_time = datetime.fromtimestamp(time.time())
+file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
+training_data.to_csv(f'barriers {file_tag}')

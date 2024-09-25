@@ -12,6 +12,8 @@ sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
+import time
+from datetime import datetime
 from itertools import product
 from settings import model_settings
 from tqdm import tqdm
@@ -45,18 +47,22 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.95,s*1.1,3000)
+K = np.linspace(s*0.1,s*0.9,2000)
 
 T = ms.T
 
 T = np.arange(min(T),max(T),1)
+
+title = 'vanillas'
+
+flags = ['put','call']
 
 print(f"\ngenerating {2*len(K)*len(T)} contracts...")
 
 """
 # =============================================================================
 """
-features = generate_train_features(K, T, s, ['call','put'])
+features = generate_train_features(K, T, s, flags)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
@@ -108,6 +114,7 @@ for i, row in features.iterrows():
 progress_bar.close()
 
 training_data = features.copy()
+
 training_data = ms.noisyfier(training_data)
 
 print(f"\ntraining data:\n{training_data}\ndescriptive statistics:\n")
@@ -116,3 +123,6 @@ pd.set_option("display.max_columns",None)
 print(training_data.describe())
 pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
+file_time = datetime.fromtimestamp(time.time())
+file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
+training_data.to_csv(f'{title} {file_tag}.csv')

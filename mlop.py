@@ -14,25 +14,23 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
-            QuantileTransformer
-import pandas as pd
-import numpy as np
+            QuantileTransformer, OrdinalEncoder
 from sklearn.linear_model import Lasso
-from plotnine import ggplot, aes, geom_point, facet_wrap, labs, theme
+from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
 import time
 
 class mlop:
     
-    def __init__(self):
-        self.user_dataset = None
+    def __init__(self,user_dataset):
+        self.user_dataset = user_dataset
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (100,100,100)
         self.solver = [
-                    # "lbfgs",
-                    "sgd", 
+                    "lbfgs",
+                    # "sgd", 
                     # "adam"
                     ]
         
@@ -58,19 +56,6 @@ class mlop:
         self.rf_min_samples_leaf = 2000
         
         self.target_name = 'observed_price'
-        self.feature_set = [
-            
-            'spot_price', 
-            'strike_price', 
-            'days_to_maturity',
-            
-            # 'barrierType',
-            # 'outin',
-            # 'updown',
-            
-            'w'
-            
-            ]
         
         self.numerical_features = [
             
@@ -82,33 +67,32 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrierType',
+            # 'barrier_type_name',
+            
             # 'outin',
+            
             # 'updown',
             
-            'w'
+            # 'w'
             
             ]
-        
-        self.security_tag = 'vanilla options'
-        # self.security_tag = 'barrier options'
+        self.feature_set = self.numerical_features + self.categorical_features\
+            + ['w']
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            ("encode", OneHotEncoder(),self.categorical_features)
+            ("encode", OrdinalEncoder(),self.categorical_features)
             ]   
 
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
-        print(f"\n{self.security_tag}")
         print(f"\ntransformers:\n{self.transformers}")
         print(f"\nactivation: {self.activation_function}")
         print(f"solver: {self.solver}")
         print(f"learning rate: {self.learning_rate}")
         print(f"hidden layers: {self.hidden_layer_sizes}")
-        print(f"\nfeatures:\n{self.feature_set}")
 # =============================================================================
                                                                 # Preprocessing
 
@@ -221,14 +205,14 @@ class mlop:
             training_results['prediciton']/training_results['target']-1)
         return training_results
 
-    def plot_model_performance(self,predictive_performance, runtime):
+    def plot_model_performance(self, predictive_performance, runtime, title):
         predictive_performance_plot = (
             ggplot(predictive_performance, 
                    aes(x="moneyness", y="abs_relative_error")) + 
             geom_point(alpha=0.05) + 
-            labs(x="Percentage moneyness (S/K)", 
-                 y=f"Absolute percentage error ({round(runtime,4)} second runtime)",
-                 title=f'Prediction error for {self.security_tag}') + 
+            labs(x="relative moneyness (S/K)", 
+                 y=f"absolute relative error ({round(runtime,4)} second runtime)",
+                 title=title) + 
             theme(legend_position="")
             )
         predictive_performance_plot.show()
