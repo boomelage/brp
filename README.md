@@ -41,7 +41,7 @@ Thus, we aim to generalize a data generation routine in which a set of Heston mo
 To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by the following pair of stochastic differential equations:
 
 ```math
-dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
+dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right)
 ```
 
 ```math
