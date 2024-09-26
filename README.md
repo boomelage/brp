@@ -14,7 +14,7 @@ The main scope of this paper is to devise a data generation method that can be r
 
 The data generation method outlined below is an extension of Frey et al. (2022) with additional considerations regarding feasibility of all feature combinations. The machine learning model specification is nearly identical to that of Frey et al. (2022) with minor exceptions including the use of relative absolute pricing error as a performance metric, as well as exploration of additional activation functions and solvers.
 
-Following this result, it was considered whether SkLearn Neural Network models could be used to price exotic options such as barrier and Asian options. Exotic options often require stochastic volatility models due to their path-dependent payoffs. Thus, we aim to generalize a data generation routine for generic at-the-money volatilites which will allow us to train the model on a carefully curated dataset representing user defined market conditions.
+Following this result, it was considered whether ScikitLearn Neural Network models could be used to price exotic options such as barrier and Asian options. Exotic options often require stochastic volatility models due to their path-dependent payoffs. Thus, we aim to generalize a data generation routine for generic at-the-money volatilites which will allow us to train the model on a carefully curated dataset representing user defined market conditions.
 
 
 # 2. Model Specification
