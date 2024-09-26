@@ -7,23 +7,10 @@ An empirical approach based on market data
 # Table of Contents
 1. [Introduction](#introduction)
 2. [Model Specification](#model-specification)
-   - [Pricing model](#pricing-model)
-3. [Calibration Approach](#calibration-approach)
-   - [Approximation of implied volatilities](#approximation-of-implied-volatilities)
-   - [Interpolation of volatility surface](#interpolation-of-volatility-surface)
-   - [Calibration data generation](#calibration-data-generation)
-4. [Training Procedure](#training-procedure)
-   - [Data generation](#data-generation)
-   - [Machine learning model specification](#machine-learning-model-specification)
-5. [Results](#results)
-6. [Proposal for Future Research](#proposal-for-future-research)
-7. [Conclusions](#conclusions)
-   - [Notes on calibration](#notes-on-calibration)
-   - [Preliminary testing](#preliminary-testing)
-8. [References](#references)
+3. [References](#references)
 
 
-# Introduction
+# 1. Introduction
 
 The main scope of this paper is to devise a data generation method that can be reliably used to train machine learning algorithms in pricing options under stochastic volatility models. It has been demonstrated by Frey et al. (2022) that Single Layer and Deep Neural networks are able to accurately predict option prices given a large synthetic training dataset. 
 
@@ -34,7 +21,7 @@ Following this result, it was considered whether SkLearn Neural Network models c
 Thus, we aim to generalize a data generation routine in which a set of Heston model parameters is calibrated and used to price a variety of options based on historical spot prices and at-the-money volatilities for historical option data. To achieve this, we implement several approximations, introducing various assumptions and limitations.
 
 
-# Model Specification
+# 2. Model Specification
 
 ## Pricing model
 
@@ -53,3 +40,8 @@ Derman's approximation of implied volatilites:
 ```math
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
 ```
+
+## 3. References
+Derman, E. (2008). Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
+
+Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. Available at: https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
