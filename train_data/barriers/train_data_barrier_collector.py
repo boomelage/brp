@@ -49,7 +49,7 @@ maturities filter
 type filter
 """
 
-# training_data[training_data.loc[:,'updown'] == 'Up']
+training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
 
 """"""
@@ -59,10 +59,10 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 
-# training_data = training_data[
-#     (abs(training_data['moneyness'])>=0.05)&
-#     (abs(training_data['moneyness'])<=0.1)
-#     ].reset_index(drop=True)
+training_data = training_data[
+    (training_data['moneyness']>=-0.05)&
+    (training_data['moneyness']<=-0.001)
+    ].reset_index(drop=True)
 
 
 """"""

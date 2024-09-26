@@ -18,6 +18,7 @@ from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
 import time
+from settings import compute_moneyness
 
 class mlop:
     
@@ -61,7 +62,7 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
-            'moneyness',
+            # 'moneyness',
             
             ]
         
@@ -73,15 +74,15 @@ class mlop:
             
             # 'updown',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             ("StandardScaler",StandardScaler(),self.numerical_features),
-            ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             # ("RobustScaler",RobustScaler(),self.numerical_features),
             ]   
@@ -192,8 +193,9 @@ class mlop:
 # =============================================================================
                                                                 # Model Testing
 
-    def test_model(self,test_X,test_y,model_fit):
+    def test_model(self,test_data,test_X,test_y,model_fit):
         training_results = test_X.copy()
+        training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
         training_results['target'] = test_y
         training_results['prediciton'] = model_fit.predict(test_X)
         training_results['abs_relative_error'] = abs(

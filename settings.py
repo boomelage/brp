@@ -16,7 +16,6 @@ import pandas as pd
 from scipy.stats import norm
 from bicubic_interpolation import make_bicubic_functional
 from derman_test import derman_coefs
-# from data_query import dirdatacsv, dirdata
 
 
 class model_settings():
@@ -26,8 +25,6 @@ class model_settings():
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
-        # self.csvs               =    dirdatacsv()
-        # self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
         ql.Settings.instance().evaluationDate = self.calculation_date
@@ -290,12 +287,23 @@ class model_settings():
 """
     
 def compute_moneyness(df):
-    df.loc[
-        df['w'] == 'call', 
-        'moneyness'
-        ] = df['spot_price'] / df['strike_price'] - 1
-    df.loc[
-        df['w'] == 'put', 
-        'moneyness'
-        ] = df['strike_price'] / df['spot_price'] - 1
+    
+    try:
+        df.loc[
+            df['w'] == 'call', 
+            'moneyness'
+            ] = df['spot_price'] / df['strike_price'] - 1
+    except Exception:
+        print('no calls')
+        pass
+    
+    try:
+        df.loc[
+            df['w'] == 'put', 
+            'moneyness'
+            ] = df['strike_price'] / df['spot_price'] - 1
+    except Exception:
+        print('no puts')
+        pass
+    
     return df

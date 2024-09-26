@@ -35,11 +35,11 @@ print('\nloading data...\n')
 
 "from archive"
 
-# from train_data_barrier_collector import training_data
-# title = 'Prediction errors for barrier options'
+from train_data_barrier_collector import training_data
+title = 'Prediction errors for barrier options'
 
-from train_data_vanilla_collector import training_data
-title = 'Prediction errors for Heston vanilla options'
+# from train_data_vanilla_collector import training_data
+# title = 'Prediction errors for Heston vanilla options'
 
 """
 # =============================================================================
@@ -65,17 +65,17 @@ preprocessor = mlop.preprocess()
 single layer network
 """
 
-model_name = "Single Layer Network"
-print(model_name)
-model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+# model_name = "Single Layer Network"
+# print(model_name)
+# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-# model_name = "Deep Neural Network"
-# print(model_name)
-# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+model_name = "Deep Neural Network"
+print(model_name)
+model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
@@ -98,7 +98,7 @@ lasso regression
                                 model testing
 """
 
-df = mlop.test_model(test_X,test_y,model_fit)
+df = mlop.test_model(test_data, test_X,test_y,model_fit)
 
 predictive_performance_plot = mlop.plot_model_performance(df,runtime,title)
 

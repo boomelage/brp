@@ -58,17 +58,23 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 training_data = training_data[
-    (training_data['moneyness']>=-0.05)&
-    (training_data['moneyness']<= 0.05)
+    (training_data['moneyness']>= - 0.05  ) &
+    (training_data['moneyness']<= - 0.005 )
     ].reset_index(drop=True)
 
 
 """"""
 training_data = training_data[
     [ 
-     'spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 
-     'w', 'theta', 'kappa', 'rho', 'eta','v0', 
-     'heston_price', 'observed_price' 
+     'spot_price', 'strike_price', 'days_to_maturity', 
+     
+     # 'moneyness', 
+     
+     # 'w', 'theta', 'kappa', 'rho', 'eta','v0', 
+     
+     # 'heston_price', 
+     
+     'observed_price' 
      ]
     ]
 
