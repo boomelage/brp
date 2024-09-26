@@ -271,12 +271,16 @@ class model_settings():
             raise KeyError('barrier flag error')
             
         expiration_date = calculation_date + ql.Period(int(t), ql.Days)
+        
+        
         exercise = ql.EuropeanExercise(expiration_date)
         payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
         
         barrierOption = ql.BarrierOption(
             barrierType, barrier, rebate, payoff, exercise)
+        
         barrierOption.setPricingEngine(engine)
+                
         barrier_price = barrierOption.NPV()
         
         return barrier_price

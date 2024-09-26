@@ -27,23 +27,20 @@ for file in csvs:
     train_subset = pd.read_csv(file)
     training_data = pd.concat([training_data,train_subset],ignore_index=True)
 
-training_data['eta'] = training_data['eta'].combine_first(training_data['sigma'])
-training_data = training_data.drop(columns='sigma')
-
 
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
+
 
 
 """
 maturities filter
 """
 
-# training_data = training_data[
-#     (abs(training_data['days_to_maturity'])>=0)&
-#     (abs(training_data['days_to_maturity'])<=99999)
-#     ].reset_index(drop=True)
-
+training_data = training_data[
+    (abs(training_data['days_to_maturity'])>=0)&
+    (abs(training_data['days_to_maturity'])<=99999)
+    ].reset_index(drop=True)
 
 """
 type filter
@@ -54,19 +51,20 @@ training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
 """"""
 training_data = compute_moneyness(training_data)
+
+training_data
 """"""
 """
 moneyness filter
 """
 
-training_data = training_data[
-    (training_data['moneyness']>=-0.05)&
-    (training_data['moneyness']<=-0.001)
-    ].reset_index(drop=True)
+# training_data = training_data[
+#     (training_data['moneyness']>=-0.05)&
+#     (training_data['moneyness']<=-0.001)
+#     ].reset_index(drop=True)
 
 
-""""""
-
+# """"""
 
 training_data = training_data[
     [ 'spot_price', 'strike_price', 'days_to_maturity', 'moneyness','barrier', 

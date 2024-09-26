@@ -26,8 +26,6 @@ for file in csvs:
     train_subset = pd.read_csv(file)
     training_data = pd.concat([training_data,train_subset],ignore_index=True)
     
-training_data['eta'] = training_data['eta'].combine_first(training_data['sigma'])
-training_data = training_data.drop(columns='sigma')
 
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()

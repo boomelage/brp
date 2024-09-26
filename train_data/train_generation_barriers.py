@@ -31,7 +31,7 @@ start = time.time()
 
 s = ms.s
 
-
+pd.reset_option('display.max_rows')
 """
 # =============================================================================
 """
@@ -39,17 +39,17 @@ s = ms.s
 title = 'barrier options'
 
 # T = ms.T
-T = [1,2,3]
+T = [3,4]
 
-n_strikes = 5
 
-down_k_spread = 0.20
-up_k_spread = 0.20
+n_strikes = 50
+down_k_spread = 0.5
+up_k_spread = 0.5
 
 
 n_barriers = n_strikes
 barrier_spread = 0.005
-n_barrier_spreads = 5
+n_barrier_spreads = 10
 
 
 n_contracts = len(T)*n_barriers*n_strikes*1
@@ -67,165 +67,171 @@ updowns = [
     'Down'
     ]
 
-features = pd.DataFrame(
-    product(
-        [s],
-        T,
-        updowns
-        ),
-    columns=[
-        "spot_price", 
-        "days_to_maturity",
-        "updown"
-              ])
+
+def generate_initial_barrier_features(s,T,K,outins,updown,w):
+    features = pd.DataFrame(
+        product(
+            [s],
+            T,
+            K,
+            [updown],
+            outins,
+            [w]
+            ),
+        columns=[
+            'spot_price', 
+            'days_to_maturity',
+            'strike_price',
+            'updown',
+            'outin',
+            'w'
+                  ])
+    return features
 
 
-features =  features.set_index('updown')
-
-initial_up_features = features.loc['Up'].reset_index()
 
 
 
 """
 up features
 """
+
+
 up_K = np.linspace(
     s, 
-    s*(1+up_k_spread*n_strikes),
+    s*(1+up_k_spread),
     n_strikes)
 
+initial_up_features = generate_initial_barrier_features(
+    s,T,up_K,outins,'Up','call')
+
+initial_up_features
+
 up_features = pd.DataFrame()
-for i,row in initial_up_features.iterrows():
+
+for i, row in initial_up_features.iterrows():
     s = row['spot_price']
+    k = row['strike_price']
     t = row['days_to_maturity']
-    new_up_features = pd.DataFrame(
+    outin = row['outin']
+    updown = row['updown']
+    w = row['w']
+    
+    barriers = np.linspace(
+        k*(1+barrier_spread),
+        k*(1+barrier_spread*n_barrier_spreads),
+        n_barriers
+        )    
+    
+    up_subset =  pd.DataFrame(
         product(
             [s],
             [t],
-            up_K,
-            ['Up'],
-            outins
+            [k],
+            [updown],
+            [outin],
+            [w],
+            barriers
             ),
         columns=[
-            "spot_price", 
-            "days_to_maturity",
-            "strike_price",
-            "updown",
-            "outin"
+            'spot_price', 
+            'days_to_maturity',
+            'strike_price',
+            'updown',
+            'outin',
+            'w',
+            'barrier'
                   ])
-    for j,row2 in new_up_features.iterrows():
-        
-        k = row2['strike_price']
-        
-        barriers = np.linspace(
-            k*(1+barrier_spread),
-            k*(1+n_barrier_spreads*barrier_spread),
-            n_barriers*2
-            )
-        
-        new_up_features_with_bar = pd.DataFrame(
-            product(
-                [s],
-                [t],
-                [k],
-                barriers,
-                ['Up'],
-                outins
-                ),
-            columns = [
-                "spot_price", 
-                "days_to_maturity",
-                "strike_price",
-                "barrier",
-                "updown",
-                "outin"
-                ])
-        up_features = pd.concat(
-            [up_features, new_up_features_with_bar],
-            ignore_index=True
-            )
-
     
+    up_subset['barrier_type_name'] = up_subset['updown']+up_subset['outin']
+    
+    print(f"\n{up_subset}\n")
+
+    up_features = pd.concat(
+        [up_features, up_subset],
+        ignore_index = True)    
+        
+
+
+
 """
 down features
 """
 
-initial_down_features = features.loc['Down'].reset_index()
 
 down_K = np.linspace(
-    s*(1-down_k_spread),
+    s*(1-down_k_spread), 
     s,
-    n_strikes
-    )
+    n_strikes)
+
+initial_down_features = generate_initial_barrier_features(
+    s,T,down_K,outins,'Down','put')
+
+initial_down_features
 
 down_features = pd.DataFrame()
+
 for i, row in initial_down_features.iterrows():
     s = row['spot_price']
+    k = row['strike_price']
     t = row['days_to_maturity']
-    new_down_features = pd.DataFrame(
+    outin = row['outin']
+    updown = row['updown']
+    w = row['w']
+    
+    
+    barriers = np.linspace(
+        k*(1-barrier_spread*n_barrier_spreads),
+        k*(1-barrier_spread),
+        n_barriers
+        )    
+    
+    down_subset =  pd.DataFrame(
         product(
             [s],
             [t],
-            down_K,
-            ['Down'],
-            outins
+            [k],
+            [updown],
+            [outin],
+            [w],
+            barriers
             ),
         columns=[
-            "spot_price", 
-            "days_to_maturity",
-            "strike_price",
-            "updown",
-            "outin"
+            'spot_price', 
+            'days_to_maturity',
+            'strike_price',
+            'updown',
+            'outin',
+            'w',
+            'barrier'
                   ])
-    for j,row2 in new_down_features.iterrows():
-        k = row2['strike_price']
-        
-        barriers = np.linspace(
-            k*(1-n_barrier_spreads*barrier_spread),
-            k*(1-barrier_spread),
-            n_barriers*2
-            )
-        
-        new_down_features_with_bar = pd.DataFrame(
-            product(
-                [s],
-                [t],
-                [k],
-                barriers,
-                ['Down'],
-                outins
-                ),
-            columns = [
-                "spot_price", 
-                "days_to_maturity",
-                "strike_price",
-                "barrier",
-                "updown",
-                "outin"
-                ])
-        down_features = pd.concat([down_features, new_down_features_with_bar],
-                                  ignore_index=True)
+    
+    down_subset['barrier_type_name'] = down_subset['updown']+down_subset['outin']
+    
+    print(f"\n{down_subset}\n")
+    
+    down_features = pd.concat(
+        [down_features, down_subset],
+        ignore_index = True)    
         
 
 features = pd.concat([down_features,up_features],ignore_index=True)
 
-features['barrier_type_name'] = features['updown'] + features['outin'] 
 features['eta'] = heston_parameters['eta'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-
 features['barrier_price'] = np.nan
+
+features
 pricing_bar = tqdm(
     desc="pricing",
     total=features.shape[0],
     unit='contracts',
     leave=True)
-
 for i, row in features.iterrows():
-    
     barrier_type_name = row['barrier_type_name']
     barrier = row['barrier']
     s = row['spot_price']
@@ -234,8 +240,6 @@ for i, row in features.iterrows():
     r = 0.04
     g = 0.001
     rebate = 0.
-    
-    calculation_date = ms.calculation_date
     
     v0 = heston_parameters['v0'].iloc[0]
     kappa = heston_parameters['kappa'].iloc[0] 
@@ -249,10 +253,9 @@ for i, row in features.iterrows():
             v0, kappa, theta, eta, rho)
     
     features.at[i,'barrier_price'] = barrier_price
+        
     
     pricing_bar.update(1)
-    
-
 pricing_bar.close()
 
 training_data = features.copy()
@@ -267,3 +270,10 @@ pd.reset_option("display.max_columns")
 file_time = datetime.fromtimestamp(time.time())
 file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
 training_data.to_csv(os.path.join('barriers',f'barriers {file_tag}.csv'))
+
+
+
+
+
+
+
