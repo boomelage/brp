@@ -133,6 +133,22 @@ class model_settings():
             int(row['days_to_maturity']),ql.Days)
         return row
     
+    def compute_moneyness_row(df):
+        df['moneyness'] = 0.00
+        for i, row in df.iterrows():
+            if row['w'] == 'call':
+                df.at[i,'moneyness'] = df.at[i,'spot_price']/df.at[i,'strike_price'] - 1
+            elif row['w'] == 'put':
+                df.at[i,'moneyness'] = df.at[i,'strike_price']/df.at[i,'spot_price'] - 1
+            else:
+                raise ValueError('put/call flag error')
+        return df
+    
+    
+    """
+    ===========================================================================
+                                        pricing
+    """
     def noisyfier(self,prices):
         price = prices.columns[-1]
         
@@ -262,3 +278,7 @@ class model_settings():
         barrier_price = barrierOption.NPV()
         
         return barrier_price
+    
+    """
+    ===========================================================================
+    """

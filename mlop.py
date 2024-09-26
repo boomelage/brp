@@ -9,12 +9,11 @@ from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
-            QuantileTransformer, OrdinalEncoder
+            QuantileTransformer, OrdinalEncoder,OneHotEncoder
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
@@ -24,7 +23,7 @@ class mlop:
     
     def __init__(self,user_dataset):
         self.user_dataset = user_dataset
-        self.random_state = None
+        self.random_state = 1312
         self.test_size = 0.01
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (100,100,100)
@@ -67,17 +66,16 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
             # 'updown',
             
-            # 'w'
+            'w'
             
             ]
-        self.feature_set = self.numerical_features + self.categorical_features\
-            + ['w']
+        self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),

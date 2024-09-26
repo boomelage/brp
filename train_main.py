@@ -25,12 +25,12 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-from train_generation_barriers import training_data, title
+# from train_generation_barriers import training_data, title
 
 # from train_generation_vanillas import training_data, title
 
-# from train_data_collector import training_data
-# title = 'barrier_options'
+from train_data_collector import training_data
+title = 'barrier_options'
 
 """
 # =============================================================================
