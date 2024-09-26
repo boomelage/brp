@@ -10,7 +10,7 @@ An empirical approach based on market data
 
 # 1. Introduction
 
-The main scope of this paper is to devise a data generation method that can be reliably used to train machine learning algorithms in pricing options under stochastic volatility models. It has been demonstrated by Frey et al. (2022) that Single Layer and Deep Neural networks are able to accurately predict vanilla option prices given a large synthetic training dataset. 
+The main scope of this paper is to devise a data generation method that can be reliably used to train machine learning algorithms in pricing options under stochastic volatility. It has been demonstrated by Frey et al. (2022) that Single Layer and Deep Neural networks are able to accurately predict vanilla option prices given a large synthetic training dataset. 
 
 The data generation method outlined below is an extension of Frey et al. (2022) with additional considerations regarding feasibility of all feature combinations. The machine learning model specification is nearly identical to that of Frey et al. (2022) with minor exceptions including the use of relative absolute pricing error as a performance metric, as well as exploration of additional parameterisation.
 
@@ -31,7 +31,7 @@ dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t
 where
 - **𝑣₀** represents the initial variance,
 - **𝜃** is the long-run variance,
-- **𝜌** is the correlation between the asset return and its volatility,
+- **𝜌** is the correlation between the log-price process and its volatility,
 - **𝜅** is the mean reversion of the variance to **𝜃**, and
 - **𝜂** is the volatility of the variance process.
   
