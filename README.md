@@ -10,13 +10,11 @@ An empirical approach based on market data
 
 # 1. Introduction
 
-The main scope of this paper is to devise a data generation method that can be reliably used to train machine learning algorithms in pricing options under stochastic volatility models. It has been demonstrated by Frey et al. (2022) that Single Layer and Deep Neural networks are able to accurately predict option prices given a large synthetic training dataset. 
+The main scope of this paper is to devise a data generation method that can be reliably used to train machine learning algorithms in pricing options under stochastic volatility models. It has been demonstrated by Frey et al. (2022) that Single Layer and Deep Neural networks are able to accurately predict vanilla option prices given a large synthetic training dataset. 
 
-The data generation method outlined below is an extension of Frey et al. (2022) with additional considerations regarding the feasibility of all feature combinations. The machine learning model specification is nearly identical to that of Frey et al. (2022) with minor exceptions including the use of relative absolute pricing error as a performance metric, as well as exploration of additional activation functions and solvers.
+The data generation method outlined below is an extension of Frey et al. (2022) with additional considerations regarding feasibility of all feature combinations. The machine learning model specification is nearly identical to that of Frey et al. (2022) with minor exceptions including the use of relative absolute pricing error as a performance metric, as well as exploration of additional activation functions and solvers.
 
-Following this result, it was considered whether SkLearn Neural Network models could be used to price exotic options such as barrier and Asian options. These options often require stochastic volatility models due to their path-dependent payoffs. Since exotic options lack closed-form solutions, they are computationally intensive to price, especially for a portfolio of derivatives.
-
-Thus, we aim to generalize a data generation routine in which a set of Heston model parameters is calibrated and used to price a variety of options based on historical spot prices and at-the-money volatilities for historical option data. To achieve this, we implement several approximations, introducing various assumptions and limitations.
+Following this result, it was considered whether SkLearn Neural Network models could be used to price exotic options such as barrier and Asian options. Exotic options often require stochastic volatility models due to their path-dependent payoffs. Thus, we aim to generalize a data generation routine for generic at-the-money volatilites which will allow us to train the model on a carefully curated dataset representing user defined market conditions.
 
 
 # 2. Model Specification
