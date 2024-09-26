@@ -25,11 +25,11 @@ class mlop:
         self.user_dataset = user_dataset
         self.random_state = 1312
         self.test_size = 0.01
-        self.max_iter = int(1e3)
-        self.hidden_layer_sizes = (100,100,100)
+        self.max_iter = int(1e4)
+        self.hidden_layer_sizes = (20,20,20)
         self.solver = [
-                    "lbfgs",
-                    # "sgd", 
+                    # "lbfgs",
+                    "sgd", 
                     # "adam"
                     ]
         
@@ -67,7 +67,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -79,9 +79,10 @@ class mlop:
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
-            ("scale1",StandardScaler(),self.numerical_features),
-            # ("scale2",QuantileTransformer(),self.numerical_features),
-            # ("encode", OrdinalEncoder(),self.categorical_features)
+            ("StandardScaler",StandardScaler(),self.numerical_features),
+            # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features)
+            ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 
         self.activation_function = self.activation_function[0]

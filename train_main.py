@@ -56,17 +56,17 @@ preprocessor = mlop.preprocess()
 single layer network
 """
 
-# model_name = "Single Layer Network"
-# print(model_name)
-# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+model_name = "Single Layer Network"
+print(model_name)
+model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-model_name = "Deep Neural Network"
-print(model_name)
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_name = "Deep Neural Network"
+# print(model_name)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest

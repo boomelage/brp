@@ -21,7 +21,6 @@ for file in csvs:
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 
-
 def compute_moneyness(df):
     df.loc[
         df['w'] == 'call', 
@@ -33,9 +32,23 @@ def compute_moneyness(df):
         ] = df['strike_price'] / df['spot_price'] - 1
     return df
 
+training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+
 training_data = compute_moneyness(training_data)
-training_data = training_data[abs(training_data['moneyness'])>=0.03].reset_index(drop=True)
+
+training_data = training_data[
+    (abs(training_data['moneyness'])>=0.02)&
+    (abs(training_data['moneyness'])<=0.1)
+    ].reset_index(drop=True)
+
+training_data = training_data[
+    (abs(training_data['days_to_maturity'])>=0)&
+    (abs(training_data['days_to_maturity'])<=3)
+    ].reset_index(drop=True)
+
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
+print(f"\n{training_data['w'].unique()}\n")
+print(f"\n{training_data['barrier_type_name'].unique()}\n")
 pd.reset_option("display.max_columns")
