@@ -14,7 +14,7 @@ The main scope of this paper is to devise a data generation method that can be r
 
 The data generation method proposed is an extension of that in Frey et al. (2022) with additional considerations regarding feasibility of all feature combinations. The machine learning model specification is nearly identical to that of Frey et al. (2022) with minor exceptions including the use of relative absolute pricing error as a performance metric, as well as exploration of additional parameterisation.
 
-Following this eniqury into the felixbility of this method, it was considered whether ScikitLearn Neural Network models could be used to price path-dependent exotic options. Thus, we aim to generalize a data generation routine utilising generic at-the-money (atm) volatilites which will allow us to train the model on data strictly adhering to desired market conditions while allowing for accurately calibrated stochastic volatility for each trading day simulated in part.
+Following this eniqury into the felixbility of this method, it was considered whether ScikitLearn Neural Network models could be used to price path-dependent exotic options. Thus, we aim to generalize a data generation routine utilising generic at-the-money volatilites which will allow us to train the model on data strictly adhering to desired market conditions while allowing for accurately calibrated stochastic volatility for each trading day simulated in part.
 
 
 # 2. Model Specification
