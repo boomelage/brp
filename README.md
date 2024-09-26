@@ -34,7 +34,7 @@ where
 - **𝑣₀** represents the initial variance,
 - **𝜃** is the long-run variance,
 - **𝜌** is the correlation between the asset price and its volatility,
-- **𝜅** is the mean reversion of the volatility to **𝜃**, and
+- **𝜅** is the mean reversion of the variance to **𝜃**, and
 - **𝜂** is the volatility of the volatility.
   
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
