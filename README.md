@@ -43,8 +43,10 @@ The model becomes suitable for fitting to our proposed method via approximation 
 ```
 
 # 3. References
-Derman, E. (2008). Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
+Derman, E. (2008). Lecture 9: Patterns of Volatility Change. Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
 
-Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. Available at: https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
+Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. 
+Available at: https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
 
-Heston, S. (1993). Available at: https://www.ma.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/Heston.pdf
+Heston, S. (1993). A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options 
+Available at: https://www.ma.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/Heston.pdf
