@@ -48,26 +48,26 @@ s = ms.s
 
 """
 # =============================================================================
-                    generating OTM call barrier options
 """
 
 title = 'barrier options'
 
 # T = ms.T
-T = [5,6,7]
+T = [4,5,6]
 
 n_strikes = 100
 
-down_k_spread = 0.1
-up_k_spread = 0.1
+down_k_spread = 0.5
+up_k_spread = 0.2
 
 
-n_barriers = 50
+n_barriers = 20
 barrier_spread = 0.005
 n_barrier_spreads = 5
 
 
 n_contracts = len(T)*n_barriers*n_strikes*1
+
 """
 # =============================================================================
                                 up options

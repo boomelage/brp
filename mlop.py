@@ -60,7 +60,8 @@ class mlop:
             
             'spot_price', 
             'strike_price', 
-            'days_to_maturity', 
+            'days_to_maturity',
+            'moneyness',
             
             ]
         
@@ -72,7 +73,7 @@ class mlop:
             
             # 'updown',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
@@ -80,7 +81,7 @@ class mlop:
         self.transformers = [
             ("scale1",StandardScaler(),self.numerical_features),
             # ("scale2",QuantileTransformer(),self.numerical_features),
-            ("encode", OrdinalEncoder(),self.categorical_features)
+            # ("encode", OrdinalEncoder(),self.categorical_features)
             ]   
 
         self.activation_function = self.activation_function[0]
@@ -191,12 +192,6 @@ class mlop:
 
     def test_model(self,test_X,test_y,model_fit):
         training_results = test_X.copy()
-        training_results.loc[
-            training_results['w'] == 'call', 'moneyness'
-            ] = training_results['spot_price'] / training_results['strike_price'] - 1
-        training_results.loc[
-            training_results['w'] == 'put', 'moneyness'
-            ] = training_results['strike_price'] / training_results['spot_price'] - 1
         training_results['target'] = test_y
         training_results['prediciton'] = model_fit.predict(test_X)
         training_results['abs_relative_error'] = abs(

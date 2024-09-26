@@ -9,7 +9,8 @@ import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
 from data_query import dirdatacsv
-
+from settings import model_settings
+ms = model_settings()
 csvs = dirdatacsv()
 
 training_data = pd.DataFrame()
@@ -18,21 +19,23 @@ for file in csvs:
     training_data = pd.concat([training_data,train_subset],ignore_index=True)
     
 training_data = training_data.drop(
-    columns=training_data.columns[0]).drop_duplicates().reset_index(drop=True)
+    columns=training_data.columns[0]).drop_duplicates()
 
-df = training_data
 
-def compute_moneyness_row(df):
-    df['moneyness'] = 0.00
-    for i, row in df.iterrows():
-        if row['w'] == 'call':
-            df.at[i,'moneyness'] = df.at[i,'spot_price']/df.at[i,'strike_price'] - 1
-        elif row['w'] == 'put':
-            df.at[i,'moneyness'] = df.at[i,'strike_price']/df.at[i,'spot_price'] - 1
-        else:
-            raise ValueError('put/call flag error')
+def compute_moneyness(df):
+    df.loc[
+        df['w'] == 'call', 
+        'moneyness'
+        ] = df['spot_price'] / df['strike_price'] - 1
+    df.loc[
+        df['w'] == 'put', 
+        'moneyness'
+        ] = df['strike_price'] / df['spot_price'] - 1
     return df
-    
-print(training_data)
 
-training_data.columns
+training_data = compute_moneyness(training_data)
+training_data = training_data[abs(training_data['moneyness'])>=0.03].reset_index(drop=True)
+
+pd.set_option("display.max_columns",None)
+print(f"\n{training_data.describe()}\n")
+pd.reset_option("display.max_columns")
