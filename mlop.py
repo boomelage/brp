@@ -26,7 +26,7 @@ class mlop:
         self.random_state = 1312
         self.test_size = 0.01
         self.max_iter = int(1e4)
-        self.hidden_layer_sizes = (20,20,20)
+        self.hidden_layer_sizes = (100,100,100)
         self.solver = [
                     # "lbfgs",
                     "sgd", 
@@ -73,16 +73,17 @@ class mlop:
             
             # 'updown',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             ("StandardScaler",StandardScaler(),self.numerical_features),
-            # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+            # ("RobustScaler",RobustScaler(),self.numerical_features),
             ]   
 
         self.activation_function = self.activation_function[0]

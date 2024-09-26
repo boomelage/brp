@@ -24,13 +24,22 @@ print(f"\n{train_start_tag}\n")
 # =============================================================================
                                 importing data
 """
+print('\nloading data...\n')
+"from generation"
 
-# from train_generation_barriers import training_data, title
+# from train_generation_barriers import training_data
+# title = 'Prediction errors for barrier options'
 
-# from train_generation_vanillas import training_data, title
+# from train_generation_vanillas import training_data
+# title = 'Prediction errors for Heston vanilla options'
 
-from train_data_barrier_collector import training_data
-title = 'barrier options'
+"from archive"
+
+# from train_data_barrier_collector import training_data
+# title = 'Prediction errors for barrier options'
+
+from train_data_vanilla_collector import training_data
+title = 'Prediction errors for Heston vanilla options'
 
 """
 # =============================================================================

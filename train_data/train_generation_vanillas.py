@@ -51,16 +51,16 @@ def generate_train_features(K,T,s,flag):
 """
 K = np.linspace(
     
-    s*0.9,
+    s*0.8,
     
-    s*1.1,
+    s*1.2,
     
-    5
+    2000
     )
 
 T = ms.T
 
-T = np.arange(min(T),max(T),1)
+T = np.arange(1,30,1)
 
 title = 'vanillas'
 

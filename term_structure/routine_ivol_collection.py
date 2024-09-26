@@ -109,11 +109,6 @@ def clean_raw_ts(raw_market_ts):
     raw_ts.columns = raw_ts.columns.astype(int)
     raw_ts.index = raw_ts.index.astype(int)
     
-    pd.set_option('display.max_rows',None)
-    pd.set_option('display.max_columns',None)
-    print(f'\nterm structure collected:\n\n{raw_ts}\n')
-    pd.reset_option('display.max_rows')
-    pd.reset_option('display.max_columns')
     os.chdir(parent_dir)
     return raw_ts
 

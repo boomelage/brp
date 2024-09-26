@@ -13,6 +13,7 @@ grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
 import pandas as pd
+import numpy as np
 from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
 os.chdir(current_dir)
@@ -33,6 +34,7 @@ training_data = training_data.drop(columns='sigma')
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 
+
 """
 maturities filter
 """
@@ -47,15 +49,12 @@ maturities filter
 type filter
 """
 
-
 # training_data[training_data.loc[:,'updown'] == 'Up']
 
 
 """"""
 training_data = compute_moneyness(training_data)
 """"""
-
-
 """
 moneyness filter
 """
@@ -67,6 +66,8 @@ moneyness filter
 
 
 """"""
+
+
 training_data = training_data[
     [ 'spot_price', 'strike_price', 'days_to_maturity', 'moneyness','barrier', 
       'outin', 'w', 'updown', 'barrier_type_name', 'theta', 'kappa', 'rho', 
@@ -77,11 +78,12 @@ training_data = training_data.loc[
     training_data['observed_price'] >= 0.05 * training_data['spot_price']
     ]
 
+T = np.sort(training_data['days_to_maturity'].unique())
+W = np.sort(training_data['barrier_type_name'].unique())
+S = np.sort(training_data['spot_price'].unique())
+K = np.sort(training_data['strike_price'].unique())
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
-print(f"\ntypes:\n{training_data['barrier_type_name'].unique()}\n")
-print(f"\nmaturities:\n{training_data['days_to_maturity'].unique()}\n")
-print(f"\nstrikes:\n{training_data['strike_price'].unique()}\n")
-print(f"\nspot(s):\n{training_data['spot_price'].unique()}\n")
+print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
 pd.reset_option("display.max_columns")
