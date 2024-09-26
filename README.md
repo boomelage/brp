@@ -40,6 +40,10 @@ The model becomes suitable for fitting to our proposed method via approximation 
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
 ```
 
+<br>
+
+![Alt text](plots/downout.png)
+
 # 3. References
 Derman, E. (2008). Lecture 9: Patterns of Volatility Change. Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
 
