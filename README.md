@@ -34,7 +34,7 @@ dv_t = \alpha (\beta - v_t) dt + \eta \sqrt{v_t} dW_t
 
 ```
 
-The model becomes suitable for historical testing via approximation of implied volatilties usint the method proposed by Derman (2008):
+The model becomes suitable for historical testing via approximation of implied volatilities as proposed by Derman (2008):
 ```math
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
 ```
