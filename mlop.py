@@ -67,7 +67,7 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
@@ -81,7 +81,7 @@ class mlop:
         self.transformers = [
             ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 

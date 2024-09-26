@@ -9,7 +9,9 @@ import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
+grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
+sys.path.append(grandparent_dir)
 import pandas as pd
 from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
@@ -23,24 +25,57 @@ training_data = pd.DataFrame()
 for file in csvs:
     train_subset = pd.read_csv(file)
     training_data = pd.concat([training_data,train_subset],ignore_index=True)
-    
+
+training_data['eta'] = training_data['eta'].combine_first(training_data['sigma'])
+training_data = training_data.drop(columns='sigma')
+
+
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 
+"""
+maturities filter
+"""
 
-training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+# training_data = training_data[
+#     (abs(training_data['days_to_maturity'])>=0)&
+#     (abs(training_data['days_to_maturity'])<=99999)
+#     ].reset_index(drop=True)
 
+
+"""
+type filter
+"""
+
+
+# training_data[training_data.loc[:,'updown'] == 'Up']
+
+
+""""""
 training_data = compute_moneyness(training_data)
+""""""
 
-training_data = training_data[
-    (abs(training_data['moneyness'])>=0.02)&
-    (abs(training_data['moneyness'])<=0.1)
-    ].reset_index(drop=True)
 
+"""
+moneyness filter
+"""
+
+# training_data = training_data[
+#     (abs(training_data['moneyness'])>=0.05)&
+#     (abs(training_data['moneyness'])<=0.1)
+#     ].reset_index(drop=True)
+
+
+""""""
 training_data = training_data[
-    (abs(training_data['days_to_maturity'])>=0)&
-    (abs(training_data['days_to_maturity'])<=3)
-    ].reset_index(drop=True)
+    [ 'spot_price', 'strike_price', 'days_to_maturity', 'moneyness','barrier', 
+      'outin', 'w', 'updown', 'barrier_type_name', 'theta', 'kappa', 'rho', 
+      'eta','v0', 'barrier_price', 'observed_price' ]
+    ]
+
+training_data = training_data.loc[
+    training_data['observed_price'] >= 0.05 * training_data['spot_price']
+    ]
 
 
 pd.set_option("display.max_columns",None)

@@ -52,15 +52,15 @@ s = ms.s
 title = 'barrier options'
 
 # T = ms.T
-T = [4,5,6]
+T = [1,2,3]
 
-n_strikes = 5
+n_strikes = 30
 
-down_k_spread = 0.5
-up_k_spread = 0.2
+down_k_spread = 0.20
+up_k_spread = 0.20
 
 
-n_barriers = 2
+n_barriers = n_strikes
 barrier_spread = 0.005
 n_barrier_spreads = 5
 
@@ -125,6 +125,7 @@ for i, row in initial_up_features.iterrows():
         [strike_wise_in, strike_wise_out],
         ignore_index=True)
     
+    
     up_features = pd.concat(
         [up_features, strike_wise],
         ignore_index=True
@@ -137,69 +138,69 @@ up_bar.close()
                                 down options
 """
 
-down_K = np.linspace(
-    s*(1-down_k_spread),
-    s,
-    n_strikes
-    )
-initial_down_features = generate_features(down_K,T,s)
-down_features = pd.DataFrame()
-down_bar = tqdm(
-    desc="generatingDowns",
-    total=initial_down_features.shape[0],
-    unit='sets',
-    leave=True)
-for i, row in initial_down_features.iterrows():
+# down_K = np.linspace(
+#     s*(1-down_k_spread),
+#     s,
+#     n_strikes
+#     )
+# initial_down_features = generate_features(down_K,T,s)
+# down_features = pd.DataFrame()
+# down_bar = tqdm(
+#     desc="generatingDowns",
+#     total=initial_down_features.shape[0],
+#     unit='sets',
+#     leave=True)
+# for i, row in initial_down_features.iterrows():
     
-    s = row['spot_price']
-    k = row['strike_price']
-    t = row['days_to_maturity']
+#     s = row['spot_price']
+#     k = row['strike_price']
+#     t = row['days_to_maturity']
     
-    col_names = [
-        'spot_price', 'strike_price', 'days_to_maturity','barrier','outin','w']
-    strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
+#     col_names = [
+#         'spot_price', 'strike_price', 'days_to_maturity','barrier','outin','w']
+#     strike_wise_np = np.zeros((n_barriers,len(col_names)),dtype=float)
     
-    strike_wise_out = pd.DataFrame(strike_wise_np).copy()
-    strike_wise_out.columns = col_names
-    strike_wise_out['strike_price'] = k
-    strike_wise_out['spot_price'] = s
-    strike_wise_out['days_to_maturity'] = t
-    strike_wise_out['w'] = 'put'
-    strike_wise_out['updown'] = 'Down'
-    strike_wise_out['outin'] = 'Out'
+#     strike_wise_out = pd.DataFrame(strike_wise_np).copy()
+#     strike_wise_out.columns = col_names
+#     strike_wise_out['strike_price'] = k
+#     strike_wise_out['spot_price'] = s
+#     strike_wise_out['days_to_maturity'] = t
+#     strike_wise_out['w'] = 'put'
+#     strike_wise_out['updown'] = 'Down'
+#     strike_wise_out['outin'] = 'Out'
     
-    # strike_wise_in = pd.DataFrame(strike_wise_np).copy()
-    # strike_wise_in.columns = col_names
-    # strike_wise_in['strike_price'] = k
-    # strike_wise_in['spot_price'] = s
-    # strike_wise_in['days_to_maturity'] = t
-    # strike_wise_in['w'] = 'put'
-    # strike_wise_in['updown'] = 'Down'
-    # strike_wise_in['outin'] = 'In'
+#     # strike_wise_in = pd.DataFrame(strike_wise_np).copy()
+#     # strike_wise_in.columns = col_names
+#     # strike_wise_in['strike_price'] = k
+#     # strike_wise_in['spot_price'] = s
+#     # strike_wise_in['days_to_maturity'] = t
+#     # strike_wise_in['w'] = 'put'
+#     # strike_wise_in['updown'] = 'Down'
+#     # strike_wise_in['outin'] = 'In'
     
-    barriers = np.linspace(
-        k*(1-n_barrier_spreads*barrier_spread),
-        k*(1-barrier_spread),
-        n_barriers
-        )
+#     barriers = np.linspace(
+#         k*(1-n_barrier_spreads*barrier_spread),
+#         k*(1-barrier_spread),
+#         n_barriers
+#         )
     
-    # strike_wise_in['barrier'] = barriers
+#     # strike_wise_in['barrier'] = barriers
     
-    strike_wise_out['barrier'] = barriers
-    strike_wise = strike_wise_out
+#     strike_wise_out['barrier'] = barriers
+#     strike_wise = strike_wise_out
     
-    # strike_wise = pd.concat(
-    #     [strike_wise_in, strike_wise_out],
-    #     ignore_index=True)
+#     # strike_wise = pd.concat(
+#     #     [strike_wise_in, strike_wise_out],
+#     #     ignore_index=True)
     
-    down_features = pd.concat(
-        [down_features, strike_wise],
-        ignore_index=True
-        )
+#     down_features = pd.concat(
+#         [down_features, strike_wise],
+#         ignore_index=True
+#         )
     
-    down_bar.update(1)
+#     down_bar.update(1)
     
-down_bar.close()
+# down_bar.close()
     
 """  
 # =============================================================================
@@ -209,7 +210,7 @@ down_bar.close()
 #     [up_features,down_features],
 #     ignore_index=True)
 
-features = down_features
+features = up_features
 features['barrier_type_name'] = features['updown'] + features['outin'] 
 features['eta'] = heston_parameters['eta'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
@@ -261,6 +262,7 @@ training_data = ms.noisyfier(training_data)
 
 pd.set_option("display.max_columns",None)
 print(f'\n{training_data}\n')
+print(f'\n{training_data.describe()}\n')
 pd.reset_option("display.max_columns")
 
 file_time = datetime.fromtimestamp(time.time())

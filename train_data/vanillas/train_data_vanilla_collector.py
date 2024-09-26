@@ -23,20 +23,60 @@ for file in csvs:
     train_subset = pd.read_csv(file)
     training_data = pd.concat([training_data,train_subset],ignore_index=True)
     
+training_data['eta'] = training_data['eta'].combine_first(training_data['sigma'])
+training_data = training_data.drop(columns='sigma')
+
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 
-training_data = compute_moneyness(training_data)
-
-training_data = training_data[
-    (abs(training_data['moneyness'])>=0.00)&
-    (abs(training_data['moneyness'])<=0.15)
-    ].reset_index(drop=True)
+"""
+maturities filter
+"""
 
 # training_data = training_data[
 #     (abs(training_data['days_to_maturity'])>=0)&
-#     (abs(training_data['days_to_maturity'])<=3)
+#     (abs(training_data['days_to_maturity'])<=99999)
 #     ].reset_index(drop=True)
+
+
+"""
+type filter
+"""
+
+
+# training_data[training_data.loc[:,'w'] == 'Put']
+
+
+""""""
+training_data = compute_moneyness(training_data)
+""""""
+
+"""
+moneyness filter
+"""
+
+# training_data = training_data[
+#     (abs(training_data['moneyness'])>=0.05)&
+#     (abs(training_data['moneyness'])<=0.1)
+#     ].reset_index(drop=True)
+
+
+""""""
+training_data = training_data[
+    [ 
+     'spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 
+     'w', 'theta', 'kappa', 'rho', 'eta','v0', 
+     'heston_price', 'observed_price' 
+     ]
+    ]
+
+training_data = training_data.loc[
+    training_data['observed_price'] >= 0.05 * training_data['spot_price']
+    ]
+
+
+
+
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
