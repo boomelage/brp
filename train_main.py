@@ -25,24 +25,12 @@ print(f"\n{train_start_tag}\n")
                                 importing data
 """
 
-from train_generation_barriers import training_data#, title
+from train_generation_barriers import training_data, title
 
 # from train_generation_vanillas import training_data, title
 
-# import pandas as pd
-# file = csvs[0]
-# training_data = pd.read_csv(file)
-# training_data = training_data.drop(columns=training_data.columns[0])
-# title = f'{file}'
-
-
-updown = 'Down'
-outin = 'Out '
-# training_data = training_data[training_data['updown']==updown]
-# training_data = training_data[training_data['outin']==outin[:-1]]
-
-title = f'{updown}{outin} barrier options'
-
+# from train_data_collector import training_data
+# title = 'barrier_options'
 
 """
 # =============================================================================

@@ -236,7 +236,8 @@ class model_settings():
         spotHandle = ql.QuoteHandle(ql.SimpleQuote(s))
         
         hestonProcess = ql.HestonProcess(
-            flat_ts, dividend_ts, spotHandle, v0, kappa, theta, sigma, rho)
+            flat_ts, dividend_ts, spotHandle, 
+            v0, kappa, theta, sigma, rho)
         
         hestonModel = ql.HestonModel(hestonProcess)
         engine = ql.FdHestonBarrierEngine(hestonModel)
