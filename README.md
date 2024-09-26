@@ -31,7 +31,7 @@ dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t
 where
 - **𝑣₀** represents the initial variance,
 - **𝜃** is the long-run variance,
-- **𝜌** is the correlation between the asset price and its volatility,
+- **𝜌** is the correlation between the asset return and its volatility,
 - **𝜅** is the mean reversion of the variance to **𝜃**, and
 - **𝜂** is the volatility of the variance process.
   
