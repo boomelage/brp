@@ -21,17 +21,22 @@ Following this result, it was considered whether ScikitLearn Neural Network mode
 
 ## Pricing model
 
-To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by the following pair of stochastic differential equations:
+To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by pair of stochastic differential equations:
 
 ```math
-dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right)
+dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
 ```
 
 ```math
-dv_t = \alpha (\beta - v_t) dt + \eta \sqrt{v_t} dW_t
-
+dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t
 ```
-
+where
+- **𝑣₀** represents the initial variance,
+- **𝜃** is the long-run variance,
+- **𝜌** is the correlation between the asset price and its volatility,
+- **𝜅** is the mean reversion of the volatility to **𝜃**, and
+- **𝜂** is the volatility of the volatility.
+  
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
 ```math
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
