@@ -1,5 +1,3 @@
-
-
 **Machine Learning Option Pricing:**  
 An empirical approach based on market data
 
@@ -41,7 +39,7 @@ Derman's approximation of implied volatilites:
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
 ```
 
-## 3. References
+# 3. References
 Derman, E. (2008). Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
 
 Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. Available at: https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
