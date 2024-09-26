@@ -19,7 +19,7 @@ Following this result, it was considered whether ScikitLearn Neural Network mode
 
 # 2. Model Specification
 
-To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by pair of stochastic differential equations:
+To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by the pair of stochastic differential equations:
 
 ```math
 dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
