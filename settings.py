@@ -16,7 +16,7 @@ import pandas as pd
 from scipy.stats import norm
 from bicubic_interpolation import make_bicubic_functional
 from derman_test import derman_coefs
-from data_query import dirdatacsv, dirdata
+# from data_query import dirdatacsv, dirdata
 
 
 class model_settings():
@@ -26,8 +26,8 @@ class model_settings():
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
-        self.csvs               =    dirdatacsv()
-        self.xlsxs              =    dirdata()
+        # self.csvs               =    dirdatacsv()
+        # self.xlsxs              =    dirdata()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
         ql.Settings.instance().evaluationDate = self.calculation_date
@@ -151,11 +151,19 @@ class model_settings():
     def black_scholes_price(self,s,k,t,r,volatility,w): 
         if w == 'call':
             w = 1
-        else:
+        elif w == 'put':
             w = -1
-        d1 = (np.log(s/k)+(r+volatility**2/2)*t/365)/(volatility*np.sqrt(t/365))
+        else:
+            raise KeyError('simple black scholes put/call flag error')
+        d1 = (
+            np.log(s/k)+(r+volatility**2/2)*t/365
+            )/(
+                volatility*np.sqrt(t/365)
+                )
         d2 = d1-volatility*np.sqrt(t/365)
+        
         price = w*(s*norm.cdf(w*d1)-k*np.exp(-r*t/365)*norm.cdf(w*d2))
+        
         return price
     
     def ql_black_scholes(self,
@@ -168,7 +176,7 @@ class model_settings():
         elif w == 'put':
             option_type = ql.Option.Put
         else:
-            raise ValueError("flag error")
+            raise KeyError("quantlib black scholes flag error")
         
         expiration_date = calculation_date + ql.Period(t,ql.Days)
         flat_ts = self.make_ts_object(r)
@@ -199,9 +207,16 @@ class model_settings():
     
     def ql_heston_price(self,
             s,k,t,r,g,w,
-            v0,kappa,theta,sigma,rho,
+            v0,kappa,theta,eta,rho,
             calculation_date):
-        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+        # option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+        
+        if w == 'call':
+            option_type = ql.Option.Call
+        elif w == 'put':
+            option_type = ql.Option.Put
+        else:
+            raise KeyError('quantlib heston put/call error')
         
         date = calculation_date + ql.Period(t,ql.Days)
 
@@ -218,7 +233,7 @@ class model_settings():
             
             ql.QuoteHandle(ql.SimpleQuote(s)), 
             
-            v0, kappa, theta, sigma, rho)
+            v0, kappa, theta, eta, rho)
         
         heston_model = ql.HestonModel(heston_process)
         
@@ -233,7 +248,7 @@ class model_settings():
     def ql_barrier_price(self,
             s,k,t,r,g,calculation_date,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, sigma, rho):
+            v0, kappa, theta, eta, rho):
         
         flat_ts = self.make_ts_object(r)
         dividend_ts = self.make_ts_object(g)
@@ -242,7 +257,7 @@ class model_settings():
         
         hestonProcess = ql.HestonProcess(
             flat_ts, dividend_ts, spotHandle, 
-            v0, kappa, theta, sigma, rho)
+            v0, kappa, theta, eta, rho)
         
         hestonModel = ql.HestonModel(hestonProcess)
         engine = ql.FdHestonBarrierEngine(hestonModel)
@@ -256,18 +271,31 @@ class model_settings():
         elif barrier_type_name == 'DownIn':
             barrierType = ql.Barrier.DownIn
         else:
-            raise ValueError('barrier flag error')
+            raise KeyError('barrier flag error')
             
         expiration_date = calculation_date + ql.Period(int(t), ql.Days)
         exercise = ql.EuropeanExercise(expiration_date)
         payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
         
-        barrierOption = ql.BarrierOption(barrierType, barrier, rebate, payoff, exercise)
+        barrierOption = ql.BarrierOption(
+            barrierType, barrier, rebate, payoff, exercise)
         barrierOption.setPricingEngine(engine)
         barrier_price = barrierOption.NPV()
         
         return barrier_price
     
-    """
-    ===========================================================================
-    """
+"""
+# =============================================================================
+                    auxilliary functions
+"""
+    
+def compute_moneyness(df):
+    df.loc[
+        df['w'] == 'call', 
+        'moneyness'
+        ] = df['spot_price'] / df['strike_price'] - 1
+    df.loc[
+        df['w'] == 'put', 
+        'moneyness'
+        ] = df['strike_price'] / df['spot_price'] - 1
+    return df

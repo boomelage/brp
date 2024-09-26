@@ -4,14 +4,9 @@ Created on Tue Sep 17 17:13:18 2024
 
 """
 import os
-import sys
 import time
 from datetime import datetime
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('term_structure')
-sys.path.append('contract_details')
-sys.path.append('misc')
-sys.path.append('historical_data')
 from mlop import mlop
 from data_query import dirdatacsv
 csvs = dirdatacsv()

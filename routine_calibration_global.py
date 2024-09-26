@@ -35,7 +35,7 @@ def calibrate_heston(calibration_dataset,
         
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
 
-    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; sigma = 0.5; 
+    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; eta = 0.5; 
     process = ql.HestonProcess(
         flat_ts,                
         dividend_ts,            
@@ -43,7 +43,7 @@ def calibrate_heston(calibration_dataset,
         v0,                # Initial volatility
         kappa,             # Mean reversion speed
         theta,             # Long-run variance (volatility squared)
-        sigma,             # Volatility of the volatility
+        eta,             # Volatility of the volatility
         rho                # Correlation between asset and volatility
     )
 
@@ -74,7 +74,7 @@ def calibrate_heston(calibration_dataset,
     model.calibrate(heston_helpers, lm,
                       ql.EndCriteria(1000, 50, 1.0e-8,1.0e-8, 1.0e-8))
     
-    theta, kappa, sigma, rho, v0 = model.params()
+    theta, kappa, eta, rho, v0 = model.params()
     
     perfcols = ['market','model','relative_error']
     performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
@@ -92,7 +92,7 @@ def calibrate_heston(calibration_dataset,
             performance_df.loc[i,'relative_error'])
         )*100/performance_df.shape[0]
     
-    param_names = ['spot','theta', 'rho', 'kappa', 'sigma', 'v0', 'avg']
+    param_names = ['spot','theta', 'rho', 'kappa', 'eta', 'v0', 'avg']
     
     heston_parameters_np = np.zeros((1,len(param_names)),dtype=float)
     heston_parameters = pd.DataFrame(heston_parameters_np)
@@ -102,7 +102,7 @@ def calibrate_heston(calibration_dataset,
     heston_parameters['theta'] = theta
     heston_parameters['rho'] = rho
     heston_parameters['kappa'] = kappa
-    heston_parameters['sigma'] = sigma
+    heston_parameters['eta'] = eta
     heston_parameters['v0'] = v0
     heston_parameters['avg'] = avg
     heston_parameters = heston_parameters.set_index('spot',drop=True)

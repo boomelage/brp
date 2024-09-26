@@ -6,12 +6,18 @@ Created on Thu Sep 26 01:57:11 2024
 """
 
 import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
 import pandas as pd
 from data_query import dirdatacsv
-from settings import model_settings
+from settings import model_settings, compute_moneyness
+os.chdir(current_dir)
+
 ms = model_settings()
 csvs = dirdatacsv()
+
 
 training_data = pd.DataFrame()
 for file in csvs:
@@ -21,16 +27,6 @@ for file in csvs:
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 
-def compute_moneyness(df):
-    df.loc[
-        df['w'] == 'call', 
-        'moneyness'
-        ] = df['spot_price'] / df['strike_price'] - 1
-    df.loc[
-        df['w'] == 'put', 
-        'moneyness'
-        ] = df['strike_price'] / df['spot_price'] - 1
-    return df
 
 training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
@@ -49,6 +45,8 @@ training_data = training_data[
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
-print(f"\n{training_data['w'].unique()}\n")
-print(f"\n{training_data['barrier_type_name'].unique()}\n")
+print(f"\ntypes:\n{training_data['barrier_type_name'].unique()}\n")
+print(f"\nmaturities:\n{training_data['days_to_maturity'].unique()}\n")
+print(f"\nstrikes:\n{training_data['strike_price'].unique()}\n")
+print(f"\nspot(s):\n{training_data['spot_price'].unique()}\n")
 pd.reset_option("display.max_columns")

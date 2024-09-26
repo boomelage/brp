@@ -7,27 +7,26 @@ Created on Tue Sep 10 17:55:16 2024
 
 import os
 import sys
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('term_structure')
-sys.path.append('contract_details')
-sys.path.append('misc')
-import QuantLib as ql
+from tqdm import tqdm
 import numpy as np
-from settings import model_settings
 import pandas as pd
 import time
 from datetime import datetime
-pd.set_option("display.max_columns",None)
-pd.reset_option("display.max_rows")
-ms = model_settings()
-from tqdm import tqdm
+from itertools import product
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+from settings import model_settings
 from routine_calibration_testing import heston_parameters
+
+ms = model_settings()
 calculation_date = ms.calculation_date
 day_count = ms.day_count
 
+os.chdir(current_dir)
 
-import pandas as pd
-from itertools import product
 def generate_features(K,T,s):
     features = pd.DataFrame(
         product(
@@ -55,13 +54,13 @@ title = 'barrier options'
 # T = ms.T
 T = [4,5,6]
 
-n_strikes = 100
+n_strikes = 5
 
 down_k_spread = 0.5
 up_k_spread = 0.2
 
 
-n_barriers = 20
+n_barriers = 2
 barrier_spread = 0.005
 n_barrier_spreads = 5
 
@@ -212,7 +211,7 @@ down_bar.close()
 
 features = down_features
 features['barrier_type_name'] = features['updown'] + features['outin'] 
-features['sigma'] = heston_parameters['sigma'].iloc[0]
+features['eta'] = heston_parameters['eta'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
@@ -241,13 +240,13 @@ for i, row in features.iterrows():
     v0 = heston_parameters['v0'].iloc[0]
     kappa = heston_parameters['kappa'].iloc[0] 
     theta = heston_parameters['theta'].iloc[0] 
-    sigma = heston_parameters['sigma'].iloc[0] 
+    eta = heston_parameters['eta'].iloc[0] 
     rho = heston_parameters['rho'].iloc[0]
     
     barrier_price = ms.ql_barrier_price(
             s,k,t,r,g,calculation_date,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, sigma, rho)
+            v0, kappa, theta, eta, rho)
     
     features.at[i,'barrier_price'] = barrier_price
     
@@ -266,4 +265,4 @@ pd.reset_option("display.max_columns")
 
 file_time = datetime.fromtimestamp(time.time())
 file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
-training_data.to_csv(f'barriers {file_tag}.csv')
+training_data.to_csv(os.path.join('barriers',f'barriers {file_tag}.csv'))

@@ -36,7 +36,7 @@ heston_parameters, performance_df = calibrate_heston(
 test_features = calibration_dataset.copy()
 test_features['dividend_rate'] = 0.02
 test_features['risk_free_rate'] = 0.04
-test_features['sigma'] = heston_parameters['sigma'].iloc[0]
+test_features['eta'] = heston_parameters['eta'].iloc[0]
 test_features['theta'] = heston_parameters['theta'].iloc[0]
 test_features['kappa'] = heston_parameters['kappa'].iloc[0]
 test_features['rho'] = heston_parameters['rho'].iloc[0]
@@ -77,12 +77,12 @@ for i, row in test_features.iterrows():
     v0 = row['v0']
     kappa = row['kappa']
     theta = row['theta']
-    sigma = row['sigma']
+    eta = row['eta']
     rho = row['rho']
     
     h_price = ms.ql_heston_price(
             s,k,t,r,g,w,
-            v0,kappa,theta,sigma,rho,
+            v0,kappa,theta,eta,rho,
             calculation_date)
     test_features.at[i,'ql_heston_price'] = h_price
 

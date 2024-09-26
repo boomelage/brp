@@ -7,24 +7,26 @@ Created on Tue Sep 17 15:46:57 2024
 
 import os
 import sys
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('term_structure')
-sys.path.append('contract_details')
-sys.path.append('misc')
+from tqdm import tqdm
+import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
 from itertools import product
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from settings import model_settings
-from tqdm import tqdm
-import numpy as np
-import QuantLib as ql
 from routine_calibration_testing import heston_parameters
 
-
 ms = model_settings()
-s = ms.s
+calculation_date = ms.calculation_date
+day_count = ms.day_count
 
+os.chdir(current_dir)
+s = ms.s
 
 def generate_train_features(K,T,s,flag):
     features = pd.DataFrame(
@@ -47,7 +49,14 @@ def generate_train_features(K,T,s,flag):
 #                       generating training dataset
                 
 """
-K = np.linspace(s*0.1,s*0.9,2000)
+K = np.linspace(
+    
+    s*0.9,
+    
+    s*1.1,
+    
+    5
+    )
 
 T = ms.T
 
@@ -66,50 +75,36 @@ features = generate_train_features(K, T, s, flags)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
-features['sigma'] = heston_parameters['sigma'].iloc[0]
+features['eta'] = heston_parameters['eta'].iloc[0]
 features['theta'] = heston_parameters['theta'].iloc[0]
 features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
-features['heston_price'] = 0.00
+
 progress_bar = tqdm(desc="pricing",total=features.shape[0],unit= "contracts")
 
+features['heston_price'] = 0.00
 for i, row in features.iterrows():
+    
     s = row['spot_price']
     k = row['strike_price']
-    t = int(row['days_to_maturity'])
+    t = row['days_to_maturity']
     r = row['risk_free_rate']
     g = row['dividend_rate']
+    
     v0 = row['v0']
     kappa = row['kappa']
     theta = row['theta']
-    sigma = row['sigma']
+    eta = row['eta']
     rho = row['rho']
     w = row['w']
     
-    date = ms.calculation_date + ql.Period(t,ql.Days)
-    option_type = ql.Option.Call if w == 'call' else ql.Option.Put
+    h_price = ms.ql_heston_price(s,k,t,r,g,w,
+                                 v0,kappa,theta,eta,rho,
+                                 ms.calculation_date)
+    features.at[i,'heston_price'] = h_price
     
-    payoff = ql.PlainVanillaPayoff(option_type, k)
-    exercise = ql.EuropeanExercise(date)
-    european_option = ql.VanillaOption(payoff, exercise)
-    flat_ts = ms.make_ts_object(r)
-    dividend_ts = ms.make_ts_object(g)
-    
-    heston_process = ql.HestonProcess(
-        flat_ts,dividend_ts, 
-        ql.QuoteHandle(ql.SimpleQuote(s)), 
-        v0, kappa, theta, sigma, rho)
-    
-    heston_model = ql.HestonModel(heston_process)
-    
-    engine = ql.AnalyticHestonEngine(heston_model)
-    
-    european_option.setPricingEngine(engine)
-    
-    h_price = european_option.NPV()
     progress_bar.update(1)
-    features.at[i, 'heston_price'] = h_price
 
 progress_bar.close()
 
@@ -125,4 +120,4 @@ pd.reset_option("display.max_rows")
 pd.reset_option("display.max_columns")
 file_time = datetime.fromtimestamp(time.time())
 file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
-training_data.to_csv(f'{title} {file_tag}.csv')
+training_data.to_csv(os.path.join('vanillas',f'vanillas {file_tag}.csv'))
