@@ -85,14 +85,12 @@ computing Derman coefficients
 """
 def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
     
-    derman_coefs_np = np.zeros(len(T),dtype=float)
-    derman_coefs = pd.DataFrame(derman_coefs_np)
-    derman_coefs.index = T
-    
+    derman_coefs = pd.Series(np.zeros(len(T),dtype=float),index=T)
     for t in T:
         try:
             t = int(t)
-            term_struct = raw_ts.loc[:,t].dropna()
+            term_struct = raw_ts.loc[:,t].copy()
+            term_struct = term_struct.replace(0,np.nan).dropna()
             
             K_reg = term_struct.index
             x = np.array(K_reg  - s, dtype=float)
@@ -102,15 +100,15 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
             x = x.reshape(-1,1)
             model.fit(x,y)
             b = model.coef_[0]
-    
-            derman_coefs.loc[t] = b
+            derman_coefs[t] = b
+        
         except Exception:
-            print(f'error: t = {t}')
+            print(f'Derman error: t = {t}')
     return derman_coefs
 
 
-derman_coefs = compute_derman_coefficients(s, T, raw_call_K, call_atmvols, raw_calls)
-
+derman_coefs = compute_derman_coefficients(
+    s, T, raw_call_K, call_atmvols, raw_calls)
 
 
 """
@@ -118,19 +116,20 @@ surface maker
 
 """
 
+
 T = derman_coefs.index
 derman_ts = pd.DataFrame(np.zeros((len(raw_call_K),len(T)),dtype=float))
 derman_ts.index = raw_call_K
 derman_ts.columns = T
 
-for i, k in enumerate(raw_call_K):
-    moneyness = k-s
-    for j, t in enumerate(T):
-        derman_ts.loc[k,t] = (
-            np.array(call_atmvols,dtype=float)[j] + \
-            np.array(derman_coefs)[j] * moneyness
-        )
-    derman_ts = derman_ts[~(derman_ts<0)].dropna(how="any",axis=0)
+
+for k in raw_call_K:
+    for t in T:
+        moneyness = k-s
+        derman_ts.loc[k,t] = call_atmvols[t] + derman_coefs[t]*moneyness
+        
+        
+        
 
 
 """
@@ -138,22 +137,17 @@ testing approximation fit
 """
 
 
-# derman_test_ts = derman_ts
-# real_test_ts = raw_calls
-
-# for t in T: 
-#     actual_data = real_test_ts.loc[:,t].dropna()
-#     plot_K = actual_data.index
-#     derman_fit = derman_test_ts.loc[plot_K,t]
-#     plt.rcParams['figure.figsize']=(6,4)
-#     # K = K.astype(int)
-#     fig, ax = plt.subplots()
-#     ax.plot(raw_call_K, derman_ts)
-#     ax.plot(raw_call_K, raw_calls, "o")
-#     ax.set_title("Derman approximation of implied volatility surface")
-#     plt.show()
-#     plt.cla()
-#     plt.clf()
+for t in T: 
+    actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
+    derman_fit = derman_ts.loc[actual_data.index,t]
+    plt.rcParams['figure.figsize']=(6,4)
+    fig, ax = plt.subplots()
     
-
-derman_coefs
+    ax.plot(actual_data.index, derman_fit)
+    ax.plot(actual_data.index, actual_data, "o")
+    
+    ax.set_title("Derman approximation of implied volatility surface")
+    
+    plt.show()
+    plt.cla()
+    plt.clf()

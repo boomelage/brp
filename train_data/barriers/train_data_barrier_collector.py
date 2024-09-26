@@ -46,7 +46,7 @@ training_data = training_data[
 type filter
 """
 
-training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+# training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
 
 """"""
@@ -73,7 +73,7 @@ training_data = training_data[
     ]
 
 training_data = training_data.loc[
-    training_data['observed_price'] >= 0.05 * training_data['spot_price']
+    training_data['observed_price'] >= 0.0001 * training_data['spot_price']
     ]
 
 T = np.sort(training_data['days_to_maturity'].unique())

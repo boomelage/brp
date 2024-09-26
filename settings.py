@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 from bicubic_interpolation import make_bicubic_functional
-from derman_test import derman_coefs
+from derman_test import derman_coefs, raw_call_K, call_atmvols
 
 
 class model_settings():
@@ -77,13 +77,14 @@ class model_settings():
         
         self.derman_ts.columns = self.T
             
-        for i, k in enumerate(self.surf_K):
+        for k in self.surf_K:
             moneyness = k-self.s
-            for j, t in enumerate(self.T):
+            for t in self.T:
                 self.derman_ts.loc[k,t] = (
                     self.atm_vols.loc[t,0] + \
-                    self.derman_coefs.loc[t,0] * moneyness
+                    self.derman_coefs[t] * moneyness 
                 )
+                
         self.derman_ts = self.derman_ts.dropna(how="any",axis=0)
         self.derman_ts = self.derman_ts.dropna(how="any",axis=1)
         
@@ -311,3 +312,8 @@ def compute_moneyness(df):
         pass
     
     return df
+
+
+
+
+

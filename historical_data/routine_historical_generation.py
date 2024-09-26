@@ -13,17 +13,14 @@ sys.path.append(os.path.join('term_structure',parent_dir))
 import pandas as pd
 import numpy as np
 import QuantLib as ql
-import time
-from datetime import datetime
 from itertools import product
 from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
-from routine_calibration_testing import test_heston_calibration
-from pricing import noisyfier
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
 from routine_historical_collection import collect_historical_data
+from train_generation_historical_barriers import generate_historical_barriers
 
 def generate_features(K,T,s):
     features = pd.DataFrame(
@@ -65,7 +62,7 @@ for i, row in historical_data.iterrows():
           ],dtype=object)
     
     T = expiry_dates - calculation_date
-    
+    g = row['dividend_rate']
     """
     calibration dataset construction
     """
@@ -88,7 +85,6 @@ for i, row in historical_data.iterrows():
         ms.derman_ts.index.tolist(), 
         ms.derman_ts.columns.tolist())
     
-    
     calibration_dataset = generate_features(
         K, T, s)
 
@@ -96,96 +92,23 @@ for i, row in historical_data.iterrows():
         bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
     calibration_dataset = calibration_dataset.copy()
     calibration_dataset['risk_free_rate'] = 0.04
-    calibration_dataset['dividend_rate'] = row['dividend_rate']
+    calibration_dataset['dividend_rate'] = g
     
     heston_parameters, performance_df = calibrate_heston(
         calibration_dataset, s, calculation_date)
     
-    error_df = test_heston_calibration(
-        calibration_dataset,heston_parameters,performance_df,s)
-    """
-    train data generation
-    """
-    n_hist_spreads = 5
-    historical_spread = 0.005
-    n_strikes = 5
-    K = np.linspace(
-        s*(1 - n_hist_spreads * historical_spread),
-        s*(1 + n_hist_spreads * historical_spread),
-        n_strikes)
+    """"""
     
-    features = pd.DataFrame(
-        product(
-            [float(s)],
-            K,
-            T,
-            ['call','put']
-            ),
-        columns=[
-            "spot_price", 
-            "strike_price",
-            "days_to_maturity",
-            "w"
-                  ])
     
-    features['sigma'] = heston_parameters['sigma'].iloc[0]
-    features['theta'] = heston_parameters['theta'].iloc[0]
-    features['kappa'] = heston_parameters['kappa'].iloc[0]
-    features['rho'] = heston_parameters['rho'].iloc[0]
-    features['v0'] = heston_parameters['v0'].iloc[0]
-    features['risk_free_rate'] = 0.00
-    features['dividend_rate'] = row['dividend_rate']
-    features['days_to_maturity'] = features['days_to_maturity'].astype(int)
+    # training_data_subset = generate_historical_barriers(
+    #     s, calculation_date, g, heston_parameters)
     
-    """
-    group by t and then price to only initialise the heston process once per
-    maturity per day
-    """
+    # print(training_data_subset['barrier_price'].unique())
     
-    for i, row in features.iterrows():
-        s = row['spot_price']
-        k = row['strike_price']
-        t = int(row['days_to_maturity'])
-        r = row['risk_free_rate']
-        g = row['dividend_rate']
-        v0 = row['v0']
-        kappa = row['kappa']
-        theta = row['theta']
-        sigma = row['sigma']
-        rho = row['rho']
-        w = row['w']
-        
-        date = calculation_date + ql.Period(t,ql.Days)
-        option_type = ql.Option.Call if w == 'call' else ql.Option.Put
-        
-        payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(date)
-        
-        european_option = ql.VanillaOption(payoff, exercise)
-        
-        flat_ts = ms.make_ts_object(r)
-        dividend_ts = ms.make_ts_object(g)
-        
-        heston_process = ql.HestonProcess(
-            flat_ts, dividend_ts, 
-            ql.QuoteHandle(ql.SimpleQuote(s)), 
-            v0, kappa, theta, sigma, rho)
-        
-        heston_model = ql.HestonModel(heston_process)
-        
-        engine = ql.AnalyticHestonEngine(heston_model)
-        
-        european_option.setPricingEngine(engine)
-        
-        h_price = european_option.NPV()
-        features.at[i, 'heston_price'] = h_price
-                
-        training_data = pd.concat([training_data, features],ignore_index=True)
+    # training_data = pd.concat([training_data, training_data_subset],
+    #                           ignore_index=True)
     
-training_data = noisyfier(training_data)
 
-file_time = time.time()
-file_dt = datetime.fromtimestamp(file_time)
-file_timetag = file_dt.strftime("%Y-%m-%d %H-%M-%S")
-training_data.to_csv(f"hist_outputs/{file_timetag}.csv")
 
+    
+   

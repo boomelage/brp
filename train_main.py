@@ -35,11 +35,11 @@ print('\nloading data...\n')
 
 "from archive"
 
-from train_data_barrier_collector import training_data
-title = 'Prediction errors for barrier options'
+# from train_data_barrier_collector import training_data
+# title = 'Prediction errors for barrier options'
 
-# from train_data_vanilla_collector import training_data
-# title = 'Prediction errors for Heston vanilla options'
+from train_data_vanilla_collector import training_data
+title = 'Prediction errors for Heston vanilla options'
 
 """
 # =============================================================================

@@ -63,17 +63,8 @@ training_data = training_data[
 
 """"""
 training_data = training_data[
-    [ 
-     'spot_price', 'strike_price', 'days_to_maturity', 
-     
-     # 'moneyness', 
-     
-     # 'w', 'theta', 'kappa', 'rho', 'eta','v0', 
-     
-     # 'heston_price', 
-     
-     'observed_price' 
-     ]
+    ['spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 'w', 
+     'theta', 'kappa', 'rho', 'eta','v0', 'heston_price', 'observed_price']
     ]
 
 training_data = training_data.loc[

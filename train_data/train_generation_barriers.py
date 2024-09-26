@@ -39,20 +39,19 @@ pd.reset_option('display.max_rows')
 title = 'barrier options'
 
 # T = ms.T
-T = [3,4]
+T = [1,2,3]
 
 
 n_strikes = 50
-down_k_spread = 0.5
-up_k_spread = 0.5
+down_k_spread = 0.05
+up_k_spread = 0.05
 
 
-n_barriers = n_strikes
-barrier_spread = 0.005
-n_barrier_spreads = 10
+n_barriers = 50
+barrier_spread = 0.0010                   
+n_barrier_spreads = 5
 
 
-n_contracts = len(T)*n_barriers*n_strikes*1
 
 
 outins = [
@@ -151,8 +150,6 @@ for i, row in initial_up_features.iterrows():
         [up_features, up_subset],
         ignore_index = True)    
         
-
-
 
 """
 down features
@@ -253,10 +250,10 @@ for i, row in features.iterrows():
             v0, kappa, theta, eta, rho)
     
     features.at[i,'barrier_price'] = barrier_price
-        
     
     pricing_bar.update(1)
 pricing_bar.close()
+
 
 training_data = features.copy()
 

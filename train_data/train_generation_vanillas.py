@@ -18,7 +18,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from settings import model_settings
+from settings import model_settings, compute_moneyness
 from routine_calibration_testing import heston_parameters
 
 ms = model_settings()
@@ -51,16 +51,16 @@ def generate_train_features(K,T,s,flag):
 """
 K = np.linspace(
     
-    s*0.8,
+    s*0.80,
     
-    s*1.2,
+    s*1.20,
     
-    2000
+    1000
     )
 
-T = ms.T
+# T = ms.T
 
-T = np.arange(1,30,1)
+T = np.arange(1,365,1)
 
 title = 'vanillas'
 
@@ -72,6 +72,8 @@ print(f"\ngenerating {2*len(K)*len(T)} contracts...")
 # =============================================================================
 """
 features = generate_train_features(K, T, s, flags)
+
+features = compute_moneyness(features)
 
 features['dividend_rate'] = 0.02
 features['risk_free_rate'] = 0.04
@@ -100,8 +102,8 @@ for i, row in features.iterrows():
     w = row['w']
     
     h_price = ms.ql_heston_price(s,k,t,r,g,w,
-                                 v0,kappa,theta,eta,rho,
-                                 ms.calculation_date)
+                                  v0,kappa,theta,eta,rho,
+                                  ms.calculation_date)
     features.at[i,'heston_price'] = h_price
     
     progress_bar.update(1)
