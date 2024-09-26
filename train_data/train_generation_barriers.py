@@ -84,10 +84,11 @@ features =  features.set_index('updown')
 
 initial_up_features = features.loc['Up'].reset_index()
 
-initial_down_features = features.loc['Down'].reset_index()
 
 
-
+"""
+up features
+"""
 up_K = np.linspace(
     s, 
     s*(1+up_k_spread*n_strikes),
@@ -116,7 +117,6 @@ for i,row in initial_up_features.iterrows():
         
         k = row2['strike_price']
         
-        
         barriers = np.linspace(
             k*(1+barrier_spread),
             k*(1+n_barrier_spreads*barrier_spread),
@@ -129,7 +129,7 @@ for i,row in initial_up_features.iterrows():
                 [t],
                 [k],
                 barriers,
-                ['up'],
+                ['Up'],
                 outins
                 ),
             columns = [
@@ -147,8 +147,10 @@ for i,row in initial_up_features.iterrows():
 
     
 """
-down options
+down features
 """
+
+initial_down_features = features.loc['Down'].reset_index()
 
 down_K = np.linspace(
     s*(1-down_k_spread),
@@ -157,64 +159,111 @@ down_K = np.linspace(
     )
 
 down_features = pd.DataFrame()
+for i, row in initial_down_features.iterrows():
+    s = row['spot_price']
+    t = row['days_to_maturity']
+    new_down_features = pd.DataFrame(
+        product(
+            [s],
+            [t],
+            down_K,
+            ['Down'],
+            outins
+            ),
+        columns=[
+            "spot_price", 
+            "days_to_maturity",
+            "strike_price",
+            "updown",
+            "outin"
+                  ])
+    for j,row2 in new_down_features.iterrows():
+        k = row2['strike_price']
+        
+        barriers = np.linspace(
+            k*(1-n_barrier_spreads*barrier_spread),
+            k*(1-barrier_spread),
+            n_barriers*2
+            )
+        
+        new_down_features_with_bar = pd.DataFrame(
+            product(
+                [s],
+                [t],
+                [k],
+                barriers,
+                ['Down'],
+                outins
+                ),
+            columns = [
+                "spot_price", 
+                "days_to_maturity",
+                "strike_price",
+                "barrier",
+                "updown",
+                "outin"
+                ])
+        down_features = pd.concat([down_features, new_down_features_with_bar],
+                                  ignore_index=True)
+        
+
+features = pd.concat([down_features,up_features],ignore_index=True)
+
+features['barrier_type_name'] = features['updown'] + features['outin'] 
+features['eta'] = heston_parameters['eta'].iloc[0]
+features['theta'] = heston_parameters['theta'].iloc[0]
+features['kappa'] = heston_parameters['kappa'].iloc[0]
+features['rho'] = heston_parameters['rho'].iloc[0]
+features['v0'] = heston_parameters['v0'].iloc[0]
 
 
-# features = pd.concat([down_features,up_features],ignore_index=True)
-# features
-# features['barrier_type_name'] = features['updown'] + features['outin'] 
-# features['eta'] = heston_parameters['eta'].iloc[0]
-# features['theta'] = heston_parameters['theta'].iloc[0]
-# features['kappa'] = heston_parameters['kappa'].iloc[0]
-# features['rho'] = heston_parameters['rho'].iloc[0]
-# features['v0'] = heston_parameters['v0'].iloc[0]
+features['barrier_price'] = np.nan
+pricing_bar = tqdm(
+    desc="pricing",
+    total=features.shape[0],
+    unit='contracts',
+    leave=True)
 
-# features['barrier_price'] = np.nan
-# pricing_bar = tqdm(
-#     desc="pricing",
-#     total=features.shape[0],
-#     unit='contracts',
-#     leave=True)
-
-# for i, row in features.iterrows():
+for i, row in features.iterrows():
     
-#     barrier_type_name = row['barrier_type_name']
-#     barrier = row['barrier']
-#     s = row['spot_price']
-#     k = row['strike_price']
-#     t = row['days_to_maturity']
-#     r = 0.04
-#     g = 0.001
-#     rebate = 0.
+    barrier_type_name = row['barrier_type_name']
+    barrier = row['barrier']
+    s = row['spot_price']
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    r = 0.04
+    g = 0.001
+    rebate = 0.
     
-#     calculation_date = ms.calculation_date
+    calculation_date = ms.calculation_date
     
-#     v0 = heston_parameters['v0'].iloc[0]
-#     kappa = heston_parameters['kappa'].iloc[0] 
-#     theta = heston_parameters['theta'].iloc[0] 
-#     eta = heston_parameters['eta'].iloc[0] 
-#     rho = heston_parameters['rho'].iloc[0]
+    v0 = heston_parameters['v0'].iloc[0]
+    kappa = heston_parameters['kappa'].iloc[0] 
+    theta = heston_parameters['theta'].iloc[0] 
+    eta = heston_parameters['eta'].iloc[0] 
+    rho = heston_parameters['rho'].iloc[0]
     
-#     barrier_price = ms.ql_barrier_price(
-#             s,k,t,r,g,calculation_date,
-#             barrier_type_name,barrier,rebate,
-#             v0, kappa, theta, eta, rho)
+    barrier_price = ms.ql_barrier_price(
+            s,k,t,r,g,calculation_date,
+            barrier_type_name,barrier,rebate,
+            v0, kappa, theta, eta, rho)
     
-#     features.at[i,'barrier_price'] = barrier_price
+    features.at[i,'barrier_price'] = barrier_price
     
-#     pricing_bar.update(1)
+    pricing_bar.update(1)
     
 
-# pricing_bar.close()
+pricing_bar.close()
 
-# training_data = features.copy()
+training_data = features.copy()
 
-# training_data = ms.noisyfier(training_data)
+training_data = ms.noisyfier(training_data)
 
-# pd.set_option("display.max_columns",None)
-# print(f'\n{training_data}\n')
-# print(f'\n{training_data.describe()}\n')
-# pd.reset_option("display.max_columns")
+pd.set_option("display.max_columns",None)
+print(f'\n{training_data}\n')
+print(f'\n{training_data.describe()}\n')
+pd.reset_option("display.max_columns")
 
-# file_time = datetime.fromtimestamp(time.time())
-# file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
-# training_data.to_csv(os.path.join('barriers',f'barriers {file_tag}.csv'))
+file_time = datetime.fromtimestamp(time.time())
+file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
+training_data.to_csv(os.path.join('barriers',f'barriers {file_tag}.csv'))
