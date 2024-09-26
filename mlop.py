@@ -81,8 +81,8 @@ class mlop:
         self.transformers = [
             ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features)
-            ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 
         self.activation_function = self.activation_function[0]

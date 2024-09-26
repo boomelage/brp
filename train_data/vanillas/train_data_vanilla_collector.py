@@ -28,10 +28,10 @@ training_data = training_data.drop(
 
 training_data = compute_moneyness(training_data)
 
-# training_data = training_data[
-#     (abs(training_data['moneyness'])>=0.02)&
-#     (abs(training_data['moneyness'])<=0.1)
-#     ].reset_index(drop=True)
+training_data = training_data[
+    (abs(training_data['moneyness'])>=0.00)&
+    (abs(training_data['moneyness'])<=0.15)
+    ].reset_index(drop=True)
 
 # training_data = training_data[
 #     (abs(training_data['days_to_maturity'])>=0)&
