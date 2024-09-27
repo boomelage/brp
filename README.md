@@ -1,14 +1,12 @@
 **Machine Learning Option Pricing:**  
 An empirical approach based on market data
 
-
 # Table of Contents
 1. [Introduction](#introduction)
 2. [Model Specification](#model-specification)
-   2.1 [Pricing Model](#pricing-model)
-   2.2 [Volatility Estimation](#volatility-estimation)
+   * 2.1 [Pricing Model](#pricing-model)
+   * 2.2 [Volatility Estimation](#volatility-estimation)
 3. [References](#references)
-
 
 
 # 1. Introduction
