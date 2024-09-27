@@ -18,7 +18,6 @@ from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
 import time
-from settings import compute_moneyness
 
 class mlop:
     
@@ -75,12 +74,12 @@ class mlop:
             
             # 'updown',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features\
             + [
-                'moneyness'
+                # 'moneyness'
                 ]
         
         self.transformers = [
@@ -92,7 +91,7 @@ class mlop:
             # ("Normalizer",Normalizer(),self.numerical_features),
             # ("RobustScaler",RobustScaler(),self.numerical_features),
             
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 
@@ -226,6 +225,12 @@ class mlop:
         training_results['prediciton'] = model_fit.predict(test_X)
         training_results['abs_relative_error'] = abs(
             training_results['prediciton']/training_results['target']-1)
+        
+        print(
+            f"\nresults:"
+            f"\n{training_results['abs_relative_error'].describe()}\n"
+              )
+        
         return training_results
 
     def plot_model_performance(self, predictive_performance, runtime, title):

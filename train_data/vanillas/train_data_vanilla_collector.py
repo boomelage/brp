@@ -53,7 +53,7 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """"""
@@ -63,8 +63,8 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
-lower = -0.1
-upper = 0.1
+lower = -0.05
+upper = 0
 
 training_data = training_data[
     (training_data['moneyness'] >=  lower ) 
@@ -91,5 +91,5 @@ pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
 print(f"\ninitial count:\n{initial_count}")
-print(f"\ntotal prices:\n{training_data.shape[0]}")
+print(f"\ntotal prices:\n{training_data.shape[0]}\n")
 pd.reset_option("display.max_columns")

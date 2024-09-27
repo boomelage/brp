@@ -43,7 +43,7 @@ def calibrate_heston(calibration_dataset,
         v0,                # Initial volatility
         kappa,             # Mean reversion speed
         theta,             # Long-run variance (volatility squared)
-        eta,             # Volatility of the volatility
+        eta,               # Volatility of the volatility
         rho                # Correlation between asset and volatility
     )
 
