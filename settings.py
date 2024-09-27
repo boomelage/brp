@@ -37,10 +37,11 @@ class model_settings():
             19.7389,
             21.2123, 
             21.9319,	
-            23.0063, 
-            23.6643, 
-            # 24.1647,  
+            23.0063,
+            23.6643,
+            # 24.1647,
             # 24.4341
+            
             ]
         
         self.ql_T = [
@@ -226,7 +227,6 @@ class model_settings():
             s,k,t,r,g,w,
             v0,kappa,theta,eta,rho,
             calculation_date):
-        # option_type = ql.Option.Call if w == 'call' else ql.Option.Put
         
         if w == 'call':
             option_type = ql.Option.Call
@@ -263,7 +263,7 @@ class model_settings():
     
     
     def ql_barrier_price(self,
-            s,k,t,r,g,calculation_date,
+            s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
             v0, kappa, theta, eta, rho):
         
@@ -279,6 +279,13 @@ class model_settings():
         hestonModel = ql.HestonModel(hestonProcess)
         engine = ql.FdHestonBarrierEngine(hestonModel)
         
+        if w == 'call':
+            option_type = ql.Option.Call
+        elif w == 'put':
+            option_type = ql.Option.Put
+        else:
+            raise KeyError("quantlib black scholes flag error")
+        
         if barrier_type_name == 'UpOut':
             barrierType = ql.Barrier.UpOut
         elif barrier_type_name == 'DownOut':
@@ -292,9 +299,8 @@ class model_settings():
             
         expiration_date = calculation_date + ql.Period(int(t), ql.Days)
         
-        
         exercise = ql.EuropeanExercise(expiration_date)
-        payoff = ql.PlainVanillaPayoff(ql.Option.Call, k)
+        payoff = ql.PlainVanillaPayoff(option_type, k)
         
         barrierOption = ql.BarrierOption(
             barrierType, barrier, rebate, payoff, exercise)

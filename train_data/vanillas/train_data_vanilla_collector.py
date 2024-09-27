@@ -57,7 +57,6 @@ type filter
 
 # training_data = training_data[training_data.loc[:,'w'] == 'put']
 
-
 """"""
 training_data = compute_moneyness(training_data)
 """"""
@@ -66,11 +65,11 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 
-otm_lower = -0.2
+otm_lower = -0.5
 otm_upper = -0.0
 
 itm_lower =  0.0
-itm_upper =  0.0
+itm_upper =  0.5
 
 training_data = training_data[
     

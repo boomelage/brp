@@ -37,8 +37,8 @@ print(f"\n{train_start_tag}\n")
 # from train_data_barrier_collector import training_data
 # title = 'Prediction errors for barrier options'
 
-from train_data_vanilla_collector import training_data
-title = 'Prediction errors for Heston vanilla options'
+# from train_data_vanilla_collector import training_data
+# title = 'Prediction errors for Heston vanilla options'
 
 
 mlop = mlop(user_dataset = training_data)

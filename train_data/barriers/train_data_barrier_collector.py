@@ -53,6 +53,7 @@ type filter
 training_data = compute_moneyness(training_data)
 
 training_data
+
 """"""
 """
 moneyness filter
@@ -66,14 +67,18 @@ moneyness filter
 
 # """"""
 
+
+# training_data = training_data.loc[
+#     training_data['observed_price'] >= 0.0001 * training_data['spot_price']
+#     ]
+
+
+training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
+
 training_data = training_data[
     [ 'spot_price', 'strike_price', 'days_to_maturity', 'moneyness','barrier', 
       'outin', 'w', 'updown', 'barrier_type_name', 'theta', 'kappa', 'rho', 
-      'eta','v0', 'barrier_price', 'observed_price' ]
-    ]
-
-training_data = training_data.loc[
-    training_data['observed_price'] >= 0.0001 * training_data['spot_price']
+      'eta','v0', 'heston_price', 'barrier_price', 'observed_price' ]
     ]
 
 T = np.sort(training_data['days_to_maturity'].unique())
@@ -85,3 +90,5 @@ pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
 pd.reset_option("display.max_columns")
+
+    

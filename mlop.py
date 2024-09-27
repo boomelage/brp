@@ -27,7 +27,7 @@ class mlop:
         self.random_state = 1312
         self.test_size = 0.01
         self.max_iter = int(1e4)
-        self.hidden_layer_sizes = (10,10,10)
+        self.hidden_layer_sizes = (100,100,100)
         self.single_layer_size = 10
         self.solver = [
                     # "lbfgs",
@@ -68,13 +68,13 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
-            # 'outin',
+            'outin',
             
-            # 'updown',
+            'updown',
             
-            'moneyness_tag',
+            # 'moneyness_tag',
             
             'w'
             
