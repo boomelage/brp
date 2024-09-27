@@ -5,7 +5,9 @@ An empirical approach based on market data
 # Table of Contents
 1. [Introduction](#introduction)
 2. [Model Specification](#model-specification)
-3. [References](#references)
+  2.1 [Pricing Model](#pricing-model)
+  2.2 [Volatility Estimation](#volatility-estimation)
+4. [References](#references)
 
 
 # 1. Introduction
@@ -18,6 +20,7 @@ Following this eniqury into the felixbility of this method, it was considered wh
 
 
 # 2. Model Specification
+## 2.1 Pricing Model
 
 To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by the pair of stochastic differential equations:
 
@@ -36,7 +39,7 @@ where
 - $\eta$ is the volatility of the variance process, and 
 - $B_t$ , $W_t$ are continuous random walks. 
 
-
+## 2.2 Volatility Estimation
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
 ```math
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
