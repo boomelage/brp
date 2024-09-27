@@ -29,12 +29,14 @@ dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt
 dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t
 ```
 where
-- **𝑣₀** represents the initial variance,
-- **𝜃** is the long-run variance,
-- **𝜌** is the correlation between the log-price process and its volatility,
-- **𝜅** is the mean reversion of the variance to **𝜃**, and
-- **𝜂** is the volatility of the variance process.
-  
+- $v_0$ represents the initial variance,
+- $\theta$ is the long-run variance,
+- $\rho$ is the correlation between the log-price process and its volatility,
+- $\kappa$ is the mean reversion of the variance to **𝜃**,
+- $\eta$ is the volatility of the variance process, and 
+- $B_t$ , $W_t$ are continuous random walks. 
+
+
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
 ```math
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
