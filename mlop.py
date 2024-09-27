@@ -63,7 +63,7 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
-            'moneyness'
+            # 'moneyness'
             
             ]
         
@@ -75,7 +75,7 @@ class mlop:
             
             # 'updown',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
@@ -83,13 +83,13 @@ class mlop:
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
             ("StandardScaler",StandardScaler(),self.numerical_features),
-            ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
+            # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             # ("RobustScaler",RobustScaler(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 
@@ -129,10 +129,11 @@ class mlop:
                                                              # Model Estimation
 
     def run_nnet(self, preprocessor, train_X, train_y):
-        print(f"hidden layers size: {self.single_layer_size}")
+        print(f"hidden layer size: {self.single_layer_size}")
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
         print(f"solver: {self.solver}")
+        print(f"alpha: {self.alpha}")
         nnet_start = time.time()
         
         nnet_model = MLPRegressor(
@@ -158,6 +159,7 @@ class mlop:
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
         print(f"solver: {self.solver}")
+        print(f"alpha: {self.alpha}")
         dnn_start = time.time()
         deepnnet_model = MLPRegressor(
             hidden_layer_sizes= self.hidden_layer_sizes,
@@ -182,6 +184,7 @@ class mlop:
         print(f"number of estimators: {self.rf_n_estimators}")
         print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
         rf_start = time.time()
+        
         rf_model = RandomForestRegressor(
         n_estimators=self.rf_n_estimators, 
         min_samples_leaf=self.rf_min_samples_leaf, 
@@ -196,13 +199,14 @@ class mlop:
         return rf_fit, rf_runtime
     
     def run_lm(self, train_X, train_y):
+        print(f"alpha: {self.alpha}")
         lm_start = time.time()
         lm_pipeline = Pipeline([
             ("polynomial", PolynomialFeatures(degree=5, 
                                     interaction_only=False, 
                                     include_bias=True)),
             ("scaler", StandardScaler()),
-            ("regressor", Lasso(alpha=0.01))])
+            ("regressor", Lasso(alpha=self.alpha))])
 
         lm_fit = lm_pipeline.fit(train_X, train_y)
         lm_end = time.time()

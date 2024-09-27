@@ -133,21 +133,21 @@ for k in raw_call_K:
 
 
 """
-testing approximation fit
+plotting approximation fit
 """
 
 
-for t in T: 
-    actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
-    derman_fit = derman_ts.loc[actual_data.index,t]
-    plt.rcParams['figure.figsize']=(6,4)
-    fig, ax = plt.subplots()
+# for t in T: 
+#     actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
+#     derman_fit = derman_ts.loc[actual_data.index,t]
+#     plt.rcParams['figure.figsize']=(6,4)
+#     fig, ax = plt.subplots()
     
-    ax.plot(actual_data.index, derman_fit)
-    ax.plot(actual_data.index, actual_data, "o")
+#     ax.plot(actual_data.index, derman_fit)
+#     ax.plot(actual_data.index, actual_data, "o")
     
-    ax.set_title("Derman approximation of implied volatility surface")
+#     ax.set_title("Derman approximation of implied volatility surface")
     
-    plt.show()
-    plt.cla()
-    plt.clf()
+#     plt.show()
+#     plt.cla()
+#     plt.clf()
