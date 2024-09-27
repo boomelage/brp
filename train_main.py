@@ -45,7 +45,6 @@ title = 'Prediction errors for Heston vanilla options'
 """
 
 mlop = mlop(user_dataset = training_data)
-print('\ntraining...')
 
 """
 # =============================================================================
@@ -79,10 +78,11 @@ model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 """
 random forest
 """
-# 
+
 # model_name = "Random Forest"
 # print(model_name)
 # model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
+
 
 """
 lasso regression

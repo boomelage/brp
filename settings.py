@@ -13,9 +13,10 @@ sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from scipy.stats import norm
 from bicubic_interpolation import make_bicubic_functional
-from derman_test import derman_coefs, raw_call_K, call_atmvols
+from derman_test import derman_coefs
 
 
 class model_settings():
@@ -130,6 +131,17 @@ class model_settings():
         row['maturity_date'] = self.calculation_date + ql.Period(
             int(row['days_to_maturity']),ql.Days)
         return row
+    
+    def make_tqdm_bar(self, user_total, user_desc, user_unit):
+        progress_bar = tqdm(
+            desc=user_desc, 
+            unit=user_unit,
+            total=user_total, 
+            leave=True, 
+            bar_format ='{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | '
+            '{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining}'
+        )
+        return progress_bar
     
     
     """

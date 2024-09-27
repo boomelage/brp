@@ -17,6 +17,7 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
+import pandas as pd
 import time
 
 class mlop:
@@ -46,8 +47,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -84,12 +85,12 @@ class mlop:
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("StandardScaler",StandardScaler(),self.numerical_features),
+            # ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
-            # ("RobustScaler",RobustScaler(),self.numerical_features),
+            ("RobustScaler",RobustScaler(),self.numerical_features),
             
             # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
@@ -103,7 +104,9 @@ class mlop:
         print(f"maximum iterations: {self.max_iter}")
         print(f"\ntarget: \n{self.target_name}")
         print(f"\nfeatures: \n{self.feature_set}")
-        print(f"\ntransformers:\n{self.transformers}\n")
+        print("\ntransformers:")
+        for i in self.transformers:
+            print(f"\n{i}")
         
 # =============================================================================
                                                                 # Preprocessing
@@ -136,6 +139,7 @@ class mlop:
         print(f"activation: {self.activation_function}")
         print(f"solver: {self.solver}")
         print(f"alpha: {self.alpha}")
+        print('\ntraining...')
         nnet_start = time.time()
         
         nnet_model = MLPRegressor(
@@ -162,6 +166,7 @@ class mlop:
         print(f"activation: {self.activation_function}")
         print(f"solver: {self.solver}")
         print(f"alpha: {self.alpha}")
+        print('\ntraining...')
         dnn_start = time.time()
         deepnnet_model = MLPRegressor(
             hidden_layer_sizes= self.hidden_layer_sizes,
@@ -185,6 +190,7 @@ class mlop:
     def run_rf(self, preprocessor, train_X, train_y):
         print(f"number of estimators: {self.rf_n_estimators}")
         print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
+        print('\ntraining...')
         rf_start = time.time()
         
         rf_model = RandomForestRegressor(
@@ -202,6 +208,7 @@ class mlop:
     
     def run_lm(self, train_X, train_y):
         print(f"alpha: {self.alpha}")
+        print('\ntraining...')
         lm_start = time.time()
         lm_pipeline = Pipeline([
             ("polynomial", PolynomialFeatures(degree=5, 
@@ -226,10 +233,15 @@ class mlop:
         training_results['abs_relative_error'] = abs(
             training_results['prediciton']/training_results['target']-1)
         
+        descriptive_stats = training_results['abs_relative_error'].describe()
+        test_count = int(descriptive_stats['count'])
+        descriptive_stats = descriptive_stats[1:]
+        pd.set_option('display.float_format', '{:.10f}'.format)
         print(
-            f"\nresults:"
-            f"\n{training_results['abs_relative_error'].describe()}\n"
-              )
+            f"\nresults:\n--------\ntest sample count: {test_count}"
+            f"\n{descriptive_stats}\n"
+            )
+        pd.reset_option('display.float_format')
         
         return training_results
 

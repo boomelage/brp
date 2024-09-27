@@ -24,7 +24,13 @@ csvs = dirdatacsv()
 
 print('\nloading data...\n')
 
-file_bar = tqdm(desc="file",total=len(csvs),unit='files',leave=True)
+file_bar = tqdm(
+    desc="file", 
+    total=len(csvs), 
+    unit='files', 
+    leave=True, 
+    bar_format='{n_fmt}/{total_fmt} files | Elapsed: {elapsed} | Remaining: {remaining}'
+)
 training_data = pd.DataFrame()
 for file in csvs:
     train_subset = pd.read_csv(file)
@@ -63,19 +69,33 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
-lower = -0.05
-upper = 0
+otm_lower = - 0.2
+otm_upper = - 0.005
+
+itm_lower = 0.0
+itm_upper = 0.005
 
 training_data = training_data[
-    (training_data['moneyness'] >=  lower ) 
-    &
-    (training_data['moneyness'] <=  upper )
-    ].reset_index(drop=True)
+    
+    (
+     (training_data['moneyness'] >= otm_lower) & 
+     (training_data['moneyness'] <= otm_upper)
+     )
+   
+    # |
+    
+    # (
+    #   (training_data['moneyness'] >= itm_lower) & 
+    #   (training_data['moneyness'] <= itm_upper)
+    #   )
+
+]
 
 
 """"""
 training_data = training_data[
-    ['spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 'w', 
+    [
+     'spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 'w', 
      'theta', 'kappa', 'rho', 'eta','v0', 'heston_price', 'observed_price']
     ]
 

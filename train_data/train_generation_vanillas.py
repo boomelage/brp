@@ -53,9 +53,9 @@ K = np.linspace(
     
     s*0.8,
     
-    s*1.2,
+    s*0.9,
     
-    7777
+    100
     )
 
 # T = ms.T
@@ -66,11 +66,11 @@ title = 'vanillas'
 
 flags = [
     'put',
-    'call'
+    # 'call'
     ]
 
 print(f"\ngenerating {len(flags)*len(K)*len(T)} contracts...")
-print(f"\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{flags}\n")
+print(f"\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{flags}")
 """
 # =============================================================================
 """
@@ -86,8 +86,14 @@ features['kappa'] = heston_parameters['kappa'].iloc[0]
 features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
-progress_bar = tqdm(desc="pricing",total=features.shape[0],unit= "contracts")
-
+print("\npricing contracts...\n")
+progress_bar = tqdm(
+    desc="pricing", 
+    unit="contracts",
+    total=features.shape[0], 
+    leave=True, 
+    bar_format='{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | {rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining}'
+)
 features['heston_price'] = 0.00
 for i, row in features.iterrows():
     
@@ -117,7 +123,7 @@ training_data = features.copy()
 
 training_data = ms.noisyfier(training_data)
 
-print(f"\ntraining data:\n{training_data}\ndescriptive statistics:\n")
+print(f"\n\ntraining data:\n{training_data}\ndescriptive statistics:\n")
 pd.set_option("display.max_rows",None)
 pd.set_option("display.max_columns",None)
 print(training_data.describe())
