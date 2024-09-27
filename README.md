@@ -21,7 +21,7 @@ Following this eniqury into the felixbility of this method, it was considered wh
 # 2. Model Specification
 ## 2.1 Pricing Model
 
-To model the logarithmic price of the underlying security, we use the Heston (1993) model, defined by the pair of stochastic differential equations:
+To model the logarithmic price of our underlying security, we use the Heston (1993) model, described by the pair of stochastic differential equations:
 
 ```math
 dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
