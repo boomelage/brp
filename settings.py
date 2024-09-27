@@ -28,7 +28,6 @@ class model_settings():
         self.calculation_date   =    ql.Date.todaysDate()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
-        ql.Settings.instance().evaluationDate = self.calculation_date
         
         self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
         
@@ -205,7 +204,7 @@ class model_settings():
             calculation_date, 
             expiration_date
             ):
-        
+        ql.Settings.instance().evaluationDate = calculation_date
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
@@ -215,6 +214,9 @@ class model_settings():
         
         flat_ts = self.make_ts_object(r)
         divident_ts = self.make_ts_object(g)
+        print(f"Risk-free term structure discount: {flat_ts.discount(expiration_date)}")
+        print(f"Dividend term structure discount: {divident_ts.discount(expiration_date)}")
+        
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
         
         volTS = ql.BlackVolTermStructureHandle(
@@ -225,6 +227,8 @@ class model_settings():
                 self.day_count
                 )
             )
+        print(f"Spot: {initialValue.value()}, Volatility: {volTS.blackVol(expiration_date, k)}")
+        
         process = ql.GeneralizedBlackScholesProcess(
             initialValue, divident_ts, flat_ts, volTS)
         
@@ -232,6 +236,7 @@ class model_settings():
         
         payoff = ql.PlainVanillaPayoff(option_type, k)
         europeanExercise = ql.EuropeanExercise(expiration_date)
+        print(f"European Exercise Valid: {europeanExercise.lastDate()}")  # Should match expiration_date
         european_option = ql.VanillaOption(payoff, europeanExercise)
         european_option.setPricingEngine(engine)
         
@@ -245,7 +250,7 @@ class model_settings():
             calculation_date,
             expiration_date
             ):
-        
+        ql.Settings.instance().evaluationDate = calculation_date
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
@@ -281,7 +286,7 @@ class model_settings():
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
             v0, kappa, theta, eta, rho):
-        
+        ql.Settings.instance().evaluationDate = calculation_date
         flat_ts = self.make_ts_object(r)
         dividend_ts = self.make_ts_object(g)
         

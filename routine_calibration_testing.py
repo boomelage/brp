@@ -27,8 +27,10 @@ from routine_calibration_global import calibrate_heston
 
 s = ms.s
 calculation_date = ms.calculation_date
+ql.Settings.instance().evaluationDate = calculation_date
 g = 0.001
 r = 0.04
+
 
 heston_parameters, performance_df = calibrate_heston(
     calibration_dataset, s, r, g, calculation_date)

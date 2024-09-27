@@ -23,7 +23,7 @@ def calibrate_heston(
         calendar = ms.calendar,
         day_count = ms.day_count
         ):
-    
+    ql.Settings.instance().evaluationDate = calculation_date
     flat_ts = ms.make_ts_object(r)
     dividend_ts = ms.make_ts_object(g)
 
