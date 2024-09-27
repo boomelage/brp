@@ -27,7 +27,8 @@ class mlop:
         self.random_state = 1312
         self.test_size = 0.01
         self.max_iter = int(1e4)
-        self.hidden_layer_sizes = (100,100,100)
+        self.hidden_layer_sizes = (10,10,10)
+        self.single_layer_size = 10
         self.solver = [
                     # "lbfgs",
                     "sgd", 
@@ -62,7 +63,7 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
-            # 'moneyness',
+            'moneyness'
             
             ]
         
@@ -90,11 +91,12 @@ class mlop:
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
-        print(f"\ntransformers:\n{self.transformers}")
-        print(f"\nactivation: {self.activation_function}")
-        print(f"solver: {self.solver}")
-        print(f"learning rate: {self.learning_rate}")
-        print(f"hidden layers: {self.hidden_layer_sizes}")
+        print(f"test size: {self.test_size}")
+        print(f"random state: {self.random_state}")
+        print(f"maximum iterations: {self.max_iter}")
+        print(f"target: \n{self.target_name}")
+        print(f"features: \n{self.feature_set}")
+        print(f"transformers:\n{self.transformers}\n")
 # =============================================================================
                                                                 # Preprocessing
 
@@ -121,11 +123,16 @@ class mlop:
                                                              # Model Estimation
 
     def run_nnet(self, preprocessor, train_X, train_y):
+        print(f"hidden layers size: {self.single_layer_size}")
+        print(f"learning rate: {self.learning_rate}")
+        print(f"activation: {self.activation_function}")
+        print(f"solver: {self.solver}")
         nnet_start = time.time()
+        
         nnet_model = MLPRegressor(
-            hidden_layer_sizes=self.hidden_layer_sizes,
-            activation=self.activation_function, 
-            solver=self.solver, 
+            hidden_layer_sizes=self.single_layer_size,
+            activation=self.activation_function,
+            solver=self.solver,
             max_iter=self.max_iter,
             random_state=self.random_state
             )
@@ -141,6 +148,10 @@ class mlop:
         return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor,train_X,train_y):
+        print(f"hidden layers sizes: {self.hidden_layer_sizes}")
+        print(f"learning rate: {self.learning_rate}")
+        print(f"activation: {self.activation_function}")
+        print(f"solver: {self.solver}")
         dnn_start = time.time()
         deepnnet_model = MLPRegressor(
             hidden_layer_sizes= self.hidden_layer_sizes,
@@ -162,6 +173,8 @@ class mlop:
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
+        print(f"number of estimators: {self.rf_n_estimators}")
+        print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
         rf_start = time.time()
         rf_model = RandomForestRegressor(
         n_estimators=self.rf_n_estimators, 

@@ -44,8 +44,7 @@ training_data = training_data[
 type filter
 """
 
-
-training_data[training_data.loc[:,'w'] == 'Put']
+# training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """"""
@@ -55,9 +54,12 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
+lower = -0.10
+upper = 0.10
+
 training_data = training_data[
-    (training_data['moneyness']>= - 0.05  ) &
-    (training_data['moneyness']<= - 0.005 )
+    (training_data['moneyness'] >=  lower ) &
+    (training_data['moneyness'] <=  upper )
     ].reset_index(drop=True)
 
 
@@ -68,7 +70,7 @@ training_data = training_data[
     ]
 
 training_data = training_data.loc[
-    training_data['observed_price'] >= 0.005 * training_data['spot_price']
+    training_data['observed_price'] >= 0.01 * training_data['spot_price']
     ]
 
 S = np.sort(training_data['spot_price'].unique())
