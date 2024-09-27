@@ -76,7 +76,7 @@ class mlop:
             
             'moneyness_tag',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features

@@ -55,7 +55,7 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'put']
+# training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """"""
@@ -70,7 +70,7 @@ otm_lower = -0.2
 otm_upper = -0.0
 
 itm_lower =  0.0
-itm_upper =  0.2
+itm_upper =  0.0
 
 training_data = training_data[
     
