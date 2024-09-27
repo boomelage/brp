@@ -24,13 +24,9 @@ csvs = dirdatacsv()
 
 print('\nloading data...\n')
 
-file_bar = tqdm(
-    desc="file", 
-    total=len(csvs), 
-    unit='files', 
-    leave=True, 
-    bar_format='{n_fmt}/{total_fmt} files | Elapsed: {elapsed} | Remaining: {remaining}'
-)
+
+file_bar = ms.make_tqdm_bar(desc="file", total=len(csvs), unit='files')
+
 training_data = pd.DataFrame()
 for file in csvs:
     train_subset = pd.read_csv(file)
@@ -69,11 +65,11 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
-otm_lower = - 0.2
-otm_upper = - 0.005
+otm_lower = -0.2
+otm_upper = -0.005
 
-itm_lower = 0.0
-itm_upper = 0.005
+# itm_lower = 0.0
+# itm_upper = 0.005
 
 training_data = training_data[
     

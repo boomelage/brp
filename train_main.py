@@ -63,33 +63,24 @@ preprocessor = mlop.preprocess()
 single layer network
 """
 
-# model_name = "Single Layer Network"
-# print(model_name)
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-model_name = "Deep Neural Network"
-print(model_name)
 model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
 """
 
-# model_name = "Random Forest"
-# print(model_name)
 # model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
-
 
 """
 lasso regression
 """
 
-# model_name = "Lasso Regression"
-# print(model_name)
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
 
 """
@@ -97,9 +88,9 @@ lasso regression
                                 model testing
 """
 
-df = mlop.test_model(test_data, test_X,test_y,model_fit)
+stats = mlop.test_model(test_data, test_X,test_y,model_fit)
 
-predictive_performance_plot = mlop.plot_model_performance(df,runtime,title)
+predictive_performance_plot = mlop.plot_model_performance(stats,runtime,title)
 
 """
 # =============================================================================

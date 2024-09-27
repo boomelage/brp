@@ -132,12 +132,12 @@ class model_settings():
             int(row['days_to_maturity']),ql.Days)
         return row
     
-    def make_tqdm_bar(self, user_total, user_desc, user_unit):
+    def make_tqdm_bar(self, total, desc, unit, leave=True):
         progress_bar = tqdm(
-            desc=user_desc, 
-            unit=user_unit,
-            total=user_total, 
-            leave=True, 
+            desc=desc, 
+            unit=unit,
+            total=total, 
+            leave=leave, 
             bar_format ='{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | '
             '{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining}'
         )

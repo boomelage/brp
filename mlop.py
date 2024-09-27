@@ -134,6 +134,7 @@ class mlop:
                                                              # Model Estimation
 
     def run_nnet(self, preprocessor, train_X, train_y):
+        print("\nSingle Layer Network")
         print(f"hidden layer size: {self.single_layer_size}")
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
@@ -161,6 +162,7 @@ class mlop:
         return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor,train_X,train_y):
+        print("\nDeep Neural Network")
         print(f"hidden layers sizes: {self.hidden_layer_sizes}")
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
@@ -188,6 +190,7 @@ class mlop:
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
+        print("\nRandom Forest")
         print(f"number of estimators: {self.rf_n_estimators}")
         print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
         print('\ntraining...')
@@ -207,6 +210,7 @@ class mlop:
         return rf_fit, rf_runtime
     
     def run_lm(self, train_X, train_y):
+        print("\nLasso Regression")
         print(f"alpha: {self.alpha}")
         print('\ntraining...')
         lm_start = time.time()

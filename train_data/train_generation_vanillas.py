@@ -87,13 +87,12 @@ features['rho'] = heston_parameters['rho'].iloc[0]
 features['v0'] = heston_parameters['v0'].iloc[0]
 
 print("\npricing contracts...\n")
-progress_bar = tqdm(
+
+progress_bar = ms.make_tqdm_bar(
     desc="pricing", 
     unit="contracts",
-    total=features.shape[0], 
-    leave=True, 
-    bar_format='{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | {rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining}'
-)
+    total=features.shape[0])
+
 features['heston_price'] = 0.00
 for i, row in features.iterrows():
     
