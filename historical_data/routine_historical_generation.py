@@ -18,8 +18,10 @@ from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
 from train_generation_barriers import generate_barrier_options
 from settings import model_settings
+from tqdm import tqdm
 ms = model_settings()
 os.chdir(current_dir)
+
 from routine_historical_collection import collect_historical_data
 
 def generate_features(K,T,s):
@@ -35,8 +37,6 @@ def generate_features(K,T,s):
             "days_to_maturity"
                   ])
     return features
-
-
 
 def generate_initial_barrier_features(s,T,K,outins,updown,ws):
     features = pd.DataFrame(
@@ -58,9 +58,6 @@ def generate_initial_barrier_features(s,T,K,outins,updown,ws):
                   ])
     return features
 
-
-
-
 outins = [
     
     'Out',
@@ -75,12 +72,17 @@ ws = [
       ]
 
 """
-historical generation routine
+# =============================================================================
+                        historical generation routine
 """
+
 historical_data = collect_historical_data()
 
 total = historical_data.shape[0]
 historical_option_data = pd.DataFrame()
+
+hist_bar = ms.make_tqdm_bar(
+    total=total, desc='generating', unit='days', leave=True)
 
 training_data = pd.DataFrame()
 for i, row in historical_data.iterrows():
@@ -122,7 +124,6 @@ for i, row in historical_data.iterrows():
         ms.derman_ts, 
         ms.derman_ts.index.tolist(), 
         ms.derman_ts.columns.tolist())
-    
    
     calibration_dataset = generate_features(
         K, T, s)
@@ -137,25 +138,32 @@ for i, row in historical_data.iterrows():
         calibration_dataset, s, calculation_date)
     
     """"""
-    T = [10,30,90]
+    T = [
+        1,7,10,14,30,
+        90,180,360
+         ]
 
-    n_strikes = 5
-    down_k_spread = 0.05
-    up_k_spread = 0.05
+    n_strikes = 7
+    down_k_spread = 0.1
+    up_k_spread = 0.1
 
-    n_barriers = 3
-    barrier_spread = 0.0010                   
-    n_barrier_spreads = 5
+    n_barriers = 5
+    barrier_spread = 0.005                  
+    n_barrier_spreads = 20
     
     training_data = generate_barrier_options(
                 n_strikes, down_k_spread, up_k_spread,
                 n_barriers, barrier_spread, n_barrier_spreads,
-                ms.calculation_date, T, ms.s, 'hist_outputs'
+                ms.calculation_date, T, ms.s, heston_parameters, 'hist_outputs'
                 )
     
     historical_option_data = pd.concat(
         [historical_option_data,training_data],
         ignore_index=True)
     
+    tqdm.write(dtdate.strftime("%Y%m%d"))
+    hist_bar.update(1)
     
+hist_bar.close()
+
 historical_option_data

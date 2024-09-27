@@ -19,7 +19,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
 from settings import model_settings
-from routine_calibration_testing import heston_parameters
+
 
 ms = model_settings()
 
@@ -57,7 +57,7 @@ def generate_initial_barrier_features(s,T,K,outins,updown,ws):
 def generate_barrier_options(
         n_strikes, down_k_spread, up_k_spread,
         n_barriers, barrier_spread, n_barrier_spreads,
-        calculation_date, T, s, file_path
+        calculation_date, T, s, heston_parameters, file_path
         ):
 
     K = np.linspace(
@@ -195,9 +195,8 @@ def generate_barrier_options(
     features['heston_price'] = np.nan
     features['barrier_price'] = np.nan
     
-    features
-    pricing_bar = ms.make_tqdm_bar(
-        desc="pricing",total=features.shape[0],unit='contracts')
+    # pricing_bar = ms.make_tqdm_bar(
+    #     desc="pricing",total=features.shape[0],unit='contracts',leave=False)
     
     for i, row in features.iterrows():
         
@@ -229,17 +228,17 @@ def generate_barrier_options(
     
         features.at[i,'barrier_price'] = barrier_price
         
-        pricing_bar.update(1)
-    pricing_bar.close()
+    #     pricing_bar.update(1)
+    # pricing_bar.close()
     
     training_data = features.copy()
     
     training_data = ms.noisyfier(training_data)
     
-    # pd.set_option("display.max_columns",None)
-    # print(f'\n{training_data}\n')
-    # print(f'\n{training_data.describe()}\n')
-    # pd.reset_option("display.max_columns")
+    pd.set_option("display.max_columns",None)
+    print(f'\n{training_data}\n')
+    print(f'\n{training_data.describe()}\n\n')
+    pd.reset_option("display.max_columns")
     
     file_time = datetime.fromtimestamp(time.time())
     file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
@@ -247,6 +246,10 @@ def generate_barrier_options(
     
     return training_data
 
+
+# # example use
+
+# from routine_calibration_testing import heston_parameters
 # title = 'barrier options'
 # # T = ms.T
 # T = [10,30,90]
