@@ -15,10 +15,10 @@ import pandas as pd
 import numpy as np
 import QuantLib as ql
 from itertools import product
-from tqdm import tqdm
-from routine_calibration_global import calibrate_heston
+# from tqdm import tqdm
+# from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
-from train_generation_barriers import generate_barrier_options, concat_barrier_features
+# from train_generation_barriers import generate_barrier_options, concat_barrier_features
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
@@ -44,7 +44,7 @@ training_data = pd.DataFrame()
 row = historical_data.iloc[0]
 
 s = row['spot_price']
-g = row['dividend_rate']
+g = row['dividend_rate']/100
 dtdate = row['date']
 calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
 
@@ -59,14 +59,16 @@ calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
 #       ],dtype=object)
 # T = expiry_dates - calculation_date
 
-T = ms.derman_coefs.index
+T = ms.derman_coefs.index.astype(int)
 
-atm_volvec = row[
+atm_volvec = np.array(row[
     [
         '30D', '60D', '3M', '6M', '12M', 
         # '18M', '24M'
         ]
-    ]
+    ]/100,dtype=float)
+
+atm_volvec = pd.Series(atm_volvec)
 atm_volvec.index = T
 
 
@@ -130,11 +132,22 @@ w = 'call'
 
 expiration_date = calculation_date + ql.Period(int(t),ql.Days)
 
+# bs = ms.ql_black_scholes(
+#         s,k,r,g,
+#         volatility,w,
+#         calculation_date, 
+#         expiration_date
+#         )
+
 bs = ms.ql_black_scholes(
-        s,k,r,g,
-        volatility,w,
-        calculation_date, 
-        expiration_date
+        1416.59,
+        1133.272,
+        0.04,
+        0.018125,
+        0.10538299999999999,
+        'call',
+        ql.Date(3,1,2007), 
+        ql.Date(2,2,2007)
         )
 
 heston = ms.ql_heston_price(
@@ -144,7 +157,7 @@ heston = ms.ql_heston_price(
             expiration_date
             )
 
-my_bs = 0#ms.black_scholes_price(s,k,t,r,float(atm_volvec[T[0]]),w)
+my_bs = ms.black_scholes_price(s,k,t,r,volatility,w)
 
 print(f"\nbs: {bs}\nheston: {heston}\nmy bs: {my_bs}")
 

@@ -356,4 +356,3 @@ def compute_moneyness(df):
 
 
 
-
