@@ -78,7 +78,10 @@ class mlop:
             'w'
             
             ]
-        self.feature_set = self.numerical_features + self.categorical_features
+        self.feature_set = self.numerical_features + self.categorical_features\
+            + [
+                'moneyness'
+                ]
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
