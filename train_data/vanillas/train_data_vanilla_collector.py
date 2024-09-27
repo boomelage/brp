@@ -65,47 +65,62 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
-otm_lower = -0.2
-otm_upper = -0.005
 
-# itm_lower = 0.0
-# itm_upper = 0.005
+otm_lower = -0.2
+otm_upper = -0.0
+
+itm_lower =  0.0
+itm_upper =  0.2
 
 training_data = training_data[
     
     (
-     (training_data['moneyness'] >= otm_lower) & 
-     (training_data['moneyness'] <= otm_upper)
-     )
+      (training_data['moneyness'] >= otm_lower) & 
+      (training_data['moneyness'] <= otm_upper)
+      )
    
-    # |
+    |
     
-    # (
-    #   (training_data['moneyness'] >= itm_lower) & 
-    #   (training_data['moneyness'] <= itm_upper)
-    #   )
+    (
+      (training_data['moneyness'] >= itm_lower) & 
+      (training_data['moneyness'] <= itm_upper)
+      )
 
 ]
 
-
 """"""
-training_data = training_data[
-    [
-     'spot_price', 'strike_price', 'days_to_maturity', 'moneyness', 'w', 
-     'theta', 'kappa', 'rho', 'eta','v0', 'heston_price', 'observed_price']
-    ]
 
 training_data = training_data.loc[
     training_data['observed_price'] >= 0.01*training_data['spot_price']
+    ]
+
+training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
+
+training_data = training_data[
+    [
+     'spot_price', 'strike_price', 'days_to_maturity', 
+     'moneyness', 'moneyness_tag','w', 
+     # 'theta', 'kappa', 'rho', 'eta', 'v0', 'heston_price', 
+     'observed_price'
+     ]
     ]
 
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())
 T = np.sort(training_data['days_to_maturity'].unique())
 W = np.sort(training_data['w'].unique())
+n_calls = training_data[training_data['w']=='call'].shape[0]
+n_puts = training_data[training_data['w']=='put'].shape[0]
+
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\n")
-print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
+print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
+print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
 print(f"\ninitial count:\n{initial_count}")
 print(f"\ntotal prices:\n{training_data.shape[0]}\n")
 pd.reset_option("display.max_columns")
+
+
+
+
+

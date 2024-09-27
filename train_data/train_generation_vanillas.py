@@ -51,11 +51,10 @@ def generate_train_features(K,T,s,flag):
 """
 K = np.linspace(
     
-    s*0.8,
+    s*1.1,
+    s*1.2,
     
-    s*0.9,
-    
-    100
+    750
     )
 
 # T = ms.T
@@ -65,12 +64,13 @@ T = np.arange(1,366,1)
 title = 'vanillas'
 
 flags = [
-    'put',
-    # 'call'
+    # 'put',
+    'call'
     ]
 
-print(f"\ngenerating {len(flags)*len(K)*len(T)} contracts...")
-print(f"\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{flags}")
+print(f"\ngenerating {len(flags)*len(K)*len(T)} contracts..."
+      f"\nstrikes ({len(K)}):\n{K}\n\nmaturities ({len(T)}):"
+      f"\n{T}\n\ntypes:\n{flags}")
 """
 # =============================================================================
 """
@@ -131,3 +131,4 @@ pd.reset_option("display.max_columns")
 file_time = datetime.fromtimestamp(time.time())
 file_tag = file_time.strftime("%Y-%d-%m %H%M%S")
 training_data.to_csv(os.path.join('vanillas',f'vanillas {file_tag}.csv'))
+print("\ndata saved to csv!")

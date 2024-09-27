@@ -143,6 +143,13 @@ class model_settings():
         )
         return progress_bar
     
+    def encode_moneyness(self, array):
+        array = np.asarray(array)
+        result = np.empty_like(array, dtype=object)
+        result[array == 0] = 'atm'
+        result[array < 0] = 'otm'
+        result[array > 0] = 'itm'
+        return result
     
     """
     ===========================================================================

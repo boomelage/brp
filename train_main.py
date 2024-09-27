@@ -40,9 +40,6 @@ print(f"\n{train_start_tag}\n")
 from train_data_vanilla_collector import training_data
 title = 'Prediction errors for Heston vanilla options'
 
-"""
-# =============================================================================
-"""
 
 mlop = mlop(user_dataset = training_data)
 
@@ -55,6 +52,7 @@ train_data, train_X, train_y, \
 
 preprocessor = mlop.preprocess()
 
+print(f"\ntrain data count:\n{int(train_data.shape[0])}")
 """
 # =============================================================================
                               model selection                
@@ -84,7 +82,7 @@ lasso regression
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
 
 """
-# ============================================================================
+# =============================================================================
                                 model testing
 """
 

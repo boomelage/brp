@@ -47,8 +47,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -63,7 +63,6 @@ class mlop:
             'spot_price', 
             'strike_price', 
             'days_to_maturity',
-            # 'moneyness'
             
             ]
         
@@ -75,13 +74,12 @@ class mlop:
             
             # 'updown',
             
+            'moneyness_tag',
+            
             # 'w'
             
             ]
-        self.feature_set = self.numerical_features + self.categorical_features\
-            + [
-                # 'moneyness'
-                ]
+        self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
@@ -92,14 +90,15 @@ class mlop:
             # ("Normalizer",Normalizer(),self.numerical_features),
             ("RobustScaler",RobustScaler(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+
             ]   
 
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
-        print(f"test size: {self.test_size}")
+        print(f"test size: {round(self.test_size*100,0)}%")
         print(f"random state: {self.random_state}")
         print(f"maximum iterations: {self.max_iter}")
         print(f"\ntarget: \n{self.target_name}")
@@ -242,7 +241,7 @@ class mlop:
         descriptive_stats = descriptive_stats[1:]
         pd.set_option('display.float_format', '{:.10f}'.format)
         print(
-            f"\nresults:\n--------\ntest sample count: {test_count}"
+            f"\nresults:\n--------\ntest data count: {test_count}"
             f"\n{descriptive_stats}\n"
             )
         pd.reset_option('display.float_format')
