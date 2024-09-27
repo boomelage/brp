@@ -221,8 +221,8 @@ class model_settings():
             ql.BlackConstantVol(
                 calculation_date, 
                 ql.NullCalendar(), 
-                volatility, 
-                ql.Actual365Fixed()
+                ql.QuoteHandle(ql.SimpleQuote(volatility)), 
+                self.day_count
                 )
             )
         process = ql.GeneralizedBlackScholesProcess(

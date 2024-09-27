@@ -125,8 +125,8 @@ t = T[0]
 
 
 k = float(s*0.8)
-volatility = float(atm_volvec[T[0]])
-w = 'put'
+volatility =  float(atm_volvec[T[0]])
+w = 'call'
 
 expiration_date = calculation_date + ql.Period(int(t),ql.Days)
 
@@ -144,7 +144,7 @@ heston = ms.ql_heston_price(
             expiration_date
             )
 
-my_bs = ms.black_scholes_price(s,k,t,r,volatility,w)
+my_bs = 0#ms.black_scholes_price(s,k,t,r,float(atm_volvec[T[0]]),w)
 
 print(f"\nbs: {bs}\nheston: {heston}\nmy bs: {my_bs}")
 
