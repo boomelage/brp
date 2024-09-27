@@ -24,7 +24,6 @@ print(f"\n{train_start_tag}\n")
 # =============================================================================
                                 importing data
 """
-print('\nloading data...\n')
 "from generation"
 
 # from train_generation_barriers import training_data

@@ -51,9 +51,9 @@ def generate_train_features(K,T,s,flag):
 """
 K = np.linspace(
     
-    s*0.80,
+    s*0.5,
     
-    s*1.20,
+    s*0.995,
     
     1000
     )
@@ -64,9 +64,12 @@ T = np.arange(1,365,1)
 
 title = 'vanillas'
 
-flags = ['put','call']
+flags = [
+    'put',
+    # 'call'
+    ]
 
-print(f"\ngenerating {2*len(K)*len(T)} contracts...")
+print(f"\ngenerating {len(flags)*len(K)*len(T)} contracts...")
 
 """
 # =============================================================================

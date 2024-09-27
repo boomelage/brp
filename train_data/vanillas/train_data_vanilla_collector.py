@@ -21,6 +21,8 @@ os.chdir(current_dir)
 ms = model_settings()
 csvs = dirdatacsv()
 
+print('\nloading data...\n')
+
 training_data = pd.DataFrame()
 for file in csvs:
     train_subset = pd.read_csv(file)
@@ -34,17 +36,17 @@ training_data = training_data.drop(
 maturities filter
 """
 
-training_data = training_data[
-    (abs(training_data['days_to_maturity'])>=0)&
-    (abs(training_data['days_to_maturity'])<=9999)
-    ].reset_index(drop=True)
+# training_data = training_data[
+#     (abs(training_data['days_to_maturity'])>=0)&
+#     (abs(training_data['days_to_maturity'])<=31)
+#     ].reset_index(drop=True)
 
 
 """
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """"""
@@ -54,11 +56,12 @@ training_data = compute_moneyness(training_data)
 """
 moneyness filter
 """
-lower = -0.10
-upper = 0.10
+lower = -1
+upper = 1
 
 training_data = training_data[
-    (training_data['moneyness'] >=  lower ) &
+    (training_data['moneyness'] >=  lower ) 
+    &
     (training_data['moneyness'] <=  upper )
     ].reset_index(drop=True)
 
@@ -70,7 +73,7 @@ training_data = training_data[
     ]
 
 training_data = training_data.loc[
-    training_data['observed_price'] >= 0.01 * training_data['spot_price']
+    training_data['observed_price'] >= 0.005 * training_data['spot_price']
     ]
 
 S = np.sort(training_data['spot_price'].unique())

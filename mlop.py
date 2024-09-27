@@ -75,17 +75,22 @@ class mlop:
             
             # 'updown',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
-            ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
-            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+            ("StandardScaler",StandardScaler(),self.numerical_features),
+            ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
+            # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
+            ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            # ("Normalizer",Normalizer(),self.numerical_features),
             # ("RobustScaler",RobustScaler(),self.numerical_features),
+            
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
             ]   
 
         self.activation_function = self.activation_function[0]
@@ -94,9 +99,10 @@ class mlop:
         print(f"test size: {self.test_size}")
         print(f"random state: {self.random_state}")
         print(f"maximum iterations: {self.max_iter}")
-        print(f"target: \n{self.target_name}")
-        print(f"features: \n{self.feature_set}")
-        print(f"transformers:\n{self.transformers}\n")
+        print(f"\ntarget: \n{self.target_name}")
+        print(f"\nfeatures: \n{self.feature_set}")
+        print(f"\ntransformers:\n{self.transformers}\n")
+        
 # =============================================================================
                                                                 # Preprocessing
 
