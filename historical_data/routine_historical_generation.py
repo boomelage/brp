@@ -81,8 +81,8 @@ historical_data = collect_historical_data()
 total = historical_data.shape[0]
 historical_option_data = pd.DataFrame()
 
-hist_bar = ms.make_tqdm_bar(
-    total=total, desc='generating', unit='days', leave=True)
+# hist_bar = ms.make_tqdm_bar(
+#     total=total, desc='generating', unit='days', leave=True)
 
 training_data = pd.DataFrame()
 for i, row in historical_data.iterrows():
@@ -138,12 +138,22 @@ for i, row in historical_data.iterrows():
         calibration_dataset, s, calculation_date)
     
     """"""
+    
+    
+    
+    
     T = [
-        1,7,10,14,30,
-        90,180,360
+        1,
+        7,
+        10,
+        # 14,
+        # 30,
+        # 90,
+        # 180,
+        # 360
          ]
 
-    n_strikes = 7
+    n_strikes = 10
     down_k_spread = 0.1
     up_k_spread = 0.1
 
@@ -154,16 +164,17 @@ for i, row in historical_data.iterrows():
     training_data = generate_barrier_options(
                 n_strikes, down_k_spread, up_k_spread,
                 n_barriers, barrier_spread, n_barrier_spreads,
-                ms.calculation_date, T, ms.s, heston_parameters, 'hist_outputs'
+                calculation_date, T, s, g, heston_parameters, 'hist_outputs'
                 )
     
-    historical_option_data = pd.concat(
-        [historical_option_data,training_data],
-        ignore_index=True)
+#     historical_option_data = pd.concat(
+#         [historical_option_data,training_data],
+#         ignore_index=True)
     
-    tqdm.write(dtdate.strftime("%Y%m%d"))
-    hist_bar.update(1)
+#     tqdm.write(dtdate.strftime("%c"))
     
-hist_bar.close()
+#     hist_bar.update(1)
+    
+# hist_bar.close()
 
-historical_option_data
+# historical_option_data
