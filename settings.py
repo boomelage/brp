@@ -122,9 +122,12 @@ class model_settings():
             implied_vols_matrix, self.day_count)
         return black_var_surface
 
-    def make_ts_object(self,rate):
-        ts_object = ql.YieldTermStructureHandle(ql.FlatForward(
-            self.calculation_date, rate, self.day_count))
+    def make_ts_object(self, rate):
+        yield_object = ql.FlatForward(
+            0, ql.NullCalendar(), 
+            ql.QuoteHandle(ql.SimpleQuote(rate)), 
+            self.day_count)
+        ts_object = ql.YieldTermStructureHandle(yield_object)
         return ts_object
 
     def compute_maturity_date(self,row):
@@ -151,6 +154,18 @@ class model_settings():
         result[array < 0] = 'otm'
         result[array > 0] = 'itm'
         return result
+    
+    def make_derman_surface(self, s,K,T,derman_coefs,atm_volvec):
+        ts_df = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
+        ts_df.index = K
+        ts_df.columns = T
+        for k in K:
+            for t in T:
+                moneyness = k-s
+                ts_df.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
+        return ts_df
+                
+    
     
     """
     ===========================================================================
@@ -185,8 +200,10 @@ class model_settings():
         return price
     
     def ql_black_scholes(self,
-            s,t,k,r,g,
-            volatility,calculation_date,w
+            s,k,r,g,
+            volatility,w,
+            calculation_date, 
+            expiration_date
             ):
         
         if w == 'call':
@@ -196,7 +213,6 @@ class model_settings():
         else:
             raise KeyError("quantlib black scholes flag error")
         
-        expiration_date = calculation_date + ql.Period(t,ql.Days)
         flat_ts = self.make_ts_object(r)
         divident_ts = self.make_ts_object(g)
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
@@ -226,7 +242,9 @@ class model_settings():
     def ql_heston_price(self,
             s,k,t,r,g,w,
             v0,kappa,theta,eta,rho,
-            calculation_date):
+            calculation_date,
+            expiration_date
+            ):
         
         if w == 'call':
             option_type = ql.Option.Call
@@ -234,16 +252,13 @@ class model_settings():
             option_type = ql.Option.Put
         else:
             raise KeyError('quantlib heston put/call error')
-        
-        date = calculation_date + ql.Period(t,ql.Days)
 
         payoff = ql.PlainVanillaPayoff(option_type, k)
-        exercise = ql.EuropeanExercise(date)
+        exercise = ql.EuropeanExercise(expiration_date)
         european_option = ql.VanillaOption(payoff, exercise)
         
-        flat_ts = self.make_ts_object(r)
-        dividend_ts = self.make_ts_object(g)
-        
+        flat_ts = self.make_ts_object(float(r))
+        dividend_ts = self.make_ts_object(float(g))
         heston_process = ql.HestonProcess(
             
             flat_ts,dividend_ts, 

@@ -2,39 +2,33 @@
 """
 Created on Mon Sep 16 19:47:34 2024
 
-
 """
-import time
-from datetime import datetime
-start_time = time.time()
-start_datetime = datetime.fromtimestamp(start_time)
-start_tag = start_datetime.strftime("%c")
 import os
-import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
-sys.path.append('term_structure')
 import QuantLib as ql
 import numpy as np
 import pandas as pd
 from settings import model_settings
+
+
 ms = model_settings()
 
-def calibrate_heston(calibration_dataset, 
-                     s = ms.s, 
-                     calculation_date = ms.calculation_date,
-                     calendar = ms.calendar,
-                     day_count = ms.day_count
-                     ):
-    risk_free_rate = 0.05
-    dividend_rate = 0.02
-    flat_ts = ms.make_ts_object(risk_free_rate)
-    dividend_ts = ms.make_ts_object(dividend_rate)
+def calibrate_heston(
+        calibration_dataset, 
+        s,
+        r,
+        g,
+        calculation_date,
+        calendar = ms.calendar,
+        day_count = ms.day_count
+        ):
+    
+    flat_ts = ms.make_ts_object(r)
+    dividend_ts = ms.make_ts_object(g)
 
-    heston_helpers = []
-        
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
-
+    heston_helpers = []
     v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; eta = 0.5; 
     process = ql.HestonProcess(
         flat_ts,                
@@ -52,7 +46,6 @@ def calibrate_heston(calibration_dataset,
 
     for row_idx, row in calibration_dataset.iterrows():
         t = row['days_to_maturity']
-        
         date = calculation_date + ql.Period(int(t),ql.Days)
         dt = (date - calculation_date)
         p = ql.Period(dt, ql.Days)

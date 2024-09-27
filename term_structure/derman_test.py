@@ -19,9 +19,9 @@ from matplotlib import cm
 # =============================================================================
 from routine_ivol_collection import raw_calls, raw_puts
 
-s = 5625
+derman_s = 5625
 
-T =  [
+derman_T =  [
             
             2, 
             
@@ -73,10 +73,10 @@ raw_puts = raw_puts
 raw_call_K = raw_calls.index
 raw_put_K = raw_puts.index
 
-put_atmvols = raw_calls.loc[s,:].dropna()
-call_atmvols = raw_puts.loc[s,:].dropna()
-call_K = raw_calls.index[raw_calls.index>s]
-put_K = raw_puts.index[raw_puts.index<s]
+put_atmvols = raw_calls.loc[derman_s,:].dropna()
+call_atmvols = raw_puts.loc[derman_s,:].dropna()
+call_K = raw_calls.index[raw_calls.index>derman_s]
+put_K = raw_puts.index[raw_puts.index<derman_s]
 
 # =============================================================================
 """
@@ -108,33 +108,30 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
 
 
 derman_coefs = compute_derman_coefficients(
-    s, T, raw_call_K, call_atmvols, raw_calls)
+    derman_s, derman_T, raw_call_K, call_atmvols, raw_calls)
 
 
-"""
-surface maker
+# """
+# surface maker
 
-"""
+# """
 
-
-T = derman_coefs.index
-derman_ts = pd.DataFrame(np.zeros((len(raw_call_K),len(T)),dtype=float))
-derman_ts.index = raw_call_K
-derman_ts.columns = T
-
-
-for k in raw_call_K:
-    for t in T:
-        moneyness = k-s
-        derman_ts.loc[k,t] = call_atmvols[t] + derman_coefs[t]*moneyness
-        
-        
-        
+# def make_derman_suface(s,K,T,derman_coefs,atm_volvec):
+#     derman_ts = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
+#     derman_ts.index = K
+#     derman_ts.columns = T
+#     for k in K:
+#         for t in T:
+#             moneyness = k-s
+#             derman_ts.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
+#     return derman_ts
+            
+            
 
 
-"""
-plotting approximation fit
-"""
+# """
+# plotting approximation fit
+# """ 
 
 
 # for t in T: 

@@ -27,6 +27,19 @@ start = time.time()
 
 pd.reset_option('display.max_rows')
 
+def make_barriers(s, updown, n_barriers, barrier_spread,n_barrier_spreads):
+    if updown == "Up":
+        flag = 1
+    elif updown == "Down":
+        flag = -1
+    else:
+        raise ValueError("updown error")
+    barriers = np.linspace(
+        s*(1+flag*barrier_spread*n_barrier_spreads),
+        s*(1+flag*barrier_spread),
+        n_barriers
+        )
+    return barriers
 
 def generate_barrier_features(s,K,T,updown,barriers):
     
@@ -55,133 +68,93 @@ def generate_barrier_features(s,K,T,updown,barriers):
     
     return barrier_features
 
-"""
-# =============================================================================
-"""
 
 
-
-
-T = [
-     10,
-     # 30,90
-     ]
-
-n_strikes = 5
-down_k_spread = 0.05
-up_k_spread = 0.05
-
-n_barriers = 5
-barrier_spread = 0.0010                   
-n_barrier_spreads = 5
-
-g=0.001
-s = ms.s
-
-K = np.linspace(
-    ms.s*(1-down_k_spread),
-    ms.s*(1+up_k_spread),
-    n_strikes
-    )
-
-from routine_calibration_testing import heston_parameters
-
-
-
-
-
-
-
-
-
-
-
-updown = 'Up'
-
-barriers = np.linspace(
-    s*(1+barrier_spread),
-    s*(1+barrier_spread*n_barrier_spreads),
-    n_barriers
-    )
-
-
+def concat_barrier_features(
+        s,K,T,g,heston_parameters,
+        barrier_spread,n_barrier_spreads,n_barriers):
     
-barrier_features = generate_barrier_features(s,K,T,updown,barriers)
-
-
-barrier_features 
-
-
+    barriers = make_barriers(s, 'Up', n_barriers, barrier_spread,n_barrier_spreads)
     
-
-
-
-
-# # features = pd.concat([down_features,up_features],ignore_index=True)
-# features = up_barriers
-# features['eta'] = heston_parameters['eta'].iloc[0]
-# features['theta'] = heston_parameters['theta'].iloc[0]
-# features['kappa'] = heston_parameters['kappa'].iloc[0]
-# features['rho'] = heston_parameters['rho'].iloc[0]
-# features['v0'] = heston_parameters['v0'].iloc[0]
-# features['heston_price'] = np.nan
-# features['heston_price'] = np.nan
-# features['barrier_price'] = np.nan
-
-# pricing_bar = ms.make_tqdm_bar(
-#     desc="pricing",total=features.shape[0],unit='contracts',leave=False)
-
-# for i, row in features.iterrows():
+    up_features = generate_barrier_features(s,K,T,'Up',barriers)
     
-#     barrier_type_name = row['barrier_type_name']
-#     barrier = row['barrier']
-#     s = row['spot_price']
-#     k = row['strike_price']
-#     t = row['days_to_maturity']
-#     w = row['w']
-#     r = 0.04
-#     rebate = 0.
+            
+    barriers = make_barriers(s, 'Down', n_barriers, barrier_spread,n_barrier_spreads)
     
-#     v0 = heston_parameters['v0'].iloc[0]
-#     kappa = heston_parameters['kappa'].iloc[0] 
-#     theta = heston_parameters['theta'].iloc[0] 
-#     eta = heston_parameters['eta'].iloc[0] 
-#     rho = heston_parameters['rho'].iloc[0]
+    down_features = generate_barrier_features(s,K,T,'Down',barriers)
     
-#     heston_price = ms.ql_heston_price(
-#         s,k,t,r,g,w,v0,kappa,theta,eta,rho,calculation_date
-#         )
-#     features.at[i,'heston_price'] = heston_price
     
-#     barrier_price = ms.ql_barrier_price(
-#             s,k,t,r,g,calculation_date,w,
-#             barrier_type_name,barrier,rebate,
-#             v0, kappa, theta, eta, rho)
-
-#     features.at[i,'barrier_price'] = barrier_price
+    features = pd.concat([down_features,up_features],ignore_index=True)
     
-#     pricing_bar.update(1)
-# pricing_bar.close()
+    return features
 
-# training_data = features.copy()
 
-# training_data = ms.noisyfier(training_data)
 
-# pd.set_option("display.max_columns",None)
-# print(f'\n{training_data}\n')
-# print(f'\n{training_data.describe()}')
-# pd.reset_option("display.max_columns")
 
-# file_date = datetime(
-#     calculation_date.year(), 
-#     calculation_date.month(), 
-#     calculation_date.dayOfMonth())
-# date_tag = file_date.strftime("%Y-%m-%d")
-# file_time = datetime.fromtimestamp(time.time())
-# file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-# # training_data.to_csv(os.path.join(
-# #     file_path,f'barriers {date_tag} {file_time_tag}.csv'))
+def generate_barrier_options(features, calculation_date, heston_parameters, g):
+    features['eta'] = heston_parameters['eta'].iloc[0]
+    features['theta'] = heston_parameters['theta'].iloc[0]
+    features['kappa'] = heston_parameters['kappa'].iloc[0]
+    features['rho'] = heston_parameters['rho'].iloc[0]
+    features['v0'] = heston_parameters['v0'].iloc[0]
+    features['heston_price'] = np.nan
+    features['barrier_price'] = np.nan
+    
+    # pricing_bar = ms.make_tqdm_bar(
+    #     desc="pricing",total=features.shape[0],unit='contracts',leave=False)
+    
+    for i, row in features.iterrows():
+        
+        barrier_type_name = row['barrier_type_name']
+        barrier = row['barrier']
+        s = row['spot_price']
+        k = row['strike_price']
+        t = row['days_to_maturity']
+        w = row['w']
+        r = 0.04
+        rebate = 0.
+        
+        v0 = heston_parameters['v0'].iloc[0]
+        kappa = heston_parameters['kappa'].iloc[0] 
+        theta = heston_parameters['theta'].iloc[0] 
+        eta = heston_parameters['eta'].iloc[0] 
+        rho = heston_parameters['rho'].iloc[0]
+        
+        heston_price = ms.ql_heston_price(
+            s,k,t,r,g,w,v0,kappa,theta,eta,rho,calculation_date
+            )
+        features.at[i,'heston_price'] = heston_price
+        
+        barrier_price = ms.ql_barrier_price(
+                s,k,t,r,g,calculation_date,w,
+                barrier_type_name,barrier,rebate,
+                v0, kappa, theta, eta, rho)
+    
+        features.at[i,'barrier_price'] = barrier_price
+        
+    #     pricing_bar.update(1)
+    # pricing_bar.close()
+    
+    training_data = features.copy()
+    
+    training_data = ms.noisyfier(training_data)
+    
+    pd.set_option("display.max_columns",None)
+    print(f'\n{training_data}\n')
+    print(f'\n{training_data.describe()}')
+    pd.reset_option("display.max_columns")
+    
+    # file_date = datetime(
+    #     calculation_date.year(), 
+    #     calculation_date.month(), 
+    #     calculation_date.dayOfMonth())
+    # date_tag = file_date.strftime("%Y-%m-%d")
+    # file_time = datetime.fromtimestamp(time.time())
+    # file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+    # training_data.to_csv(os.path.join(
+    #     file_path,f'barriers {date_tag} {file_time_tag}.csv'))
 
-# return training_data
+    return training_data
+
 
 
