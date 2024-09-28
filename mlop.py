@@ -47,8 +47,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -70,9 +70,9 @@ class mlop:
             
             'barrier_type_name',
             
-            'outin',
+            # 'outin',
             
-            'updown',
+            # 'updown',
             
             # 'moneyness_tag',
             

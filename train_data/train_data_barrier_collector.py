@@ -9,14 +9,15 @@ import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
+historical_data_dir = os.path.join(parent_dir,'historical_data','hist_outputs')
+sys.path.append(historical_data_dir)
+
 import pandas as pd
 import numpy as np
 from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
-os.chdir(current_dir)
+os.chdir(historical_data_dir)
 
 ms = model_settings()
 csvs = dirdatacsv()
@@ -33,14 +34,15 @@ training_data = training_data.drop(
 
 
 
+
 """
 maturities filter
 """
 
-training_data = training_data[
-    (abs(training_data['days_to_maturity'])>=0)&
-    (abs(training_data['days_to_maturity'])<=99999)
-    ].reset_index(drop=True)
+# training_data = training_data[
+#     (abs(training_data['days_to_maturity'])>=0)&
+#     (abs(training_data['days_to_maturity'])<=31)
+#     ].reset_index(drop=True)
 
 """
 type filter
@@ -51,8 +53,6 @@ type filter
 
 """"""
 training_data = compute_moneyness(training_data)
-
-training_data
 
 """"""
 """
@@ -65,12 +65,7 @@ moneyness filter
 #     ].reset_index(drop=True)
 
 
-# """"""
-
-
-# training_data = training_data.loc[
-#     training_data['observed_price'] >= 0.0001 * training_data['spot_price']
-#     ]
+""""""
 
 
 training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
@@ -91,4 +86,4 @@ print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
 pd.reset_option("display.max_columns")
 
-    
+os.chdir(parent_dir)

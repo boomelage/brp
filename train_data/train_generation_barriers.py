@@ -95,7 +95,7 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     features['barrier_price'] = np.nan
     
     pricing_bar = ms.make_tqdm_bar(
-        desc="pricing",total=features.shape[0],unit='contracts',leave=False)
+        desc="pricing",total=features.shape[0],unit='contracts',leave=True)
     
     for i, row in features.iterrows():
         

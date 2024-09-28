@@ -12,6 +12,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mlop import mlop
 from data_query import dirdatacsv
 csvs = dirdatacsv()
+sys.path.append('train_data')
 sys.path.append(os.path.join('train_data','barriers'))
 sys.path.append(os.path.join('train_data','vanillas'))
 
@@ -34,8 +35,8 @@ print(f"\n{train_start_tag}\n")
 
 "from archive"
 
-# from train_data_barrier_collector import training_data
-# title = 'Prediction errors for barrier options'
+from train_data_barrier_collector import training_data
+title = 'Prediction errors for barrier options'
 
 # from train_data_vanilla_collector import training_data
 # title = 'Prediction errors for Heston vanilla options'
