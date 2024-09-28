@@ -3,14 +3,10 @@
 Created on Sat Sep 21 16:10:31 2024
 
 generation routine
+
 """
 import os
 import sys
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-sys.path.append(os.path.join(parent_dir,'train_data'))
-sys.path.append(os.path.join(parent_dir,'term_structure'))
 import time
 import pandas as pd
 import numpy as np
@@ -18,9 +14,15 @@ import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
 from datetime import datetime
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+sys.path.append(os.path.join(parent_dir,'train_data'))
+sys.path.append(os.path.join(parent_dir,'term_structure'))
 from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
-from train_generation_barriers import concat_barrier_features, generate_barrier_options
+from train_generation_barriers import generate_barrier_features, \
+    generate_barrier_options
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
@@ -32,46 +34,20 @@ historical_data = collect_historical_data()
                         historical generation routine
 """
 
-    
-# T = [
-    
-#     1,
-#     7,
-#     10,
-#     14,
-#     30,
-#     90,
-#     180,
-#     360
-    
-#        ]
-      
-# T = np.arange(1,4,1)
-n_strikes = 10
-down_k_spread = 0.1
-up_k_spread = 0.1
-
-n_barriers = 30
-barrier_spread = 0.005                  
-n_barrier_spreads = 30
-
-
-
+r = 0.04
 historical_barriers = pd.DataFrame()
-for i, row in historical_data.iterrows():
-    print(row)
+for row_i, row in historical_data.iterrows():
     s = row['spot_price']
     g = row['dividend_rate']/100
     dtdate = row['date']
+    print_date = dtdate.strftime('%A %d %B %Y')
     calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
     
-    
-    """
-    ===========================================================================
-    calibration
-    """
-    
-    calibration_T = ms.derman_coefs.index.astype(int)
+                    ###############
+                    # CALIBRATION #
+                    ###############
+                    
+    T = ms.derman_coefs.index.astype(int)
     
     atm_volvec = np.array(row[
         [
@@ -80,26 +56,21 @@ for i, row in historical_data.iterrows():
         ]/100,dtype=float)
     
     atm_volvec = pd.Series(atm_volvec)
-    atm_volvec.index = calibration_T
+    atm_volvec.index = T
     
-    n_hist_spreads = 10
-    historical_spread = 0.005
-    n_strikes = 10
+    K = np.linspace( s*0.9, s*1.1, 10)
     
-    K = np.linspace(
-        s*(1 - n_hist_spreads * historical_spread),
-        s*(1 + n_hist_spreads * historical_spread),
-        n_strikes)
-    
-    derman_ts = ms.make_derman_surface(s,K,calibration_T,ms.derman_coefs,atm_volvec)
+    derman_ts = ms.make_derman_surface(
+        s,K,T,ms.derman_coefs,atm_volvec)
        
-    bicubic_vol = make_bicubic_functional(derman_ts,K.tolist(),calibration_T.tolist())
+    bicubic_vol = make_bicubic_functional(
+        derman_ts,K.tolist(),T.tolist())
         
     calibration_dataset =  pd.DataFrame(
         product(
             [s],
             K,
-            calibration_T,
+            T,
             ),
         columns=[
             'spot_price', 
@@ -110,9 +81,7 @@ for i, row in historical_data.iterrows():
     calibration_dataset = calibration_dataset.apply(
         bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
     calibration_dataset = calibration_dataset.copy()
-    calibration_dataset['risk_free_rate'] = 0.04
-    
-    r = 0.04
+    calibration_dataset['risk_free_rate'] = r
     
     heston_parameters, performance_df = calibrate_heston(
             calibration_dataset, 
@@ -122,54 +91,75 @@ for i, row in historical_data.iterrows():
             calculation_date
             )
     
-    v0 = heston_parameters['v0']
-    theta = heston_parameters['theta']
-    kappa = heston_parameters['kappa']
-    eta = heston_parameters['eta']
-    rho = heston_parameters['rho']
+    test_dataset = calibration_dataset.copy()
+    for key in heston_parameters.index[:-1]:
+        test_dataset[key] = heston_parameters[key]
     
-    test_t = calibration_T[0]
-    test_k = float(s*0.8)
-    test_volatility =  float(atm_volvec[calibration_T[0]])
-    test_w = 'call'
-    expiration_date = calculation_date + ql.Period(int(test_t),ql.Days)
-    bs = ms.ql_black_scholes(
-            s,test_k,r,0.00,
-            test_volatility,test_w,
+    test_S = test_dataset['spot_price']
+    test_K = test_dataset['strike_price']
+    test_T = test_dataset['days_to_maturity']
+    expiration_date = np.empty(len(test_T),dtype=object)
+    for i,mat in enumerate(test_T):
+        expiration_date[i] = calculation_date + ql.Period(
+            int(mat),ql.Days)
+        
+    test_VOLS = test_dataset['volatility']
+    w = 'put'
+    
+    bs_prices = ms.vector_black_scholes(
+            test_S,test_K,test_T,r,test_VOLS,w
+        )
+    test_dataset['np_black_scholes'] = bs_prices
+    
+    ql_bsps = ms.vector_qlbs(
+            test_S,test_K,r,g,
+            test_VOLS,w,
             calculation_date, 
             expiration_date
-            )
-    heston = ms.ql_heston_price(
-                s,test_k,r,0.00,test_w,
-                v0,kappa,theta,eta,rho,
-                calculation_date,
-                expiration_date
-                )
-    my_bs = ms.black_scholes_price(s,test_k,test_t,r,test_volatility,test_w)
+        )
+    test_dataset['ql_black_scholes'] = bs_prices
     
-    tqdm.write(f"\nnumpy black scholes, quantlib bs, quantlib heston: "
-          f"{round(my_bs,2)}, {round(bs,2)}, {round(heston,2)}")
-    tqdm.write(
-        f"\n{dtdate.strftime('%A %d %B %Y')} "
-        f"{int(i)}/{historical_data.shape[0]}\n")
+    hestons = ms.vector_heston_price(
+            test_S,test_K,
+            r,g,w,
+            heston_parameters['v0'],
+            heston_parameters['kappa'],
+            heston_parameters['theta'],
+            heston_parameters['eta'],
+            heston_parameters['rho'],
+            calculation_date,
+            expiration_date
+        )
+    test_dataset['ql_heston'] = hestons
     
-    """
-    ===========================================================================
-    data generation
-    """
-    T = calibration_T
-    features = concat_barrier_features(
-        s,T,g,heston_parameters,
-        down_k_spread, up_k_spread, n_strikes,
-        barrier_spread,n_barrier_spreads,n_barriers
-            )
+    pd.set_option("display.max_columns",None)
+    print_cols = ['np_black_scholes', 'ql_black_scholes', 'ql_heston']
+    print(f"\n{test_dataset[print_cols]}\nspot: {s} | "
+          f"{row_i}/{historical_data.shape[0]} | {print_date}\n")
+    pd.reset_option("display.max_columns")
     
-    training_data = generate_barrier_options(
-            features, calculation_date, heston_parameters, g, 'hist_outputs')
+                ###################
+                # DATA GENERATION #
+                ###################
     
-    historical_option_data = pd.concat(
-        [historical_barriers,training_data],
-        ignore_index=True)
+    T = [1,10,30,60,180]
+    K = np.linspace(s*0.8,s*1.2,50)
     
-    print(f"\n{training_data}\n")
-    print(f"\n{dtdate.strftime('%A %d %B %Y')}\n")
+    up_barriers = np.linspace(s*1.01,s*1.19,25)
+    down_barriers = np.linspace(s*0.81,s*0.99,25)
+    
+    features = generate_barrier_features(
+        s,K,T,down_barriers,'Down', ['Out'], ['put']
+        )
+    
+    features['barrier_type_name'] = features['updown'] + features['outin']
+    
+    barriers = generate_barrier_options(
+        features,calculation_date,heston_parameters, g, r'hist_outputs')
+    
+    historical_barriers = pd.concat(
+        [historical_barriers, barriers],ignore_index=True)
+    
+    print(f"\n{historical_barriers.describe()}\n{print_date}")
+    
+    

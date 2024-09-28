@@ -54,7 +54,7 @@ K = np.linspace(
     s*1.1,
     s*1.2,
     
-    750
+    50
     )
 
 # T = ms.T
@@ -78,45 +78,25 @@ features = generate_train_features(K, T, s, flags)
 
 features = compute_moneyness(features)
 
-features['dividend_rate'] = 0.02
-features['risk_free_rate'] = 0.04
-features['eta'] = heston_parameters['eta'].iloc[0]
-features['theta'] = heston_parameters['theta'].iloc[0]
-features['kappa'] = heston_parameters['kappa'].iloc[0]
-features['rho'] = heston_parameters['rho'].iloc[0]
-features['v0'] = heston_parameters['v0'].iloc[0]
+g = 0.02
+r = 0.04
 
 print("\npricing contracts...\n")
 
-progress_bar = ms.make_tqdm_bar(
-    desc="pricing", 
-    unit="contracts",
-    total=features.shape[0])
-
-features['heston_price'] = 0.00
-for i, row in features.iterrows():
-    
-    s = row['spot_price']
-    k = row['strike_price']
-    t = row['days_to_maturity']
-    r = row['risk_free_rate']
-    g = row['dividend_rate']
-    
-    v0 = row['v0']
-    kappa = row['kappa']
-    theta = row['theta']
-    eta = row['eta']
-    rho = row['rho']
-    w = row['w']
-    
-    h_price = ms.ql_heston_price(s,k,t,r,g,w,
-                                  v0,kappa,theta,eta,rho,
-                                  ms.calculation_date)
-    features.at[i,'heston_price'] = h_price
-    
-    progress_bar.update(1)
-
-progress_bar.close()
+w = features['w']
+k = features['strike_price']
+expiration_date = ms.compute_ql_maturity_dates(
+    features['days_to_maturity'],calculation_date)
+features['heston_price'] = ms.vector_heston_price(
+            s,k,r,g,w,
+            v0 = heston_parameters['v0'],
+            kappa = heston_parameters['kappa'],
+            theta = heston_parameters['theta'],
+            eta = heston_parameters['eta'],
+            rho = heston_parameters['rho'],
+            calculation_date = calculation_date,
+            expiration_date = expiration_date
+    )
 
 training_data = features.copy()
 

@@ -11,7 +11,6 @@ from datetime import datetime
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mlop import mlop
 from data_query import dirdatacsv
-csvs = dirdatacsv()
 sys.path.append('train_data')
 sys.path.append(os.path.join('train_data','barriers'))
 sys.path.append(os.path.join('train_data','vanillas'))

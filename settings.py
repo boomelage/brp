@@ -6,10 +6,6 @@ Created on Mon Sep  9 13:54:57 2024
 """
 import os
 import sys
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('term_structure')
-sys.path.append('contract_details')
-sys.path.append('misc')
 import QuantLib as ql
 import numpy as np
 import pandas as pd
@@ -22,6 +18,13 @@ from derman_test import derman_coefs
 class model_settings():
     
     def __init__(self):
+        
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        sys.path.append('term_structure')
+        sys.path.append('contract_details')
+        sys.path.append('train_data')
+        sys.path.append('historical_data')
+        sys.path.append('misc')
         
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
@@ -93,19 +96,6 @@ class model_settings():
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T)
     
-    def make_ql_array(self,nparr):
-        qlarr = ql.Array(len(nparr),1)
-        for i in range(len(nparr)):
-            qlarr[i] = float(nparr[i])
-        return qlarr
-    
-    def expiration_date(self, t, calculation_date=None):
-        if calculation_date is None:
-            calculation_date = self.calculation_date
-        ql.Settings.instance().evaluationDate = calculation_date
-        expiration_date = calculation_date + ql.Period(int(t), ql.Days)
-        return expiration_date
-
     
     def compute_ql_maturity_dates(self, maturities, calculation_date=None):
         if calculation_date is None:
@@ -309,7 +299,8 @@ class model_settings():
     def ql_barrier_price(self,
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, eta, rho):
+            v0, kappa, theta, eta, rho
+            ):
         ql.Settings.instance().evaluationDate = calculation_date
         flat_ts = self.make_ts_object(r)
         dividend_ts = self.make_ts_object(g)
@@ -370,7 +361,24 @@ class model_settings():
             s,k,t,r,volatility,w
             )
         return black_scholes_prices
+    
+    def vector_qlbs(self,
+            s,k,r,g,
+            volatility,w,
+            calculation_date, 
+            expiration_date
+            ):
+        vqlbs = np.vectorize(self.ql_black_scholes)
         
+        ql_bsps = vqlbs(
+                s,k,r,g,
+                volatility,w,
+                calculation_date, 
+                expiration_date
+                )
+        return ql_bsps
+        
+    
     def vector_heston_price(self,
             s,k,r,g,w,
             v0,kappa,theta,eta,rho,
@@ -387,7 +395,20 @@ class model_settings():
             )
         return heston_prices
     
-    
+    def vector_barrier_price(self,
+            s,k,t,r,g,calculation_date, w,
+            barrier_type_name,barrier,rebate,
+            v0, kappa, theta, eta, rho
+            ):
+        vql_barrier_price = np.vectorize(self.ql_barrier_price)
+        
+        barrier_prices = vql_barrier_price(
+            s,k,t,r,g,calculation_date, w,
+            barrier_type_name,barrier,rebate,
+            v0, kappa, theta, eta, rho
+            )
+        
+        return barrier_prices
     
 """
 # =============================================================================

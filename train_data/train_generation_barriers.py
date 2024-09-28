@@ -2,7 +2,6 @@
 """
 Created on Thu Sep 26 17:33:55 2024
 
-@author: boomelage
 """
 
 import os
@@ -31,7 +30,7 @@ def make_barriers(
         )
     return barriers
 
-def generate_barrier_features(s,K,T,updown,barriers):
+def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     
     barrier_features =  pd.DataFrame(
         product(
@@ -40,14 +39,8 @@ def generate_barrier_features(s,K,T,updown,barriers):
             barriers,
             T,
             [updown],
-            [
-                'Out',
-                'In'
-                ],
-            [
-                'call',
-                'put'
-                ]
+            OUTIN,
+            W
             ),
         columns=[
             'spot_price', 
@@ -66,32 +59,12 @@ def generate_barrier_features(s,K,T,updown,barriers):
 
 
 
-def concat_barrier_features(
-        s,T,g,heston_parameters,
-        down_k_spread, up_k_spread, n_strikes,
-        barrier_spread,n_barrier_spreads,n_barriers
-        ):
-    
-    K = np.linspace(s*(1+down_k_spread),s*(1+up_k_spread),n_strikes)
-    
-    barriers = make_barriers(s, 'Up', n_barriers, barrier_spread,n_barrier_spreads)
-    
-    up_features = generate_barrier_features(s,K,T,'Up',barriers)
-    
-            
-    barriers = make_barriers(s, 'Down', n_barriers, barrier_spread,n_barrier_spreads)
-    
-    down_features = generate_barrier_features(s,K,T,'Down',barriers)
-    
-    
-    features = pd.concat([down_features,up_features],ignore_index=True)
-    
-    return up_features
 
 
 
 def generate_barrier_options(
         features, calculation_date, heston_parameters, g, output_folder):
+    
     features['eta'] = heston_parameters['eta']
     features['theta'] = heston_parameters['theta']
     features['kappa'] = heston_parameters['kappa']
@@ -101,7 +74,8 @@ def generate_barrier_options(
     features['barrier_price'] = np.nan
     
     pricing_bar = ms.make_tqdm_bar(
-        desc="pricing",total=features.shape[0],unit='contracts',leave=True)
+        desc='pricing', unit='contracts', leave=True, total = features.shape[0]
+        )
     
     for i, row in features.iterrows():
         
@@ -111,15 +85,16 @@ def generate_barrier_options(
         k = row['strike_price']
         t = row['days_to_maturity']
         w = row['w']
+        barrier = row['barrier']
+        barrier_type_name = row['barrier_type_name']
+        v0 = row['v0']
+        kappa = row['kappa']
+        theta = row['theta']
+        eta = row['eta']
+        rho = row['rho']
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         r = 0.04
         rebate = 0.
-        
-        v0 = heston_parameters['v0']
-        kappa = heston_parameters['kappa']
-        theta = heston_parameters['theta']
-        eta = heston_parameters['eta']
-        rho = heston_parameters['rho']
-        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
         heston_price = ms.ql_heston_price(
             s,k,r,g,w,
@@ -135,10 +110,8 @@ def generate_barrier_options(
                 v0, kappa, theta, eta, rho)
     
         features.at[i,'barrier_price'] = barrier_price
-        
         pricing_bar.update(1)
     pricing_bar.close()
-    
     training_data = features.copy()
     
     training_data = ms.noisyfier(training_data)

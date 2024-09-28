@@ -111,7 +111,6 @@ example usage
 """
 from routine_calibration_generation import calibration_dataset
 from routine_calibration_testing import heston_parameters
-test_dataset = ms.apply_heston_parameters(calibration_dataset,heston_parameters)
 
 r = 0.04
 g = 0.00
@@ -143,9 +142,8 @@ test_dataset['heston_price'] = ms.vector_heston_price(
     )
 
 
+from train_generation_
 
 pd.set_option("display.max_columns",None)
-
-test_dataset
-
-# pd.reset_option("display.max_columns")
+print(f"\n{test_dataset}\n")
+pd.reset_option("display.max_columns")

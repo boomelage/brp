@@ -70,27 +70,27 @@ class mlop:
             
             # 'barrier_type_name',
             
-            'outin',
+            # 'outin',
             
             # 'updown',
             
-            'moneyness_tag',
+            # 'moneyness_tag',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            # ("StandardScaler",StandardScaler(),self.numerical_features),
+            ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
-            ("RobustScaler",RobustScaler(),self.numerical_features),
+            # ("RobustScaler",RobustScaler(),self.numerical_features),
             
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]   
