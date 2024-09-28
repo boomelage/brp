@@ -103,7 +103,7 @@ class model_settings():
         if calculation_date is None:
             calculation_date = self.calculation_date
         ql.Settings.instance().evaluationDate = calculation_date
-        expiration_date = calculation_date + ql.Period(t, ql.Days)
+        expiration_date = calculation_date + ql.Period(int(t), ql.Days)
         return expiration_date
 
     
@@ -185,7 +185,13 @@ class model_settings():
                 moneyness = k-s
                 ts_df.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
         return ts_df
-                
+    
+    
+    def apply_heston_parameters(self, df, heston_parameters):
+        paras = ['v0','theta','eta','kappa','rho']
+        for para in paras:
+            df[para] = heston_parameters[para]
+        return df
     
     
     """
