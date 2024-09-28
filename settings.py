@@ -42,7 +42,7 @@ class model_settings():
             # 24.4341
             
             ]
-        
+            # Tuesday 03 January 2012 spx
         self.ql_T = [
             
             ql.Period(30,ql.Days), 

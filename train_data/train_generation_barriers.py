@@ -85,7 +85,8 @@ def concat_barrier_features(
 
 
 
-def generate_barrier_options(features, calculation_date, heston_parameters, g):
+def generate_barrier_options(
+        features, calculation_date, heston_parameters, g, output_filepath):
     features['eta'] = heston_parameters['eta'].iloc[0]
     features['theta'] = heston_parameters['theta'].iloc[0]
     features['kappa'] = heston_parameters['kappa'].iloc[0]
@@ -150,7 +151,7 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     file_time = datetime.fromtimestamp(time.time())
     file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
     training_data.to_csv(os.path.join(
-        'hist_outputs',f'barriers {date_tag} {file_time_tag}.csv'))
+        output_filepath,f'barriers {date_tag} {file_time_tag}.csv'))
 
     return training_data
 

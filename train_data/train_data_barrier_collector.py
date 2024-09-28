@@ -48,7 +48,7 @@ maturities filter
 type filter
 """
 
-# training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
 
 """"""
