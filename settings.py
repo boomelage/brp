@@ -355,6 +355,40 @@ class model_settings():
         
         return barrier_price
     
+    """
+    ===========================================================================
+    vectorized pricing functions
+    """
+    
+    
+    def vector_black_scholes(self,
+            s,k,t,r,volatility,w
+            ):
+        vblack_scholes_price = np.vectorize(self.black_scholes_price)
+        
+        black_scholes_prices = vblack_scholes_price(
+            s,k,t,r,volatility,w
+            )
+        return black_scholes_prices
+        
+    def vector_heston_price(self,
+            s,k,r,g,w,
+            v0,kappa,theta,eta,rho,
+            calculation_date,
+            expiration_date
+            ):
+        
+        vql_heston_price = np.vectorize(self.ql_heston_price)
+        heston_prices = vql_heston_price(
+            s,k,r,g,w,
+            v0,kappa,theta,eta,rho,
+            calculation_date,
+            expiration_date
+            )
+        return heston_prices
+    
+    
+    
 """
 # =============================================================================
                     auxilliary functions
