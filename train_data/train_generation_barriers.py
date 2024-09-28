@@ -92,11 +92,11 @@ def concat_barrier_features(
 
 def generate_barrier_options(
         features, calculation_date, heston_parameters, g, output_folder):
-    features['eta'] = heston_parameters['eta'].iloc[0]
-    features['theta'] = heston_parameters['theta'].iloc[0]
-    features['kappa'] = heston_parameters['kappa'].iloc[0]
-    features['rho'] = heston_parameters['rho'].iloc[0]
-    features['v0'] = heston_parameters['v0'].iloc[0]
+    features['eta'] = heston_parameters['eta']
+    features['theta'] = heston_parameters['theta']
+    features['kappa'] = heston_parameters['kappa']
+    features['rho'] = heston_parameters['rho']
+    features['v0'] = heston_parameters['v0']
     features['heston_price'] = np.nan
     features['barrier_price'] = np.nan
     
@@ -114,15 +114,15 @@ def generate_barrier_options(
         r = 0.04
         rebate = 0.
         
-        v0 = heston_parameters['v0'].iloc[0]
-        kappa = heston_parameters['kappa'].iloc[0] 
-        theta = heston_parameters['theta'].iloc[0] 
-        eta = heston_parameters['eta'].iloc[0] 
-        rho = heston_parameters['rho'].iloc[0]
+        v0 = heston_parameters['v0']
+        kappa = heston_parameters['kappa']
+        theta = heston_parameters['theta']
+        eta = heston_parameters['eta']
+        rho = heston_parameters['rho']
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
         heston_price = ms.ql_heston_price(
-            s,k,t,r,g,w,
+            s,k,r,g,w,
             v0,kappa,theta,eta,rho,
             calculation_date,
             expiration_date

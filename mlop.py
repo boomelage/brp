@@ -70,13 +70,13 @@ class mlop:
             
             # 'barrier_type_name',
             
-            # 'outin',
+            'outin',
             
             # 'updown',
             
             'moneyness_tag',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features

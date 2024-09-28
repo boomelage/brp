@@ -44,16 +44,16 @@ historical_data = collect_historical_data()
 #     180,
 #     360
     
-      # ]
-T = np.arange(1,4,1)
+#        ]
+      
+# T = np.arange(1,4,1)
 n_strikes = 10
 down_k_spread = 0.1
 up_k_spread = 0.1
 
-n_barriers = 10
+n_barriers = 30
 barrier_spread = 0.005                  
-n_barrier_spreads = 20
-
+n_barrier_spreads = 30
 
 
 
@@ -122,11 +122,11 @@ for i, row in historical_data.iterrows():
             calculation_date
             )
     
-    v0 = heston_parameters['v0'].iloc[0]
-    theta = heston_parameters['theta'].iloc[0]
-    kappa = heston_parameters['kappa'].iloc[0]
-    eta = heston_parameters['eta'].iloc[0]
-    rho = heston_parameters['rho'].iloc[0]
+    v0 = heston_parameters['v0']
+    theta = heston_parameters['theta']
+    kappa = heston_parameters['kappa']
+    eta = heston_parameters['eta']
+    rho = heston_parameters['rho']
     
     test_t = calibration_T[0]
     test_k = float(s*0.8)
@@ -140,7 +140,7 @@ for i, row in historical_data.iterrows():
             expiration_date
             )
     heston = ms.ql_heston_price(
-                s,test_k,test_t,r,0.00,test_w,
+                s,test_k,r,0.00,test_w,
                 v0,kappa,theta,eta,rho,
                 calculation_date,
                 expiration_date
@@ -148,17 +148,21 @@ for i, row in historical_data.iterrows():
     my_bs = ms.black_scholes_price(s,test_k,test_t,r,test_volatility,test_w)
     
     tqdm.write(f"\nnumpy black scholes, quantlib bs, quantlib heston: "
-          f"{int(my_bs)}, {int(bs)}, {int(heston)}")
-    tqdm.write(f"\n{dtdate.strftime('%A %d %B %Y')} {int(i)}/{historical_data.shape[0]}\n")
+          f"{round(my_bs,2)}, {round(bs,2)}, {round(heston,2)}")
+    tqdm.write(
+        f"\n{dtdate.strftime('%A %d %B %Y')} "
+        f"{int(i)}/{historical_data.shape[0]}\n")
     
     """
     ===========================================================================
     data generation
     """
-    
+    T = calibration_T
     features = concat_barrier_features(
-            s,K,T,g,heston_parameters,
-            barrier_spread,n_barrier_spreads,n_barriers)
+        s,T,g,heston_parameters,
+        down_k_spread, up_k_spread, n_strikes,
+        barrier_spread,n_barrier_spreads,n_barriers
+            )
     
     training_data = generate_barrier_options(
             features, calculation_date, heston_parameters, g, 'hist_outputs')

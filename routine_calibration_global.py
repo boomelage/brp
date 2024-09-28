@@ -10,8 +10,6 @@ import QuantLib as ql
 import numpy as np
 import pandas as pd
 from settings import model_settings
-
-
 ms = model_settings()
 
 def calibrate_heston(
@@ -85,20 +83,19 @@ def calibrate_heston(
             performance_df.loc[i,'relative_error'])
         )*100/performance_df.shape[0]
     
-    param_names = ['spot','theta', 'rho', 'kappa', 'eta', 'v0', 'avg']
+    param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price', 'avg']
     
-    heston_parameters_np = np.zeros((1,len(param_names)),dtype=float)
-    heston_parameters = pd.DataFrame(heston_parameters_np)
-    heston_parameters.columns = param_names
+    heston_parameters_np = np.zeros(len(param_names),dtype=float)
+    heston_parameters = pd.Series(heston_parameters_np)
+    heston_parameters.index = param_names
     
-    heston_parameters['spot'] = s
     heston_parameters['theta'] = theta
     heston_parameters['rho'] = rho
     heston_parameters['kappa'] = kappa
     heston_parameters['eta'] = eta
     heston_parameters['v0'] = v0
+    heston_parameters['spot_price'] = s
     heston_parameters['avg'] = avg
-    heston_parameters = heston_parameters.set_index('spot',drop=True)
     
     pd.set_option("display.max_columns",None)
     pd.set_option("display.max_rows",None),

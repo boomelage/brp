@@ -25,6 +25,7 @@ class model_settings():
         
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
+        # self.calculation_date   =    ql.Date.todaysDate()
         self.calculation_date   =    ql.Date.todaysDate()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
@@ -91,17 +92,28 @@ class model_settings():
         
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T)
-        
+    
     def make_ql_array(self,nparr):
         qlarr = ql.Array(len(nparr),1)
         for i in range(len(nparr)):
             qlarr[i] = float(nparr[i])
         return qlarr
     
-    def compute_ql_maturity_dates(self, maturities):
+    def expiration_date(self, t, calculation_date=None):
+        if calculation_date is None:
+            calculation_date = self.calculation_date
+        ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(t, ql.Days)
+        return expiration_date
+
+    
+    def compute_ql_maturity_dates(self, maturities, calculation_date=None):
+        if calculation_date is None:
+            calculation_date = self.calculation_date
+        ql.Settings.instance().evaluationDate = calculation_date
         expiration_dates = np.empty(len(maturities),dtype=object)
         for i, maturity in enumerate(maturities):
-            expiration_dates[i] = self.calculation_date + ql.Period(
+            expiration_dates[i] = calculation_date + ql.Period(
                 int(maturity), ql.Days)
         return expiration_dates
     
@@ -114,9 +126,15 @@ class model_settings():
         return implied_vols_matrix
     
     def make_black_var_surface(
-            self, expiration_dates, Ks, implied_vols_matrix):
+            self, expiration_dates, Ks, implied_vols_matrix, 
+            calculation_date=None):
+        
+        if calculation_date is None:
+            calculation_date = self.calculation_date
+        ql.Settings.instance().evaluationDate = calculation_date
+        
         black_var_surface = ql.BlackVarianceSurface(
-            self.calculation_date, self.calendar,
+            calculation_date, self.calendar,
             expiration_dates, Ks,
             implied_vols_matrix, self.day_count)
         return black_var_surface
@@ -129,9 +147,13 @@ class model_settings():
         ts_object = ql.YieldTermStructureHandle(yield_object)
         return ts_object
 
-    def compute_maturity_date(self,row):
+    def compute_maturity_date(self,row,calculation_date = None):
+        if calculation_date is None:
+            calculation_date = self.calculation_date
+        ql.Settings.instance().evaluationDate = calculation_date
+        
         row['calculation_date'] = self.calculation_date
-        row['maturity_date'] = self.calculation_date + ql.Period(
+        row['maturity_date'] = calculation_date + ql.Period(
             int(row['days_to_maturity']),ql.Days)
         return row
     
@@ -241,7 +263,7 @@ class model_settings():
     
     
     def ql_heston_price(self,
-            s,k,t,r,g,w,
+            s,k,r,g,w,
             v0,kappa,theta,eta,rho,
             calculation_date,
             expiration_date

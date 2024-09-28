@@ -20,7 +20,7 @@ from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
 
 
-DATA_DIRECTORY = spontaneous_data_directory
+DATA_DIRECTORY = historical_data_dir
 
 os.chdir(DATA_DIRECTORY)
 
@@ -58,21 +58,20 @@ type filter
 
 """"""
 training_data = compute_moneyness(training_data)
-
 """"""
 """
 moneyness filter
 """
 
-training_data = training_data[
-    (training_data['moneyness']>=-0.05)&
-    (training_data['moneyness']<=-0.0)
-    ].reset_index(drop=True)
+# training_data = training_data[
+#     (training_data['moneyness']>=-0.05)&
+#     (training_data['moneyness']<=-0.0)
+#     ].reset_index(drop=True)
 
-training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
+
 """"""
 
-
+training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 
 training_data = training_data[

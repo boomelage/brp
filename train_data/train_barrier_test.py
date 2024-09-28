@@ -17,7 +17,7 @@ ms = model_settings()
 os.chdir(current_dir)
 from train_generation_barriers import concat_barrier_features,\
     generate_barrier_options
-    
+
 T = [10,30,90]
 
 n_strikes = 5
