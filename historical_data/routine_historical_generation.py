@@ -166,5 +166,6 @@ for i, row in historical_data.iterrows():
     historical_option_data = pd.concat(
         [historical_barriers,training_data],
         ignore_index=True)
+    
     print(f"\n{training_data}\n")
     print(f"\n{dtdate.strftime('%A %d %B %Y')}\n")

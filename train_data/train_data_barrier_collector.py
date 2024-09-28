@@ -11,13 +11,18 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 historical_data_dir = os.path.join(parent_dir,'historical_data','hist_outputs')
+spontaneous_data_directory = os.path.join(current_dir,'barriers')
 sys.path.append(historical_data_dir)
-
+sys.path.append(spontaneous_data_directory)
 import pandas as pd
 import numpy as np
 from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
-os.chdir(historical_data_dir)
+
+
+DATA_DIRECTORY = spontaneous_data_directory
+
+os.chdir(DATA_DIRECTORY)
 
 ms = model_settings()
 csvs = dirdatacsv()
@@ -47,8 +52,8 @@ maturities filter
 """
 type filter
 """
-
-training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+ 
+# training_data = training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
 
 
 """"""
@@ -59,12 +64,12 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 
-# training_data = training_data[
-#     (training_data['moneyness']>=-0.05)&
-#     (training_data['moneyness']<=-0.001)
-#     ].reset_index(drop=True)
+training_data = training_data[
+    (training_data['moneyness']>=-0.05)&
+    (training_data['moneyness']<=-0.0)
+    ].reset_index(drop=True)
 
-
+training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 """"""
 
 
@@ -72,8 +77,9 @@ training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 
 training_data = training_data[
     [ 'spot_price', 'strike_price', 'days_to_maturity', 'moneyness','barrier', 
-      'outin', 'w', 'updown', 'barrier_type_name', 'theta', 'kappa', 'rho', 
-      'eta','v0', 'heston_price', 'barrier_price', 'observed_price' ]
+      'outin', 'w', 'updown', 'barrier_type_name', 'moneyness_tag',
+      'theta', 'kappa', 'rho', 'eta','v0', 
+      'heston_price', 'barrier_price', 'observed_price' ]
     ]
 
 T = np.sort(training_data['days_to_maturity'].unique())
@@ -86,4 +92,3 @@ print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}\n")
 pd.reset_option("display.max_columns")
 
-os.chdir(parent_dir)

@@ -47,8 +47,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -68,15 +68,15 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
             # 'updown',
             
-            # 'moneyness_tag',
+            'moneyness_tag',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features

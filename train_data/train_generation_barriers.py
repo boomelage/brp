@@ -6,23 +6,18 @@ Created on Thu Sep 26 17:33:55 2024
 """
 
 import os
-import sys
 import time
 import numpy as np
 import pandas as pd
 import QuantLib as ql
 from itertools import product
 from datetime import datetime
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
-os.chdir(current_dir)
 
 
-def make_barriers(s, updown, n_barriers, barrier_spread,n_barrier_spreads):
+def make_barriers(
+        s, updown, n_barriers, barrier_spread,n_barrier_spreads):
     if updown == "Up":
         flag = 1
     elif updown == "Down":
@@ -41,21 +36,27 @@ def generate_barrier_features(s,K,T,updown,barriers):
     barrier_features =  pd.DataFrame(
         product(
             [s],
-            T,
             K,
+            barriers,
+            T,
             [updown],
-            ['Out','In'],
-            ['call','put'],
-            barriers
+            [
+                'Out',
+                'In'
+                ],
+            [
+                'call',
+                'put'
+                ]
             ),
         columns=[
             'spot_price', 
-            'days_to_maturity',
             'strike_price',
+            'barrier',
+            'days_to_maturity',
             'updown',
             'outin',
-            'w',
-            'barrier'
+            'w'
                   ])
     
     barrier_features['barrier_type_name'] = \
@@ -66,8 +67,12 @@ def generate_barrier_features(s,K,T,updown,barriers):
 
 
 def concat_barrier_features(
-        s,K,T,g,heston_parameters,
-        barrier_spread,n_barrier_spreads,n_barriers):
+        s,T,g,heston_parameters,
+        down_k_spread, up_k_spread, n_strikes,
+        barrier_spread,n_barrier_spreads,n_barriers
+        ):
+    
+    K = np.linspace(s*(1+down_k_spread),s*(1+up_k_spread),n_strikes)
     
     barriers = make_barriers(s, 'Up', n_barriers, barrier_spread,n_barrier_spreads)
     
@@ -81,12 +86,12 @@ def concat_barrier_features(
     
     features = pd.concat([down_features,up_features],ignore_index=True)
     
-    return features
+    return up_features
 
 
 
 def generate_barrier_options(
-        features, calculation_date, heston_parameters, g, output_filepath):
+        features, calculation_date, heston_parameters, g, output_folder):
     features['eta'] = heston_parameters['eta'].iloc[0]
     features['theta'] = heston_parameters['theta'].iloc[0]
     features['kappa'] = heston_parameters['kappa'].iloc[0]
@@ -151,7 +156,7 @@ def generate_barrier_options(
     file_time = datetime.fromtimestamp(time.time())
     file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
     training_data.to_csv(os.path.join(
-        output_filepath,f'barriers {date_tag} {file_time_tag}.csv'))
+        output_folder,f'barriers {date_tag} {file_time_tag}.csv'))
 
     return training_data
 
