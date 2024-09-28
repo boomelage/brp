@@ -16,9 +16,9 @@ import numpy as np
 import QuantLib as ql
 from itertools import product
 # from tqdm import tqdm
-# from routine_calibration_global import calibrate_heston
+from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
-# from train_generation_barriers import generate_barrier_options, concat_barrier_features
+from train_generation_barriers import generate_barrier_options, concat_barrier_features
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
@@ -48,23 +48,12 @@ g = row['dividend_rate']/100
 dtdate = row['date']
 calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
 
-# expiry_dates = np.array([
-#         calculation_date + ql.Period(30,ql.Days), 
-#         calculation_date + ql.Period(60,ql.Days), 
-#         calculation_date + ql.Period(3,ql.Months), 
-#         calculation_date + ql.Period(6,ql.Months),
-#         calculation_date + ql.Period(12,ql.Months), 
-#         # calculation_date + ql.Period(18,ql.Months), 
-#         # calculation_date + ql.Period(24,ql.Months)
-#       ],dtype=object)
-# T = expiry_dates - calculation_date
 
 T = ms.derman_coefs.index.astype(int)
 
 atm_volvec = np.array(row[
     [
         '30D', '60D', '3M', '6M', '12M', 
-        # '18M', '24M'
         ]
     ]/100,dtype=float)
 
@@ -108,15 +97,14 @@ calibration_dataset['risk_free_rate'] = 0.04
 
 r = 0.04
 
-# heston_parameters, performance_df = calibrate_heston(
-#         calibration_dataset, 
-#         s,
-#         r,
-#         g,
-#         calculation_date
-#         )
+heston_parameters, performance_df = calibrate_heston(
+        calibration_dataset, 
+        s,
+        r,
+        g,
+        calculation_date
+        )
 
-from routine_calibration_testing import heston_parameters
 v0 = heston_parameters['v0'].iloc[0]
 theta = heston_parameters['theta'].iloc[0]
 kappa = heston_parameters['kappa'].iloc[0]
@@ -132,23 +120,13 @@ w = 'call'
 
 expiration_date = calculation_date + ql.Period(int(t),ql.Days)
 
-# bs = ms.ql_black_scholes(
-#         s,k,r,g,
-#         volatility,w,
-#         calculation_date, 
-#         expiration_date
-#         )
-
 bs = ms.ql_black_scholes(
-        1416.59,
-        1133.272,
-        0.04,
-        0.018125,
-        0.10538299999999999,
-        'call',
-        ql.Date(3,1,2007), 
-        ql.Date(2,2,2007)
+        s,k,r,g,
+        volatility,w,
+        calculation_date, 
+        expiration_date
         )
+
 
 heston = ms.ql_heston_price(
             s,k,t,r,g,w,
@@ -159,7 +137,7 @@ heston = ms.ql_heston_price(
 
 my_bs = ms.black_scholes_price(s,k,t,r,volatility,w)
 
-print(f"\nbs: {bs}\nheston: {heston}\nmy bs: {my_bs}")
+print(f"\nbs, my bs, heston: {int(bs)}, {int(my_bs)}, {int(heston)}")
 
 
     
@@ -179,46 +157,52 @@ print(f"\nbs: {bs}\nheston: {heston}\nmy bs: {my_bs}")
     
     
     
-    
-    
-#     """"""
-    
-#     T = [
-#         1,
-#         7,
-#         10,
-#         # 14,
-#         # 30,
-#         # 90,
-#         # 180,
-#         # 360
-#           ]
 
-#     n_strikes = 10
-#     down_k_spread = 0.1
-#     up_k_spread = 0.1
 
-#     n_barriers = 5
-#     barrier_spread = 0.005                  
-#     n_barrier_spreads = 20
-    
-#     features = concat_barrier_features(
-#             s,K,T,g,heston_parameters,
-#             barrier_spread,n_barrier_spreads,n_barriers)
-    
+""""""
 
-#     training_data = generate_barrier_options(
-#         features, calculation_date, heston_parameters, g)
-#     # print(f"\n{dtdate}\n{training_data}\n")
-#     historical_option_data = pd.concat(
-#         [historical_option_data,training_data],
-#         ignore_index=True)
-#     # k = s*0.5
-#     # t = 1
-#     # r = 0.04
-#     # volatility = np.mean()
-#     # bs = ms.black_scholes_price(s,k,t,r,volatility,w)
-# #     tqdm.write(dtdate.strftime("%c"))
-# #     hist_bar.update(1)
-# # hist_bar.close()
+T = [
+    10,
+    30,
+    90,
+    # 180,
+    # 360
+      ]
 
+n_strikes = 10
+down_k_spread = 0.1
+up_k_spread = 0.1
+
+n_barriers = 5
+barrier_spread = 0.005                  
+n_barrier_spreads = 20
+
+features = concat_barrier_features(
+        s,K,T,g,heston_parameters,
+        barrier_spread,n_barrier_spreads,n_barriers)
+
+
+training_data = generate_barrier_options(
+    features, calculation_date, heston_parameters, g)
+# print(f"\n{dtdate}\n{training_data}\n")
+historical_option_data = pd.concat(
+    [historical_option_data,training_data],
+    ignore_index=True)
+# k = s*0.5
+# t = 1
+# r = 0.04
+# volatility = np.mean()
+# bs = ms.black_scholes_price(s,k,t,r,volatility,w)
+#     tqdm.write(dtdate.strftime("%c"))
+#     hist_bar.update(1)
+# hist_bar.close()
+
+# file_date = datetime(
+#     calculation_date.year(), 
+#     calculation_date.month(), 
+#     calculation_date.dayOfMonth())
+# date_tag = file_date.strftime("%Y-%m-%d")
+# file_time = datetime.fromtimestamp(time.time())
+# file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+# training_data.to_csv(os.path.join(
+#     file_path,f'barriers {date_tag} {file_time_tag}.csv'))

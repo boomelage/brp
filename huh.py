@@ -22,6 +22,7 @@ bs = ms.ql_black_scholes(
 #         ql.Date(1,1,2023), 
 #         ql.Date(1,1,2024)
 #         )
+
 t = ql.Date(2,2,2007) - ql.Date(1,1,2007)
 my_bs = ms.black_scholes_price(
     1416.59, 1133.272, t, 0.04, 0.10538299999999999, 'call')

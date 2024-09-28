@@ -9,9 +9,9 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import time
-from datetime import datetime
+import QuantLib as ql
 from itertools import product
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -23,7 +23,6 @@ ms = model_settings()
 
 os.chdir(current_dir)
 
-start = time.time()
 
 pd.reset_option('display.max_rows')
 
@@ -100,8 +99,8 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     features['heston_price'] = np.nan
     features['barrier_price'] = np.nan
     
-    # pricing_bar = ms.make_tqdm_bar(
-    #     desc="pricing",total=features.shape[0],unit='contracts',leave=False)
+    pricing_bar = ms.make_tqdm_bar(
+        desc="pricing",total=features.shape[0],unit='contracts',leave=False)
     
     for i, row in features.iterrows():
         
@@ -119,9 +118,13 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
         theta = heston_parameters['theta'].iloc[0] 
         eta = heston_parameters['eta'].iloc[0] 
         rho = heston_parameters['rho'].iloc[0]
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
         heston_price = ms.ql_heston_price(
-            s,k,t,r,g,w,v0,kappa,theta,eta,rho,calculation_date
+            s,k,t,r,g,w,
+            v0,kappa,theta,eta,rho,
+            calculation_date,
+            expiration_date
             )
         features.at[i,'heston_price'] = heston_price
         
@@ -132,8 +135,8 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     
         features.at[i,'barrier_price'] = barrier_price
         
-    #     pricing_bar.update(1)
-    # pricing_bar.close()
+        pricing_bar.update(1)
+    pricing_bar.close()
     
     training_data = features.copy()
     
@@ -144,15 +147,6 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     print(f'\n{training_data.describe()}')
     pd.reset_option("display.max_columns")
     
-    # file_date = datetime(
-    #     calculation_date.year(), 
-    #     calculation_date.month(), 
-    #     calculation_date.dayOfMonth())
-    # date_tag = file_date.strftime("%Y-%m-%d")
-    # file_time = datetime.fromtimestamp(time.time())
-    # file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-    # training_data.to_csv(os.path.join(
-    #     file_path,f'barriers {date_tag} {file_time_tag}.csv'))
 
     return training_data
 

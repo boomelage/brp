@@ -214,8 +214,6 @@ class model_settings():
         
         flat_ts = self.make_ts_object(r)
         divident_ts = self.make_ts_object(g)
-        print(f"Risk-free term structure discount: {flat_ts.discount(expiration_date)}")
-        print(f"Dividend term structure discount: {divident_ts.discount(expiration_date)}")
         
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
         
@@ -227,7 +225,6 @@ class model_settings():
                 self.day_count
                 )
             )
-        print(f"Spot: {initialValue.value()}, Volatility: {volTS.blackVol(expiration_date, k)}")
         
         process = ql.GeneralizedBlackScholesProcess(
             initialValue, divident_ts, flat_ts, volTS)
@@ -236,7 +233,6 @@ class model_settings():
         
         payoff = ql.PlainVanillaPayoff(option_type, k)
         europeanExercise = ql.EuropeanExercise(expiration_date)
-        print(f"European Exercise Valid: {europeanExercise.lastDate()}")  # Should match expiration_date
         european_option = ql.VanillaOption(payoff, europeanExercise)
         european_option.setPricingEngine(engine)
         
