@@ -142,24 +142,32 @@ for row_i, row in historical_data.iterrows():
                 # DATA GENERATION #
                 ###################
     
-    T = [1,10,30,60,180]
-    K = np.linspace(s*0.8,s*1.2,50)
+    T = [
+        
+        1,2
+        
+        ]
+    K = np.linspace(s*0.8,s*1.2,75)
     
-    up_barriers = np.linspace(s*1.01,s*1.19,25)
-    down_barriers = np.linspace(s*0.81,s*0.99,25)
+    up_barriers = np.linspace(s*1.01,s*1.19,50)
+    down_barriers = np.linspace(s*0.81,s*0.99,50)
     
-    features = generate_barrier_features(
-        s,K,T,down_barriers,'Down', ['Out'], ['put']
+    down_features = generate_barrier_features(
+        s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
         )
     
+    up_features = generate_barrier_features(
+        s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
+        )
+    
+    features = pd.concat([down_features,up_features],ignore_index=True)
     features['barrier_type_name'] = features['updown'] + features['outin']
     
-    barriers = generate_barrier_options(
+    barrier_options = generate_barrier_options(
         features,calculation_date,heston_parameters, g, r'hist_outputs')
     
     historical_barriers = pd.concat(
-        [historical_barriers, barriers],ignore_index=True)
+        [historical_barriers, barrier_options],ignore_index=True)
     
     print(f"\n{historical_barriers.describe()}\n{print_date}")
-    
     

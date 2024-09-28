@@ -7,13 +7,11 @@ import os
 import sys
 import time
 from datetime import datetime
-
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
 from mlop import mlop
 from data_query import dirdatacsv
-sys.path.append('train_data')
-sys.path.append(os.path.join('train_data','barriers'))
-sys.path.append(os.path.join('train_data','vanillas'))
+sys.path.append(os.path.join(current_dir,'train_data'))
 
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
@@ -61,13 +59,13 @@ print(f"\ntrain data count:\n{int(train_data.shape[0])}")
 single layer network
 """
 
-# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest

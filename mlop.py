@@ -24,7 +24,7 @@ class mlop:
     
     def __init__(self,user_dataset):
         self.user_dataset = user_dataset
-        self.random_state = 1312
+        self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e4)
         self.hidden_layer_sizes = (100,100,100)
@@ -36,10 +36,11 @@ class mlop:
                     ]
         
         self.alpha = 0.0001
+        self.learning_rate_init = 0.001
         self.learning_rate = [
             
-            'adaptive',
-            # 'constant'
+            # 'adaptive',
+            'constant'
             
             ]
         
@@ -47,8 +48,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -68,7 +69,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -76,22 +77,22 @@ class mlop:
             
             # 'moneyness_tag',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("StandardScaler",StandardScaler(),self.numerical_features),
+            # ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
-            # ("RobustScaler",RobustScaler(),self.numerical_features),
+            ("RobustScaler",RobustScaler(),self.numerical_features),
             
             # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
-            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+            ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]   
 
@@ -176,7 +177,8 @@ class mlop:
             alpha = self.alpha,
             learning_rate = self.learning_rate,
             max_iter = self.max_iter, 
-            random_state = self.random_state
+            random_state = self.random_state,
+            learning_rate_init=self.learning_rate_init
             )
                                   
         deepnnet_pipeline = Pipeline([

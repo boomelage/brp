@@ -5,6 +5,7 @@ Created on Mon Sep  9 13:54:57 2024
 
 """
 import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import sys
 import QuantLib as ql
 import numpy as np
@@ -19,7 +20,6 @@ class model_settings():
     
     def __init__(self):
         
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         sys.path.append('term_structure')
         sys.path.append('contract_details')
         sys.path.append('train_data')

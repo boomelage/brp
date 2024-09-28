@@ -58,13 +58,16 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     return barrier_features
 
 
-
-
-
-
 def generate_barrier_options(
         features, calculation_date, heston_parameters, g, output_folder):
     
+    spot_date = datetime(
+        calculation_date.year(), 
+        calculation_date.month(), 
+        calculation_date.dayOfMonth())
+    
+    features['calculation_date'] = spot_date
+    features['expiration_date'] = datetime(999,1,1)
     features['eta'] = heston_parameters['eta']
     features['theta'] = heston_parameters['theta']
     features['kappa'] = heston_parameters['kappa']
@@ -102,6 +105,13 @@ def generate_barrier_options(
             calculation_date,
             expiration_date
             )
+        
+        features.at[i,'expiration_date'] = datetime(
+            expiration_date.year(), 
+            expiration_date.month(), 
+            expiration_date.dayOfMonth()
+            )
+        
         features.at[i,'heston_price'] = heston_price
         
         barrier_price = ms.ql_barrier_price(
@@ -121,11 +131,7 @@ def generate_barrier_options(
     print(f'\n{training_data.describe()}')
     pd.reset_option("display.max_columns")
     
-    file_date = datetime(
-        calculation_date.year(), 
-        calculation_date.month(), 
-        calculation_date.dayOfMonth())
-    date_tag = file_date.strftime("%Y-%m-%d")
+    date_tag = spot_date.strftime("%Y-%m-%d")
     file_time = datetime.fromtimestamp(time.time())
     file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
     training_data.to_csv(os.path.join(
