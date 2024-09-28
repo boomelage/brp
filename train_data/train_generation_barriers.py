@@ -7,24 +7,20 @@ Created on Thu Sep 26 17:33:55 2024
 
 import os
 import sys
+import time
 import numpy as np
 import pandas as pd
 import QuantLib as ql
 from itertools import product
-
+from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-
 from settings import model_settings
-
 ms = model_settings()
-
 os.chdir(current_dir)
 
-
-pd.reset_option('display.max_rows')
 
 def make_barriers(s, updown, n_barriers, barrier_spread,n_barrier_spreads):
     if updown == "Up":
@@ -89,7 +85,6 @@ def concat_barrier_features(
 
 
 
-
 def generate_barrier_options(features, calculation_date, heston_parameters, g):
     features['eta'] = heston_parameters['eta'].iloc[0]
     features['theta'] = heston_parameters['theta'].iloc[0]
@@ -147,6 +142,15 @@ def generate_barrier_options(features, calculation_date, heston_parameters, g):
     print(f'\n{training_data.describe()}')
     pd.reset_option("display.max_columns")
     
+    file_date = datetime(
+        calculation_date.year(), 
+        calculation_date.month(), 
+        calculation_date.dayOfMonth())
+    date_tag = file_date.strftime("%Y-%m-%d")
+    file_time = datetime.fromtimestamp(time.time())
+    file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+    training_data.to_csv(os.path.join(
+        'hist_outputs',f'barriers {date_tag} {file_time_tag}.csv'))
 
     return training_data
 

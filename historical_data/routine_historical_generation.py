@@ -15,7 +15,6 @@ import pandas as pd
 import numpy as np
 import QuantLib as ql
 from itertools import product
-# from tqdm import tqdm
 from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
 from train_generation_barriers import generate_barrier_options, concat_barrier_features
@@ -35,174 +34,140 @@ historical_data = collect_historical_data()
 total = historical_data.shape[0]
 historical_option_data = pd.DataFrame()
 
-# hist_bar = ms.make_tqdm_bar(
-#     total=total, desc='generating', unit='days', leave=True)
 
 training_data = pd.DataFrame()
-# for i, row in historical_data.iterrows():
+for i, row in historical_data.iterrows():
     
-row = historical_data.iloc[0]
-
-s = row['spot_price']
-g = row['dividend_rate']/100
-dtdate = row['date']
-calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
-
-
-T = ms.derman_coefs.index.astype(int)
-
-atm_volvec = np.array(row[
-    [
-        '30D', '60D', '3M', '6M', '12M', 
-        ]
-    ]/100,dtype=float)
-
-atm_volvec = pd.Series(atm_volvec)
-atm_volvec.index = T
-
-
-"""
-calibration dataset construction
-"""
-
-n_hist_spreads = 10
-historical_spread = 0.005
-n_strikes = 10
-
-K = np.linspace(
-    s*(1 - n_hist_spreads * historical_spread),
-    s*(1 + n_hist_spreads * historical_spread),
-    n_strikes)
-
-derman_ts = ms.make_derman_surface(s,K,T,ms.derman_coefs,atm_volvec)
-   
-bicubic_vol = make_bicubic_functional(derman_ts,K.tolist(),T.tolist())
+    s = row['spot_price']
+    g = row['dividend_rate']/100
+    dtdate = row['date']
+    calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
     
-calibration_dataset =  pd.DataFrame(
-    product(
-        [s],
-        K,
-        T,
-        ),
-    columns=[
-        'spot_price', 
-        'strike_price',
-        'days_to_maturity',
-              ])
-
-calibration_dataset = calibration_dataset.apply(
-    bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
-calibration_dataset = calibration_dataset.copy()
-calibration_dataset['risk_free_rate'] = 0.04
-
-r = 0.04
-
-heston_parameters, performance_df = calibrate_heston(
-        calibration_dataset, 
-        s,
-        r,
-        g,
-        calculation_date
-        )
-
-v0 = heston_parameters['v0'].iloc[0]
-theta = heston_parameters['theta'].iloc[0]
-kappa = heston_parameters['kappa'].iloc[0]
-eta = heston_parameters['eta'].iloc[0]
-rho = heston_parameters['rho'].iloc[0]
-
-t = T[0]
-
-
-k = float(s*0.8)
-volatility =  float(atm_volvec[T[0]])
-w = 'call'
-
-expiration_date = calculation_date + ql.Period(int(t),ql.Days)
-
-bs = ms.ql_black_scholes(
-        s,k,r,g,
-        volatility,w,
-        calculation_date, 
-        expiration_date
-        )
-
-
-heston = ms.ql_heston_price(
-            s,k,t,r,g,w,
-            v0,kappa,theta,eta,rho,
-            calculation_date,
+    
+    T = ms.derman_coefs.index.astype(int)
+    
+    atm_volvec = np.array(row[
+        [
+            '30D', '60D', '3M', '6M', '12M', 
+            ]
+        ]/100,dtype=float)
+    
+    atm_volvec = pd.Series(atm_volvec)
+    atm_volvec.index = T
+    
+    
+    """
+    calibration dataset construction
+    """
+    
+    n_hist_spreads = 10
+    historical_spread = 0.005
+    n_strikes = 10
+    
+    K = np.linspace(
+        s*(1 - n_hist_spreads * historical_spread),
+        s*(1 + n_hist_spreads * historical_spread),
+        n_strikes)
+    
+    derman_ts = ms.make_derman_surface(s,K,T,ms.derman_coefs,atm_volvec)
+       
+    bicubic_vol = make_bicubic_functional(derman_ts,K.tolist(),T.tolist())
+        
+    calibration_dataset =  pd.DataFrame(
+        product(
+            [s],
+            K,
+            T,
+            ),
+        columns=[
+            'spot_price', 
+            'strike_price',
+            'days_to_maturity',
+                  ])
+    
+    calibration_dataset = calibration_dataset.apply(
+        bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
+    calibration_dataset = calibration_dataset.copy()
+    calibration_dataset['risk_free_rate'] = 0.04
+    
+    r = 0.04
+    
+    heston_parameters, performance_df = calibrate_heston(
+            calibration_dataset, 
+            s,
+            r,
+            g,
+            calculation_date
+            )
+    
+    v0 = heston_parameters['v0'].iloc[0]
+    theta = heston_parameters['theta'].iloc[0]
+    kappa = heston_parameters['kappa'].iloc[0]
+    eta = heston_parameters['eta'].iloc[0]
+    rho = heston_parameters['rho'].iloc[0]
+    
+    t = T[0]
+    
+    
+    k = float(s*0.8)
+    volatility =  float(atm_volvec[T[0]])
+    w = 'call'
+    
+    expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+    
+    bs = ms.ql_black_scholes(
+            s,k,r,0.00,
+            volatility,w,
+            calculation_date, 
             expiration_date
             )
-
-my_bs = ms.black_scholes_price(s,k,t,r,volatility,w)
-
-print(f"\nbs, my bs, heston: {int(bs)}, {int(my_bs)}, {int(heston)}")
-
-
     
     
+    heston = ms.ql_heston_price(
+                s,k,t,r,0.00,w,
+                v0,kappa,theta,eta,rho,
+                calculation_date,
+                expiration_date
+                )
     
+    my_bs = ms.black_scholes_price(s,k,t,r,volatility,w)
     
+    print(f"\nnumpy black scholes, quantlib bs, quantlib heston: "
+          f"{int(my_bs)}, {int(bs)}, {int(heston)}")
+    print(f"\n{dtdate.strftime('%A %d %B %Y')} {int(i+1)}/{int(total)}\n")
+    """"""
+    """
+    data generation
+    """
+    T = [
+        
+        1,
+        7,
+        10,
+        14,
+        30,
+        90,
+        180,
+        360
+        
+          ]
     
+    n_strikes = 10
+    down_k_spread = 0.1
+    up_k_spread = 0.1
     
+    n_barriers = 5
+    barrier_spread = 0.005                  
+    n_barrier_spreads = 20
     
+    features = concat_barrier_features(
+            s,K,T,g,heston_parameters,
+            barrier_spread,n_barrier_spreads,n_barriers)
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-""""""
-
-T = [
-    10,
-    30,
-    90,
-    # 180,
-    # 360
-      ]
-
-n_strikes = 10
-down_k_spread = 0.1
-up_k_spread = 0.1
-
-n_barriers = 5
-barrier_spread = 0.005                  
-n_barrier_spreads = 20
-
-features = concat_barrier_features(
-        s,K,T,g,heston_parameters,
-        barrier_spread,n_barrier_spreads,n_barriers)
-
-
-training_data = generate_barrier_options(
-    features, calculation_date, heston_parameters, g)
-# print(f"\n{dtdate}\n{training_data}\n")
-historical_option_data = pd.concat(
-    [historical_option_data,training_data],
-    ignore_index=True)
-# k = s*0.5
-# t = 1
-# r = 0.04
-# volatility = np.mean()
-# bs = ms.black_scholes_price(s,k,t,r,volatility,w)
-#     tqdm.write(dtdate.strftime("%c"))
-#     hist_bar.update(1)
-# hist_bar.close()
-
-# file_date = datetime(
-#     calculation_date.year(), 
-#     calculation_date.month(), 
-#     calculation_date.dayOfMonth())
-# date_tag = file_date.strftime("%Y-%m-%d")
-# file_time = datetime.fromtimestamp(time.time())
-# file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-# training_data.to_csv(os.path.join(
-#     file_path,f'barriers {date_tag} {file_time_tag}.csv'))
+    training_data = generate_barrier_options(
+        features, calculation_date, heston_parameters, g)
+    historical_option_data = pd.concat(
+        [historical_option_data,training_data],
+        ignore_index=True)
+    print(f"\n{training_data}\n")
+    print(f"\n{dtdate.strftime('%A %d %B %Y')} {int(i+1)}/{int(total)}\n")
