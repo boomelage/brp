@@ -67,21 +67,6 @@ def calibrate_heston(
     
     theta, kappa, eta, rho, v0 = model.params()
     
-    perfcols = ['market','model','relative_error']
-    performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
-    performance_df = pd.DataFrame(performance_np)
-    performance_df.columns = perfcols
-    for i in range(len(heston_helpers)):
-        opt = heston_helpers[i]
-        performance_df.loc[i,'market'] = opt.marketValue()
-        performance_df.loc[i,'model'] = opt.modelValue()
-        performance_df.loc[i,'relative_error'] = opt.modelValue() / opt.marketValue() - 1
-    
-    avg = np.sum(
-        np.abs(
-            performance_df.loc[i,'relative_error'])
-        )*100/performance_df.shape[0]
-    
     param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price', 'avg']
     
     heston_parameters_np = np.zeros(len(param_names),dtype=float)
@@ -94,15 +79,8 @@ def calibrate_heston(
     heston_parameters['eta'] = eta
     heston_parameters['v0'] = v0
     heston_parameters['spot_price'] = s
-    heston_parameters['avg'] = avg
+    heston_parameters['avg'] = np.nan
     
-    pd.set_option("display.max_columns",None)
-    pd.set_option("display.max_rows",None),
-    print(f"average abs relative error: {round(100*avg,4)}%")
-    print(f"\n{heston_parameters}")
-    
-    pd.reset_option("display.max_columns")
-    pd.reset_option("display.max_rows")
     return heston_parameters
 
 

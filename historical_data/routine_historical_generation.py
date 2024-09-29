@@ -105,11 +105,13 @@ for row_i, row in historical_data.iterrows():
                     
     if abs(calibration_error) <= 0.2:
         
-        T = [10,30,90,180.360]
+        # T = [10,30,90,180.360]
+        
+        T = np.arange(1/12,2,1/12)
         # T = np.arange(
         #     min(T),
         #     (max(T)+1),
-        #     1
+            
         #     )
         
         K = np.linspace(s*0.8,s*1.2,120)
@@ -203,5 +205,21 @@ for row_i, row in historical_data.iterrows():
         
         print(f"\n{historical_contracts.describe()}\n{print_date}")
     else:
-        print(f"\nlarge calibration error:\n"
-              f"{round(calibration_error*100,2)}%\n")
+        test_large_error = f"### large calibration error: {round(calibration_error*100,2)}% ###"
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print(test_large_error)
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print(print_date)
+        
+        
+        
+        
+        
+        
+        
+        
+        

@@ -93,6 +93,9 @@ class model_settings():
         
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T)
+        
+        self.default_bar = str("{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | "
+        "{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining} | ")
     
     def expiration_datef(self,t,calculation_date=None):
         if calculation_date is None:
@@ -146,17 +149,6 @@ class model_settings():
         row['maturity_date'] = calculation_date + ql.Period(
             int(row['days_to_maturity']),ql.Days)
         return row
-    
-    def make_tqdm_bar(self, total, desc, unit, leave=True):
-        progress_bar = tqdm(
-            desc=desc, 
-            unit=unit,
-            total=total, 
-            leave=leave, 
-            bar_format ='{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | '
-            '{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining}'
-        )
-        return progress_bar
     
     def vmoneyness(self, 
                    S, K, W
@@ -431,8 +423,7 @@ class model_settings():
         return barrier_prices
     
 
-
-
+ms = model_settings()
 
 
 

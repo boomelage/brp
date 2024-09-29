@@ -93,31 +93,35 @@ def test_heston_calibration(
     
     pd.set_option("display.max_columns",None)
     print(f"\ncalibration test:\n{print_test}\n"
-          f"average absolute relative error: {test_avg_print}")
+          f"average absolute relative error: {test_avg_print}"
+          f"\n{heston_parameters}\n")
     pd.reset_option("display.max_columns")
     return heston_parameters
 
 
-"""
-example use
-"""
-
-from routine_calibration_generation import calibration_dataset
-from routine_calibration_global import calibrate_heston
-
-s = ms.s
-calculation_date = ms.calculation_date
-ql.Settings.instance().evaluationDate = calculation_date
-
-g = 0.001
-r = 0.04
-
-heston_parameters = calibrate_heston(
-    calibration_dataset, s, r, g, calculation_date)
-
-test_features = calibration_dataset.copy()
-
-heston_parameters = test_heston_calibration(
-        test_features, heston_parameters,calculation_date,r,g)
-
-heston_parameters
+# =============================================================================
+# # """
+# # example use
+# 
+# # # =============================================================================
+# # # # from routine_calibration_generation import calibration_dataset
+# # # # from routine_calibration_global import calibrate_heston
+# # # 
+# # # # s = ms.s
+# # # # calculation_date = ms.calculation_date
+# # # # ql.Settings.instance().evaluationDate = calculation_date
+# # # 
+# # # # g = 0.001
+# # # # r = 0.04
+# # # 
+# # # # heston_parameters = calibrate_heston(
+# # # #     calibration_dataset, s, r, g, calculation_date)
+# # # 
+# # # # test_features = calibration_dataset.copy()
+# # # 
+# # # # heston_parameters = test_heston_calibration(
+# # # #         test_features, heston_parameters,calculation_date,r,g)
+# # # 
+# # # =============================================================================
+# # """
+# =============================================================================

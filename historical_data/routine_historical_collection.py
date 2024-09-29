@@ -20,6 +20,7 @@ data collection and cleaning
 def collect_historical_data():
     historical_data = pd.DataFrame()
     csvs = dirdatacsv()
+    price_counter = 0
     for file in csvs:
         raw = pd.read_csv(file)
         raw.columns = raw.loc[2]
@@ -51,6 +52,7 @@ def collect_historical_data():
         historical_data = historical_data.dropna(how='all',axis=0)
         historical_data = historical_data.dropna(how='all',axis=1)
         historical_data = historical_data.dropna(how='any',axis=0)
+        price_counter += historical_data.shape[0]
         
     return historical_data
 
