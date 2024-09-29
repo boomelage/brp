@@ -36,8 +36,10 @@ heston_parameters, performance_df = calibrate_heston(
     calibration_dataset, s, r, g, calculation_date)
 
 test_features = calibration_dataset.copy()
+
 test_features['dividend_rate'] = g
 test_features['risk_free_rate'] = r
+
 test_features['eta'] = heston_parameters['eta']
 test_features['theta'] = heston_parameters['theta']
 test_features['kappa'] = heston_parameters['kappa']
@@ -53,6 +55,11 @@ for i,row in test_features.iterrows():
     else:
         test_features.at[i,'w'] = 'put'
         
+S = test_features['spot_price']
+K = test_features['strike_price']
+W = test_features['w']
+test_features['moneyness'] = ms.vmoneyness(S,K,W)
+test_features['moneyness_tag'] = ms.encode_moneyness(test_features['moneyness'])
 
 test_features['ql_heston_price'] = np.nan
 test_features['ql_black_scholes'] = np.nan
@@ -83,7 +90,6 @@ for i,row in test_features.iterrows():
         )
     test_features.at[i,'ql_black_scholes'] =  ql_bsp
     
-    
     h_price = ms.ql_heston_price(
             s,k,r,g,w,
             v0,kappa,theta,eta,rho,
@@ -91,15 +97,21 @@ for i,row in test_features.iterrows():
             expiration_date)
     test_features.at[i,'ql_heston_price'] = h_price
     
-    
     my_bs = ms.black_scholes_price(s, k, t, r, volatility, w)
     test_features.at[i,'black_scholes_price'] = my_bs
     
+    
+print_test = test_features[['w', 'moneyness', 'ql_heston_price',
+       'ql_black_scholes']].copy()
+
+print_test.loc[:, 'relative_error'] = print_test.loc[
+    :, 'ql_heston_price'] / print_test.loc[
+        :, 'ql_black_scholes'] - 1
+        
+test_avg = np.average(np.abs(np.array(print_test['relative_error'])))
+test_avg_print = f"{round(test_avg*100,4)}%"
 
 pd.set_option("display.max_columns",None)
-print(test_features)
-pd.reset_option("display.max_columns",None)
-
-
-heston_parameters
-
+print(f"\ncalibration repricing test:\n{print_test}\n"
+      f"average absolute relative error: {test_avg_print}")
+pd.reset_option("display.max_columns")

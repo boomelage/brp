@@ -66,7 +66,7 @@ derman_T =  [
             459, 487, 640
             
             ]
-        # sep 16th
+        # sep 16th 2024 term structure
 
 raw_calls = raw_calls
 raw_puts = raw_puts
@@ -128,13 +128,12 @@ derman_coefs = compute_derman_coefficients(
             
             
 
-
 # """
 # plotting approximation fit
 # """ 
 
 
-# for t in T: 
+# for t in derman_coefs.index.astype(int).tolist(): 
 #     actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
 #     derman_fit = derman_ts.loc[actual_data.index,t]
 #     plt.rcParams['figure.figsize']=(6,4)

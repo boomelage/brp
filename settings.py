@@ -20,7 +20,6 @@ class model_settings():
     
     def __init__(self):
         
-        sys.path.append('term_structure')
         sys.path.append('contract_details')
         sys.path.append('train_data')
         sys.path.append('historical_data')
@@ -28,7 +27,6 @@ class model_settings():
         
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
-        # self.calculation_date   =    ql.Date.todaysDate()
         self.calculation_date   =    ql.Date.todaysDate()
         self.ticker             =    'SPX'
         self.s                  =    1277.92
@@ -160,13 +158,33 @@ class model_settings():
         )
         return progress_bar
     
+    def vmoneyness(self, 
+                   S, K, W
+                   ):
+        
+        def compute_moneyness(s,k,w):
+            if w == 'call':
+                call_moneyness = s/k-1
+                return call_moneyness
+            elif w == 'put':
+                put_moneyness = k/s-1
+                return put_moneyness
+            else:
+                raise ValueError(f'{w} is not a valid put/call flag')
+
+        vrel_moneyness = np.vectorize(compute_moneyness)
+        
+        moneyness = vrel_moneyness(S,K,W)
+        
+        return moneyness
+    
     def encode_moneyness(self, array):
-        array = np.asarray(array)
-        result = np.empty_like(array, dtype=object)
-        result[array == 0] = 'atm'
-        result[array < 0] = 'otm'
-        result[array > 0] = 'itm'
-        return result
+        moneyness_tags = np.asarray(array)
+        moneyness_tags = np.empty_like(array, dtype=object)
+        moneyness_tags[array == 0] = 'atm'
+        moneyness_tags[array < 0] = 'otm'
+        moneyness_tags[array > 0] = 'itm'
+        return moneyness_tags
     
     def make_derman_surface(self, s,K,T,derman_coefs,atm_volvec):
         ts_df = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
@@ -412,32 +430,9 @@ class model_settings():
         
         return barrier_prices
     
-"""
-# =============================================================================
-                    auxilliary functions
-"""
-    
-def compute_moneyness(df):
-    
-    try:
-        df.loc[
-            df['w'] == 'call', 
-            'moneyness'
-            ] = df['spot_price'] / df['strike_price'] - 1
-    except Exception:
-        print('no calls')
-        pass
-    
-    try:
-        df.loc[
-            df['w'] == 'put', 
-            'moneyness'
-            ] = df['strike_price'] / df['spot_price'] - 1
-    except Exception:
-        print('no puts')
-        pass
-    
-    return df
+
+
+
 
 
 
