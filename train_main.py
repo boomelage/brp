@@ -21,22 +21,9 @@ print(f"\n{train_start_tag}\n")
 # =============================================================================
                                 importing data
 """
-"from generation"
 
-# from train_generation_barriers import training_data
-# title = 'Prediction errors for barrier options'
-
-# from train_generation_vanillas import training_data
-# title = 'Prediction errors for Heston vanilla options'
-
-"from archive"
-
-# from train_data_barrier_collector import training_data
-# title = 'Prediction errors for barrier options'
-
-from train_data_vanilla_collector import training_data
+from train_vanillas import training_data
 title = 'Prediction errors for Heston vanilla options'
-
 
 mlop = mlop(user_dataset = training_data)
 
@@ -83,7 +70,7 @@ lasso regression
                                 model testing
 """
 
-stats = mlop.test_model(test_data, test_X,test_y,model_fit)
+stats = mlop.test_model(test_data, test_X, test_y, model_fit)
 
 predictive_performance_plot = mlop.plot_model_performance(stats,runtime,title)
 

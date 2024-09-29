@@ -18,8 +18,7 @@ ms = model_settings()
 from train_data_vanilla_collector import training_data
 
 initial_count = training_data.shape[0]
-training_data
-
+training_data = training_data.copy()
 training_data = ms.noisyfier(training_data)
 
 
@@ -42,9 +41,9 @@ type filter
 
 # training_data = training_data[training_data.loc[:,'w'] == 'put']
 
+
 """"""
-training_data['moneyness'] = 0
-training_data['moneyness'] = ms.vmoneyness(
+training_data.loc[:,'moneyness'] = ms.vmoneyness(
     training_data['spot_price'],
     training_data['strike_price'],
     training_data['w']
@@ -59,11 +58,11 @@ training_data
 moneyness filter
 """
 
-otm_lower = -0.1
-otm_upper = -0.01
+otm_lower = -0.05
+otm_upper = -0.005
 
-itm_lower =  0.0
-itm_upper =  0.01
+itm_lower =  0.005
+itm_upper =  0.05
 
 training_data = training_data[
     
@@ -72,18 +71,19 @@ training_data = training_data[
       (training_data['moneyness'] <= otm_upper)
       )
    
-    # |
+    |
     
-    # (
-    #   (training_data['moneyness'] >= itm_lower) & 
-    #   (training_data['moneyness'] <= itm_upper)
-    #   )
+    (
+      (training_data['moneyness'] >= itm_lower) & 
+      (training_data['moneyness'] <= itm_upper)
+      )
 
 ]
 
 """"""
 
-training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
+training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
+    training_data['moneyness'])
 
 training_data = training_data[
     [

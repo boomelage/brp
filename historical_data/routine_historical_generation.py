@@ -11,7 +11,6 @@ import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
-# from tqdm import tqdm
 from itertools import product
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,12 +37,8 @@ from routine_historical_collection import historical_data
 
 r = 0.04
 historical_calibration_errors = pd.Series()
-calibration_errors = []
+
 for row_i, row in historical_data.iterrows():
-# row = historical_data.iloc[0]
-
-
-    
     s = row['spot_price']
     g = row['dividend_rate']/100
     dtdate = row['date']
@@ -123,114 +118,110 @@ for row_i, row in historical_data.iterrows():
     print(f"^ {print_date}")
     calibration_error = heston_parameters['relative_error']
     historical_calibration_errors[dtdate] = calibration_error
+    
+
     ###################
     # DATA GENERATION #
     ###################
                     
                     
-    # if abs(calibration_error) <= 0.2:
+    if abs(calibration_error) <= 0.2:
         
-    #     T = np.arange(7,365,7)
+        T = np.arange(7,180,28)
         
-    #     K = np.linspace(s*0.8,s*1.2,120)
+        K = np.linspace(s*0.8,s*1.2,1000)
         
-    #     W = ['call','put']
-        
-        
-        
-    #     ############
-    #     # VANILLAS #
-    #     ############
+        W = ['call','put']
         
         
-    #     vanilla_features = pd.DataFrame(
-    #         product(
-    #             [float(s)],
-    #             K,
-    #             T,
-    #             W
-    #             ),
-    #         columns=[
-    #             "spot_price", 
-    #             "strike_price",
-    #             "days_to_maturity",
-    #             "w"
-    #                   ])
+        
+        ############
+        # VANILLAS #
+        ############
         
         
-    #     expiration_dates = ms.vexpiration_datef(
-    #         vanilla_features['days_to_maturity'],calculation_date)
+        vanilla_features = pd.DataFrame(
+            product(
+                [float(s)],
+                K,
+                T,
+                W
+                ),
+            columns=[
+                "spot_price", 
+                "strike_price",
+                "days_to_maturity",
+                "w"
+                      ])
         
-    #     vanilla_features['calculation_date'] = calculation_date
-    #     vanilla_features['expiration_date'] = expiration_dates
         
-    #     hestons = ms.vector_heston_price(
-    #             vanilla_features['spot_price'],
-    #             vanilla_features['strike_price'],
-    #             r,g,
-    #             vanilla_features['w'],
-    #             heston_parameters['v0'],
-    #             heston_parameters['kappa'],
-    #             heston_parameters['theta'],
-    #             heston_parameters['eta'],
-    #             heston_parameters['rho'],
-    #             calculation_date,
-    #             vanilla_features['expiration_date']
-    #         )
-    #     vanilla_features['heston_price'] = hestons
+        expiration_dates = ms.vexpiration_datef(
+            vanilla_features['days_to_maturity'],calculation_date)
         
-    #     historical_contracts = pd.concat(
-    #         [historical_contracts, vanilla_features],
-    #         ignore_index = True
-    #         )
+        vanilla_features['calculation_date'] = calculation_date
+        vanilla_features['expiration_date'] = expiration_dates
         
-    #     os.path.join(current_dir,)
-    #     file_time = datetime.fromtimestamp(time.time())
-    #     file_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-    #     file_name = dtdate.strftime("%Y-%m-%d") \
-    #         + f" spot{int(s)} " + file_tag + r".csv"
-    #     historical_contracts.to_csv(os.path.join(vanilla_csv_dir,file_name))
+        hestons = ms.vector_heston_price(
+                vanilla_features['spot_price'],
+                vanilla_features['strike_price'],
+                r,g,
+                vanilla_features['w'],
+                heston_parameters['v0'],
+                heston_parameters['kappa'],
+                heston_parameters['theta'],
+                heston_parameters['eta'],
+                heston_parameters['rho'],
+                calculation_date,
+                vanilla_features['expiration_date']
+            )
+        vanilla_features['heston_price'] = hestons
+        
+        file_time = datetime.fromtimestamp(time.time())
+        file_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+        file_name = dtdate.strftime("%Y-%m-%d") \
+            + f" spot{int(s)} " + file_tag + r".csv"
+        vanilla_features.to_csv(os.path.join(vanilla_csv_dir,file_name))
+        print(f"\n{vanilla_features.describe()}\n{print_date}")
+        
+        ############
+        # BARRIERS #
+        ############
     
-    #     ############
-    #     # BARRIERS #
-    #     ############
-    
-    # # =============================================================================
-    # #     # """
-    # #     # # up_barriers = np.linspace(s*1.01,s*1.19,50)
-    # #     # # down_barriers = np.linspace(s*0.81,s*0.99,50)
-    # #     
-    # #     # # down_features = generate_barrier_features(
-    # #     # #     s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
-    # #     # #     )
-    # #     
-    # #     # # up_features = generate_barrier_features(
-    # #     # #     s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
-    # #     # #     )
-    # #     
-    # #     # # features = pd.concat([down_features,up_features],ignore_index=True)
-    # #     # # features['barrier_type_name'] = features['updown'] + features['outin']
-    # #     
-    # #     # # barrier_options = generate_barrier_options(
-    # #     # #     features,calculation_date,heston_parameters, g, r'hist_outputs')
-    # #     
-    # #     # # historical_contracts = pd.concat(
-    # #     # #     [historical_contracts, barrier_options],ignore_index=True)
-    # #     # """
-    # # =============================================================================
-        
-    #     print(f"\n{historical_contracts.describe()}\n{print_date}")
-    # else:
-    #     test_large_error = str(f"### large calibration error: "
-    #                             f"{round(calibration_error*100,2)}% ###")
-    #     print('#'*len(test_large_error))
-    #     print('#'*len(test_large_error))
-    #     print('#'*len(test_large_error))
-    #     print(test_large_error)
-    #     print('#'*len(test_large_error))
-    #     print('#'*len(test_large_error))
-    #     print('#'*len(test_large_error))
-    #     print(print_date)
+    # =============================================================================
+    #     # """
+    #     # # up_barriers = np.linspace(s*1.01,s*1.19,50)
+    #     # # down_barriers = np.linspace(s*0.81,s*0.99,50)
+    #     
+    #     # # down_features = generate_barrier_features(
+    #     # #     s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
+    #     # #     )
+    #     
+    #     # # up_features = generate_barrier_features(
+    #     # #     s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
+    #     # #     )
+    #     
+    #     # # features = pd.concat([down_features,up_features],ignore_index=True)
+    #     # # features['barrier_type_name'] = features['updown'] + features['outin']
+    #     
+    #     # # barrier_options = generate_barrier_options(
+    #     # #     features,calculation_date,heston_parameters, g, r'hist_outputs')
+    #     
+    #     # # historical_contracts = pd.concat(
+    #     # #     [historical_contracts, barrier_options],ignore_index=True)
+    #     # """
+    # =============================================================================
+
+    else:
+        test_large_error = str(f"### large calibration error: "
+                                f"{round(calibration_error*100,2)}% ###")
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print(test_large_error)
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print('#'*len(test_large_error))
+        print(print_date)
         
         
         

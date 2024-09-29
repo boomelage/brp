@@ -40,8 +40,8 @@ class mlop:
         self.learning_rate_init = 0.001
         self.learning_rate = [
             
-            # 'adaptive',
-            'constant'
+            'adaptive',
+            # 'constant'
             
             ]
         
@@ -49,8 +49,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -85,10 +85,10 @@ class mlop:
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("StandardScaler",StandardScaler(),self.numerical_features),
+            # ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             ("RobustScaler",RobustScaler(),self.numerical_features),
             
