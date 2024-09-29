@@ -111,39 +111,42 @@ derman_coefs = compute_derman_coefficients(
     derman_s, derman_T, raw_call_K, call_atmvols, raw_calls)
 
 
-# """
-# surface maker
+"""
+surface maker
 
-# """
+"""
 
-# def make_derman_suface(s,K,T,derman_coefs,atm_volvec):
-#     derman_ts = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
-#     derman_ts.index = K
-#     derman_ts.columns = T
-#     for k in K:
-#         for t in T:
-#             moneyness = k-s
-#             derman_ts.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
-#     return derman_ts
+def make_derman_suface(s,K,T,derman_coefs,atm_volvec):
+    derman_ts = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
+    derman_ts.index = K
+    derman_ts.columns = T
+    for k in K:
+        for t in T:
+            moneyness = k-s
+            derman_ts.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
+    return derman_ts
             
             
+derman_ts = make_derman_suface(
+    derman_s,raw_call_K,
+    derman_coefs.index.astype(int).tolist(),
+    derman_coefs,call_atmvols)
 
-# """
-# plotting approximation fit
-# """ 
+"""
+plotting approximation fit
+""" 
 
-
-# for t in derman_coefs.index.astype(int).tolist(): 
-#     actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
-#     derman_fit = derman_ts.loc[actual_data.index,t]
-#     plt.rcParams['figure.figsize']=(6,4)
-#     fig, ax = plt.subplots()
+for t in derman_coefs.index.astype(int).tolist(): 
+    actual_data = raw_puts.loc[:,t].replace(0,np.nan).dropna()
+    derman_fit = derman_ts.loc[actual_data.index,t]
+    plt.rcParams['figure.figsize']=(6,4)
+    fig, ax = plt.subplots()
     
-#     ax.plot(actual_data.index, derman_fit)
-#     ax.plot(actual_data.index, actual_data, "o")
+    ax.plot(actual_data.index, derman_fit)
+    ax.plot(actual_data.index, actual_data, "o")
     
-#     ax.set_title("Derman approximation of implied volatility surface")
+    ax.set_title(f"Derman approximation for {int(t)} day maturity")
     
-#     plt.show()
-#     plt.cla()
-#     plt.clf()
+    plt.show()
+    plt.cla()
+    plt.clf()

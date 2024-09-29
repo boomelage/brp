@@ -423,7 +423,6 @@ class model_settings():
         return barrier_prices
     
 
-ms = model_settings()
 
 
 
