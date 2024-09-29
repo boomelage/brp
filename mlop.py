@@ -28,7 +28,7 @@ class mlop:
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e4)
-        self.hidden_layer_sizes = (100,100,100)
+        self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
                     # "lbfgs",
@@ -49,8 +49,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -76,7 +76,7 @@ class mlop:
             
             # 'updown',
             
-            # 'moneyness_tag',
+            'moneyness_tag',
             
             'w'
             
@@ -84,14 +84,14 @@ class mlop:
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
+            # ("RobustScaler",RobustScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
             # ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
             ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
-            ("RobustScaler",RobustScaler(),self.numerical_features),
-            
+            # 
             ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 

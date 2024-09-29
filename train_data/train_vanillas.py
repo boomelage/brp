@@ -59,9 +59,9 @@ moneyness filter
 """
 
 otm_lower = -0.05
-otm_upper = -0.005
+otm_upper = -0.00
 
-itm_lower =  0.005
+itm_lower =  0.00
 itm_upper =  0.05
 
 training_data = training_data[

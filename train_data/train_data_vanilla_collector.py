@@ -40,7 +40,7 @@ csvs = [file for file in csvs if extract_date(file) and start_date <= extract_da
 print('\nloading data...\n')
 price_counter = 0
 file_bar = tqdm(
-    desc='collecting',total=len(csvs),unit='file',postfix=price_counter,
+    desc='collecting',total=len(csvs),unit='files',postfix=price_counter,
     bar_format= str('{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | {rate_fmt} '
     '| Elapsed: {elapsed} | Remaining: {remaining} | Prices: {postfix}'))
 training_data = pd.DataFrame()
