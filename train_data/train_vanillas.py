@@ -6,10 +6,13 @@ Created on Thu Sep 26 01:57:11 2024
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
 from train_vanillas import training_data

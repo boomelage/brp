@@ -11,7 +11,7 @@ import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
-from tqdm import tqdm
+# from tqdm import tqdm
 from itertools import product
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,11 +20,11 @@ sys.path.append(parent_dir)
 sys.path.append(os.path.join(parent_dir,'train_data'))
 sys.path.append(os.path.join(parent_dir,'term_structure'))
 vanilla_csv_dir = os.path.join(current_dir,'historical_vanillas')
+import Derman as derman
 from routine_calibration_global import calibrate_heston
 from routine_calibration_testing import test_heston_calibration
-from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
-from train_generation_barriers import generate_barrier_features, \
-    generate_barrier_options
+# from train_generation_barriers import generate_barrier_features, \
+#     generate_barrier_options
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
@@ -39,6 +39,10 @@ from routine_historical_collection import historical_data
 r = 0.04
 historical_contracts = pd.DataFrame()
 for row_i, row in historical_data.iterrows():
+# row = historical_data.iloc[0]
+
+
+    
     s = row['spot_price']
     g = row['dividend_rate']/100
     dtdate = row['date']
@@ -49,7 +53,24 @@ for row_i, row in historical_data.iterrows():
     # CALIBRATION #
     ###############
                     
-    T = ms.derman_coefs.index.astype(int)
+    ql_T = [
+         ql.Period(30,ql.Days),
+         ql.Period(60,ql.Days),
+         ql.Period(3,ql.Months),
+         ql.Period(6,ql.Months),
+         ql.Period(12,ql.Months),
+         ql.Period(18,ql.Months),
+         ql.Period(24,ql.Months)
+         ]
+    
+    expiration_dates = []
+    for t in ql_T:
+        expiration_dates.append(calculation_date + t)
+    T = []
+    for date in expiration_dates:
+        T.append(date - calculation_date)
+    
+    T = [30,60,95,186,368]
     
     atm_volvec = np.array(row[
         [
@@ -60,14 +81,18 @@ for row_i, row in historical_data.iterrows():
     atm_volvec = pd.Series(atm_volvec)
     atm_volvec.index = T
     
-    K = np.linspace( s*0.9, s*1.1, 10)
     
-    derman_ts = ms.make_derman_surface(
-        s,K,T,ms.derman_coefs,atm_volvec)
-       
-    bicubic_vol = make_bicubic_functional(
-        derman_ts,K.tolist(),T.tolist())
-        
+    spread = 0.05
+    initial_spread = 0.005
+    wing_size = 3
+    
+    put_K = np.linspace(s*(1-spread),s*0.995,wing_size)
+    
+    call_K = np.linspace(s*1.005,s*(1+spread),wing_size)
+    
+    K = np.unique(np.array([put_K,call_K]).flatten())
+    
+    T = [30,60,95]
     calibration_dataset =  pd.DataFrame(
         product(
             [s],
@@ -80,24 +105,22 @@ for row_i, row in historical_data.iterrows():
             'days_to_maturity',
                   ])
     
-    calibration_dataset = calibration_dataset.apply(
-        bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
-    calibration_dataset = calibration_dataset.copy()
-    calibration_dataset['risk_free_rate'] = r
     
-    heston_parameters = calibrate_heston(
-            calibration_dataset, 
-            s,
-            r,
-            g,
-            calculation_date
-            )
+    calibration_dataset['volatility'] = ms.derman_volatilities(
+        s, 
+        calibration_dataset['strike_price'], 
+        calibration_dataset['strike_price'], 
+        calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
+        calibration_dataset['days_to_maturity'].map(atm_volvec)
+        )
     
-    test_features = calibration_dataset.copy()
-    test_heston_calibration(
-        test_features,heston_parameters,calculation_date,r,g)
-    calibration_error = heston_parameters['avg']
+    heston_parameters = calibrate_heston(calibration_dataset, s, r, g, calculation_date)
     
+    heston_parameters = test_heston_calibration(
+        calibration_dataset, heston_parameters, calculation_date, r, g)
+    
+    calibration_error = heston_parameters['relative_error']
+
     ###################
     # DATA GENERATION #
     ###################
@@ -218,8 +241,8 @@ for row_i, row in historical_data.iterrows():
         
         
         
-        
-        
-        
-        
-        
+            
+            
+            
+            
+            
