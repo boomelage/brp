@@ -24,13 +24,14 @@ Following this eniqury into the felixbility of this method, it was considered wh
 
 To model the logarithmic price of our underlying security, we use the Heston (1993) model, described by the pair of stochastic differential equations:
 
-```math
-dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right),
-```
+$$S
+dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right), \quad (1)
+$$
 
-```math
-dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t
-```
+$$
+dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t \quad (1.1)
+$$
+
 where
 - $v_0$ represents the initial variance,
 - $\theta$ is the long-run variance,
@@ -41,11 +42,13 @@ where
 
 ## 2.2 Volatility Estimation
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
-```math
-\sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
-```
+
+$$
+\sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0) \quad (2)
+$$
+
 ## 2.3 Calibration Procedure
-To calibrate our Heston (1993) model for a given trading day, we begin by estimating $b$ coefficients by extracting the term structure of volatility for each maturity where an at-the-money volatility is present and applying the above regression.
+To calibrate our Heston (1993) model for a given trading day, we begin by estimating $b$ coefficients by extracting the term structure of volatility for each maturity where an at-the-money volatility is present and applying $(2)$.
 <br>
 
 # 3. References
