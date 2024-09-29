@@ -70,7 +70,10 @@ def plot_derman_test(derman_s,test_T,derman_atm_vols,raw_ts_df,derman_coefs):
     for t in test_T: 
         actual_data = raw_ts_df.loc[:,t].replace(0,np.nan).dropna()
         test_K = actual_data.index
-        derman_fit = np.array((derman_atm_vols[t] + derman_coefs[t]*(test_K - derman_s)),dtype=float)
+        derman_fit = np.array(
+            (derman_atm_vols[t] + derman_coefs[t]*(test_K - derman_s)),
+            dtype=float
+            )
         plt.rcParams['figure.figsize']=(6,4)
         fig, ax = plt.subplots()
         ax.plot(actual_data.index, derman_fit)
@@ -99,14 +102,12 @@ raw_atm_vols = pd.Series(raw_ts.loc[derman_s,:].tolist(),index=derman_T)
 derman_coefs = compute_derman_coefficients(
     derman_s, derman_T, derman_K, raw_atm_vols, raw_ts)
 
-test_T = derman_coefs.index
-derman_atm_vols = raw_atm_vols.loc[test_T]
 
-plot_derman_test(derman_s,test_T,derman_atm_vols,raw_ts,derman_coefs)
+# test_T = derman_coefs.index
+# test_atm_vols = raw_atm_vols.loc[test_T]
 
-# raw_ts.loc[:,test_T].dropna(
-#     how='all',axis=1).dropna(
-#         how='all',axis=0)
+# plot_derman_test(derman_s,test_T,test_atm_vols,raw_ts,derman_coefs)
+
 
 
 
