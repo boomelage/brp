@@ -15,11 +15,11 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
-from train_vanillas import training_data
+from train_data_vanilla_collector import training_data
 
-training_data = training_data.drop(
-    columns=training_data.columns[0]).drop_duplicates().reset_index(drop=True)
 initial_count = training_data.shape[0]
+training_data
+
 training_data = ms.noisyfier(training_data)
 
 
@@ -40,11 +40,19 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'put']
+# training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 """"""
+training_data['moneyness'] = 0
 training_data['moneyness'] = ms.vmoneyness(
-    training_data['spot_price'],training_data['strike_price'],training_data['w'])
+    training_data['spot_price'],
+    training_data['strike_price'],
+    training_data['w']
+    )
+
+training_data
+
+
 """"""
 
 """
@@ -79,11 +87,11 @@ training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 
 training_data = training_data[
     [
-     'spot_price', 'strike_price', 'days_to_maturity', 
-     'moneyness', 'moneyness_tag', 'w', 
-     # 'theta', 'kappa', 'rho', 'eta', 'v0', 'heston_price', 
-     'observed_price'
-     ]
+      'spot_price', 'strike_price', 'days_to_maturity', 
+      'moneyness', 'moneyness_tag', 'w', 
+      # 'theta', 'kappa', 'rho', 'eta', 'v0', 'heston_price', 
+      'observed_price'
+      ]
     ]
 
 

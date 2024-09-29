@@ -18,7 +18,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-from settings import model_settings, compute_moneyness
+from settings import model_settings
 from routine_calibration_testing import heston_parameters
 
 ms = model_settings()

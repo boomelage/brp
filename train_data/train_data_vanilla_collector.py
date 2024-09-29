@@ -20,7 +20,7 @@ COLLECTION_DIRECTORY = historical_data_dir
 os.chdir(COLLECTION_DIRECTORY)
 
 
-csvs = dirdatacsv()
+csvs = dirdatacsv()[:10]
 print('\nloading data...\n')
 price_counter = 0
 file_bar = tqdm(
@@ -36,5 +36,7 @@ for file in csvs:
     
     file_bar.update(1)
 file_bar.close()
+training_data = training_data.drop(columns = training_data.columns[0])
+
 
 
