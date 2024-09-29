@@ -36,7 +36,6 @@ computing Derman coefficients
 
 """
 def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
-    
     derman_coefs = pd.Series(np.zeros(len(T),dtype=float),index=T)
     for i, t in enumerate(T):
         try:
@@ -53,10 +52,14 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
             model.fit(x,y)
             b = model.coef_[0]
             derman_coefs[t] = b
-        
-        except Exception as e:
-            print(f'{e} t = {t} dropped from coefficients')
+            if b >=0: 
+                print(f"check t = {t}, b = {b}")
+            
+        except Exception:
             derman_coefs = derman_coefs.drop(int(t))
+            
+    print(f"Derman coefficients available for maturities:\n"
+          f"{derman_coefs.index.tolist()}")
     return derman_coefs
             
 """
@@ -88,27 +91,22 @@ from routine_ivol_collection import raw_puts
 
 derman_s = 5625  #16th September 2024 SPX
 
-raw_ts_df = raw_puts
+raw_ts = raw_puts
 derman_K = raw_puts.index[raw_puts.index<derman_s]
-derman_T = raw_ts_df.columns
-raw_atm_vols = pd.Series(raw_ts_df.loc[derman_s,:].tolist(),index=derman_T)
+derman_T = raw_ts.columns
+raw_atm_vols = pd.Series(raw_ts.loc[derman_s,:].tolist(),index=derman_T)
 
 derman_coefs = compute_derman_coefficients(
-    derman_s, derman_T, derman_K, raw_atm_vols, raw_ts_df)
+    derman_s, derman_T, derman_K, raw_atm_vols, raw_ts)
 
 test_T = derman_coefs.index
 derman_atm_vols = raw_atm_vols.loc[test_T]
 
+plot_derman_test(derman_s,test_T,derman_atm_vols,raw_ts,derman_coefs)
 
-
-
-
-
-
-
-
-
-
+# raw_ts.loc[:,test_T].dropna(
+#     how='all',axis=1).dropna(
+#         how='all',axis=0)
 
 
 
