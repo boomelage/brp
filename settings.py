@@ -9,7 +9,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import sys
 import QuantLib as ql
 import numpy as np
-import pandas as pd
 from scipy.stats import norm
 
 class model_settings():

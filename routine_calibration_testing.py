@@ -43,9 +43,9 @@ def test_heston_calibration(
     test_dataset['ql_heston_price'] = ms.vector_black_scholes(
         s, k, t, r, volatility, w)
     test_dataset['ql_black_scholes'] = ms.vector_qlbs(
-        s, k, r, g, volatility, w, calculation_date, expiration_dates)
+        s, k, r, 0.00, volatility, w, calculation_date, expiration_dates)
     test_dataset['numpy_black_scholes'] = ms.vector_heston_price(
-        s, k, r, g, w, v0, kappa, theta, eta, rho, calculation_date, 
+        s, k, r, 0.00, w, v0, kappa, theta, eta, rho, calculation_date, 
         expiration_dates)
         
     print_test = test_dataset[
@@ -53,7 +53,7 @@ def test_heston_calibration(
          'ql_heston_price', 'ql_black_scholes','numpy_black_scholes']].copy()
     
     print_test['relative_error'] = \
-         (print_test['ql_black_scholes'] - print_test['ql_heston_price']
+         (print_test['numpy_black_scholes'] - print_test['ql_heston_price']
           )/print_test['ql_heston_price']
          
     test_avg = np.average(np.abs(np.array(print_test['relative_error'])))
