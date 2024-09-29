@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-Created on Mon Sep  9 13:54:57 2024
+general settings
 
 """
 import os
@@ -10,11 +10,7 @@ import sys
 import QuantLib as ql
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from scipy.stats import norm
-from bicubic_interpolation import make_bicubic_functional
-from derman_test import derman_coefs
-
 
 class model_settings():
     
@@ -28,75 +24,13 @@ class model_settings():
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.calculation_date   =    ql.Date.todaysDate()
-        self.ticker             =    'SPX'
-        self.s                  =    1277.92
-        
-        self.surf_K = np.linspace(self.s*0.5,self.s*1.5,1000).astype(int)
-        
-        self.atm_vols = [
-            
-            19.7389,
-            21.2123, 
-            21.9319,	
-            23.0063,
-            23.6643,
-            # 24.1647,
-            # 24.4341
-            
-            ]
-            # Tuesday 03 January 2012 spx
-        self.ql_T = [
-            
-            ql.Period(30,ql.Days), 
-            ql.Period(60,ql.Days), 
-            ql.Period(3,ql.Months), 
-            ql.Period(6,ql.Months), 
-            ql.Period(12,ql.Months), 
-            # ql.Period(18,ql.Months), 
-            # ql.Period(24,ql.Months)
-            
-            ]
-        
-        self.expiration_dates = np.empty(len(self.ql_T),dtype=object)
-        for i, p in enumerate(self.ql_T):
-            self.expiration_dates[i] = self.calculation_date + p
-        
-        self.T = np.zeros(len(self.ql_T),dtype=int)
-        for i, date in enumerate(self.expiration_dates):
-            self.T[i] = date - self.calculation_date
-        self.T = self.T.tolist()
-        
-        self.atm_vols = pd.DataFrame(self.atm_vols)/100
-        
-        self.atm_vols.index = self.T
-        
-        self.derman_coefs = derman_coefs.loc[[30,60,95,186,368]]
-        self.derman_coefs.index = self.T
-        
-        self.derman_ts = pd.DataFrame(
-            np.zeros((len(self.surf_K),len(self.T)),dtype=float))
-        
-        self.derman_ts.index = self.surf_K.astype(int)
-        
-        self.derman_ts.columns = self.T
-            
-        for k in self.surf_K:
-            moneyness = k-self.s
-            for t in self.T:
-                self.derman_ts.loc[k,t] = (
-                    self.atm_vols.loc[t,0] + \
-                    self.derman_coefs[t] * moneyness 
-                )
-                
-        self.derman_ts = self.derman_ts.dropna(how="any",axis=0)
-        self.derman_ts = self.derman_ts.dropna(how="any",axis=1)
-        
-        self.bicubic_vol = make_bicubic_functional(
-            self.derman_ts, self.surf_K.tolist(), self.T)
         
         self.default_bar = str("{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | "
         "{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining} | ")
     
+    """
+    QuantLib time tools
+    """    
     def expiration_datef(self,t,calculation_date=None):
         if calculation_date is None:
             calculation_date = self.calculation_date
@@ -110,6 +44,10 @@ class model_settings():
         expiration_dates = vdates(T,calculation_date)
         return expiration_dates
     
+    
+    """
+    QuanLib object makers
+    """
     def make_implied_vols_matrix(self, strikes, maturities, term_strucutre):
         implied_vols_matrix = ql.Matrix(len(strikes),len(maturities))
         for i, strike in enumerate(strikes):
@@ -139,16 +77,11 @@ class model_settings():
             self.day_count)
         ts_object = ql.YieldTermStructureHandle(yield_object)
         return ts_object
-
-    def compute_maturity_date(self,row,calculation_date = None):
-        if calculation_date is None:
-            calculation_date = self.calculation_date
-        ql.Settings.instance().evaluationDate = calculation_date
-        
-        row['calculation_date'] = self.calculation_date
-        row['maturity_date'] = calculation_date + ql.Period(
-            int(row['days_to_maturity']),ql.Days)
-        return row
+    
+    
+    """
+    miscellaneous convenience
+    """
     
     def vmoneyness(self, 
                    S, K, W
@@ -178,17 +111,6 @@ class model_settings():
         moneyness_tags[array > 0] = 'itm'
         return moneyness_tags
     
-    def make_derman_surface(self, s,K,T,derman_coefs,atm_volvec):
-        ts_df = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
-        ts_df.index = K
-        ts_df.columns = T
-        for k in K:
-            for t in T:
-                moneyness = k-s
-                ts_df.loc[k,t] = atm_volvec[t] + derman_coefs[t]*moneyness
-        return ts_df
-    
-    
     def apply_heston_parameters(self, df, heston_parameters):
         paras = ['v0','theta','eta','kappa','rho']
         for para in paras:
@@ -197,9 +119,9 @@ class model_settings():
     
     
     """
-    ===========================================================================
-                                        pricing
+    pricing functions 
     """
+    
     def noisyfier(self,prices):
         price = prices.columns[-1]
         
@@ -359,10 +281,8 @@ class model_settings():
         return barrier_price
     
     """
-    ===========================================================================
     vectorized pricing functions
     """
-    
     
     def vector_black_scholes(self,
             s,k,t,r,volatility,w
@@ -422,8 +342,37 @@ class model_settings():
         
         return barrier_prices
     
+    
+    """
+    approximations
+    """
 
-
-
-
+    def make_bicubic_functional(self,
+            s,K,T,atm_volvec,volatility_coefs
+            ):
+        T = T.astype(int).tolist()
+        K = K.astype(int).tolist()
+        ql_T = ql.Array(T)
+        ql_K = ql.Array(K)
+        ql_vols = ql.Matrix(len(K),len(T),0.00)
+        
+        for i, k in enumerate(ql_K):
+            for j, t in enumerate(ql_T):
+                ql_vols[i][j] = atm_volvec[t] + volatility_coefs[t]*(k-s)
+        
+        bicubic_vol = ql.BicubicSpline(ql_T, ql_K, ql_vols)
+        return bicubic_vol
+    
+    
+    def make_derman_surface(self, 
+            s,K,T,volatility_coefs,atm_volvec
+            ):
+        ts_df = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
+        ts_df.index = K
+        ts_df.columns = T
+        for k in K:
+            for t in T:
+                moneyness = k-s
+                ts_df.loc[k,t] = atm_volvec[t] + volatility_coefs[t]*moneyness
+        return ts_df
 

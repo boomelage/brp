@@ -82,14 +82,14 @@ def test_heston_calibration(
     print_test = test_features[['w', 'moneyness', 'ql_heston_price',
            'ql_black_scholes']].copy()
     
-    print_test.loc[:, 'relative_error'] = print_test.loc[
-        :, 'ql_heston_price'] / print_test.loc[
-            :, 'ql_black_scholes'] - 1
-            
+    print_test['relative_error'] = \
+         (print_test['ql_black_scholes'] - print_test['ql_heston_price']
+          )/print_test['ql_heston_price']
+         
     test_avg = np.average(np.abs(np.array(print_test['relative_error'])))
     test_avg_print = f"{round(test_avg*100,4)}%"
     
-    heston_parameters['avg'] = test_avg
+    heston_parameters['relative_error'] = test_avg
     
     pd.set_option("display.max_columns",None)
     print(f"\ncalibration test:\n{print_test}\n"
@@ -99,29 +99,3 @@ def test_heston_calibration(
     return heston_parameters
 
 
-# =============================================================================
-# # """
-# # example use
-# 
-# # # =============================================================================
-# # # # from routine_calibration_generation import calibration_dataset
-# # # # from routine_calibration_global import calibrate_heston
-# # # 
-# # # # s = ms.s
-# # # # calculation_date = ms.calculation_date
-# # # # ql.Settings.instance().evaluationDate = calculation_date
-# # # 
-# # # # g = 0.001
-# # # # r = 0.04
-# # # 
-# # # # heston_parameters = calibrate_heston(
-# # # #     calibration_dataset, s, r, g, calculation_date)
-# # # 
-# # # # test_features = calibration_dataset.copy()
-# # # 
-# # # # heston_parameters = test_heston_calibration(
-# # # #         test_features, heston_parameters,calculation_date,r,g)
-# # # 
-# # # =============================================================================
-# # """
-# =============================================================================

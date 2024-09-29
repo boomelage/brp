@@ -12,16 +12,18 @@ sys.path.append('term_structure')
 sys.path.append('contract_details')
 sys.path.append('misc')
 import pandas as pd
-import numpy as  np
+import numpy as np
 from itertools import product
-from bicubic_interpolation import make_bicubic_functional
-from bicubic_interpolation import bicubic_vol_row
 from settings import model_settings
-
-
+from Derman import raw_ts, derman_atm_vols, derman_s, derman_coefs
 ms = model_settings()
-s = ms.s
-T = ms.T
+
+T = derman_coefs.index
+T
+T = np.array([7,14,28,60,186,368],dtype=int)
+
+s = derman_s
+T = np.array([7,14,28],dtype=int)
 
 
 def generate_features(K,T,s):
@@ -38,23 +40,34 @@ def generate_features(K,T,s):
                   ])
     return features
 
+spread = 0.05
+K = np.linspace(s*(1-spread),s*(1+spread),5) 
 
+vbicubic_vol = ms.make_bicubic_functional(
+    derman_s,
+    K,
+    T,
+    derman_atm_vols,
+    derman_coefs,
+    )
 
-bicubic_vol = make_bicubic_functional(
-    ms.derman_ts, 
-    ms.derman_ts.index.tolist(), 
-    ms.derman_ts.columns.tolist())
+vbicubic_vol
 
-K = np.linspace(s*0.9,s*1.1,5)
+calibration_T = [7,14,30]
 
 features = generate_features(
-    K, T, s)
+    K, calibration_T, s)
 
-features = features.apply(bicubic_vol_row, axis = 1, bicubic_vol = bicubic_vol)
+features['volatility'] = np.nan
+for i, row in features.iterrows():
+    k = row['strike_price']
+    t = row['days_to_maturity']
+    features.at[i,'volatility'] = vbicubic_vol(t,k,True)
+    
+features
 calibration_dataset = features.copy()
 calibration_dataset['risk_free_rate'] = 0.04
 calibration_dataset['dividend_rate'] = 0.001
-
 
 pd.set_option('display.max_rows',None)
 pd.set_option('display.max_columns',None)

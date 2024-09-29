@@ -67,7 +67,7 @@ def calibrate_heston(
     
     theta, kappa, eta, rho, v0 = model.params()
     
-    param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price', 'avg']
+    param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price']
     
     heston_parameters_np = np.zeros(len(param_names),dtype=float)
     heston_parameters = pd.Series(heston_parameters_np)
@@ -79,7 +79,6 @@ def calibrate_heston(
     heston_parameters['eta'] = eta
     heston_parameters['v0'] = v0
     heston_parameters['spot_price'] = s
-    heston_parameters['avg'] = np.nan
     
     return heston_parameters
 
