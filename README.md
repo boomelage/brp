@@ -45,7 +45,7 @@ The model becomes suitable for fitting to our proposed method via approximation 
 \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0)
 ```
 ## 2.3 Calibration Procedure
-To calibrate a Heston (1993) model for a given trading day, we begin by estimating the $b$ coefficients by extracting the term structure of volatility for each maturity where an at-the-money volatility is present and applying the above regression.
+To calibrate our Heston (1993) model for a given trading day, we begin by estimating $b$ coefficients by extracting the term structure of volatility for each maturity where an at-the-money volatility is present and applying the above regression.
 <br>
 
 # 3. References
