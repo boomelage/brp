@@ -5,29 +5,21 @@ Created on Sat Sep 21 13:54:06 2024
 @author: boomelage
 """
 import os
-import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
 import pandas as pd
 from data_query import dirdatacsv
-csvs = dirdatacsv()
+os.chdir(current_dir)
 
 """
 data collection and cleaning
 """
 
-os.chdir(current_dir)
-
-# pd.set_option("display.max_rows",None)
-pd.set_option("display.max_columns",None)
-
-pd.reset_option("display.max_rows")
-# pd.reset_option("display.max_columns")
 
 
 def collect_historical_data():
     historical_data = pd.DataFrame()
+    csvs = dirdatacsv()
     for file in csvs:
         raw = pd.read_csv(file)
         raw.columns = raw.loc[2]
@@ -59,6 +51,8 @@ def collect_historical_data():
         historical_data = historical_data.dropna(how='all',axis=0)
         historical_data = historical_data.dropna(how='all',axis=1)
         historical_data = historical_data.dropna(how='any',axis=0)
+        
     return historical_data
 
 
+historical_data = collect_historical_data()

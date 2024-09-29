@@ -71,7 +71,6 @@ def calibrate_heston(
     performance_np = np.zeros((calibration_dataset.shape[0],3),dtype=float)
     performance_df = pd.DataFrame(performance_np)
     performance_df.columns = perfcols
-    
     for i in range(len(heston_helpers)):
         opt = heston_helpers[i]
         performance_df.loc[i,'market'] = opt.marketValue()
@@ -99,12 +98,11 @@ def calibrate_heston(
     
     pd.set_option("display.max_columns",None)
     pd.set_option("display.max_rows",None),
-    print(f'\n\ncalibration results:\n{performance_df}')
     print(f"average abs relative error: {round(100*avg,4)}%")
     print(f"\n{heston_parameters}")
     
     pd.reset_option("display.max_columns")
     pd.reset_option("display.max_rows")
-    return heston_parameters, performance_df
+    return heston_parameters
 
 

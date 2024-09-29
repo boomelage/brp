@@ -21,14 +21,15 @@ sys.path.append(os.path.join(parent_dir,'train_data'))
 sys.path.append(os.path.join(parent_dir,'term_structure'))
 vanilla_csv_dir = os.path.join(current_dir,'historical_vanillas')
 from routine_calibration_global import calibrate_heston
+from routine_calibration_testing import test_heston_calibration
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
 from train_generation_barriers import generate_barrier_features, \
     generate_barrier_options
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
-from routine_historical_collection import collect_historical_data
-historical_data = collect_historical_data()
+from routine_historical_collection import historical_data
+
 
 """
 # =============================================================================
@@ -84,7 +85,7 @@ for row_i, row in historical_data.iterrows():
     calibration_dataset = calibration_dataset.copy()
     calibration_dataset['risk_free_rate'] = r
     
-    heston_parameters, performance_df = calibrate_heston(
+    heston_parameters = calibrate_heston(
             calibration_dataset, 
             s,
             r,
@@ -92,53 +93,9 @@ for row_i, row in historical_data.iterrows():
             calculation_date
             )
     
-    test_dataset = calibration_dataset.copy()
-    for key in heston_parameters.index[:-1]:
-        test_dataset[key] = heston_parameters[key]
-    
-    test_S = test_dataset['spot_price']
-    test_K = test_dataset['strike_price']
-    test_T = test_dataset['days_to_maturity']
-    test_dates = np.empty(len(test_T),dtype=object)
-    for i,mat in enumerate(test_T):
-        test_dates[i] = calculation_date + ql.Period(
-            int(mat),ql.Days)
-        
-    test_VOLS = test_dataset['volatility']
-    w = 'put'
-    
-    bs_prices = ms.vector_black_scholes(
-            test_S,test_K,test_T,r,test_VOLS,w
-        )
-    test_dataset['np_black_scholes'] = bs_prices
-    
-    ql_bsps = ms.vector_qlbs(
-            test_S,test_K,r,g,
-            test_VOLS,w,
-            calculation_date, 
-            test_dates
-        )
-    test_dataset['ql_black_scholes'] = bs_prices
-    
-    hestons = ms.vector_heston_price(
-            test_S,test_K,
-            r,g,w,
-            heston_parameters['v0'],
-            heston_parameters['kappa'],
-            heston_parameters['theta'],
-            heston_parameters['eta'],
-            heston_parameters['rho'],
-            calculation_date,
-            test_dates
-        )
-    test_dataset['ql_heston'] = hestons
-    
-    pd.set_option("display.max_columns",None)
-    print_cols = ['np_black_scholes', 'ql_black_scholes', 'ql_heston']
-    print(f"\n{test_dataset[print_cols]}\nspot: {s} | "
-           f"{row_i}/{historical_data.shape[0]} | {print_date}\n")
-    pd.reset_option("display.max_columns")
-    
+    test_features = calibration_dataset.copy()
+    test_heston_calibration(
+        test_features,heston_parameters,calculation_date,r,g)
     calibration_error = heston_parameters['avg']
     
     ###################
@@ -148,12 +105,12 @@ for row_i, row in historical_data.iterrows():
                     
     if abs(calibration_error) <= 0.2:
         
-        
-        T = np.arange(
-            min(T),
-            (max(T)+1),
-            1
-            )
+        T = [10,30,90,180.360]
+        # T = np.arange(
+        #     min(T),
+        #     (max(T)+1),
+        #     1
+        #     )
         
         K = np.linspace(s*0.8,s*1.2,120)
         
@@ -190,7 +147,8 @@ for row_i, row in historical_data.iterrows():
         hestons = ms.vector_heston_price(
                 vanilla_features['spot_price'],
                 vanilla_features['strike_price'],
-                r,g,w,
+                r,g,
+                vanilla_features['w'],
                 heston_parameters['v0'],
                 heston_parameters['kappa'],
                 heston_parameters['theta'],
@@ -212,9 +170,11 @@ for row_i, row in historical_data.iterrows():
         file_name = dtdate.strftime("%Y-%m-%d") + f" spot{int(s)} " + file_tag + r".csv"
         historical_contracts.to_csv(os.path.join(vanilla_csv_dir,file_name))
     
-    ############
-    # BARRIERS #
-    ############
+    
+    
+        ############
+        # BARRIERS #
+        ############
     
     # =============================================================================
     #     # """
