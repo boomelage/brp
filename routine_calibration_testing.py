@@ -13,74 +13,44 @@ ms = model_settings()
 
 
 def test_heston_calibration(
-        test_features, heston_parameters,calculation_date,r,g
+        calibration_dataset, heston_parameters,calculation_date,r,g
         ):
-    test_features['dividend_rate'] = g
-    test_features['risk_free_rate'] = r
-    
-    test_features['eta'] = heston_parameters['eta']
-    test_features['theta'] = heston_parameters['theta']
-    test_features['kappa'] = heston_parameters['kappa']
-    test_features['rho'] = heston_parameters['rho']
-    test_features['v0'] = heston_parameters['v0']
-    
-    
-    for i,row in test_features.iterrows():
+    test_dataset = calibration_dataset.copy()
+    for i, row in test_dataset.iterrows():
         s = row['spot_price']
         k = row['strike_price']
-        if k>=s:
-            test_features.at[i,'w'] = 'call'
+        moneyness = k-s
+        if moneyness < 0:
+            test_dataset.at[i,'w'] = 'put'
         else:
-            test_features.at[i,'w'] = 'put'
+            test_dataset.at[i,'w'] = 'call'
             
-    S = test_features['spot_price']
-    K = test_features['strike_price']
-    W = test_features['w']
-    test_features['moneyness'] = ms.vmoneyness(S,K,W)
-    test_features['moneyness_tag'] = ms.encode_moneyness(test_features['moneyness'])
+    s = test_dataset['spot_price']
+    k = test_dataset['strike_price']
+    t = test_dataset['days_to_maturity']
+    volatility = test_dataset['volatility']
+    w = test_dataset['w']
+    v0 = heston_parameters['v0']
+    kappa = heston_parameters['kappa']
+    theta = heston_parameters['theta']
+    eta = heston_parameters['eta']
+    rho = heston_parameters['rho']
     
-    test_features['ql_heston_price'] = np.nan
-    test_features['ql_black_scholes'] = np.nan
-    test_features['black_scholes_price'] = np.nan
-    
-    for i,row in test_features.iterrows():
+    expiration_dates = []
+    for mat in t:
+        expiration_dates.append(calculation_date + ql.Period(int(mat),ql.Days))
+
+    test_dataset['ql_heston_price'] = ms.vector_black_scholes(
+        s, k, t, r, volatility, w)
+    test_dataset['ql_black_scholes'] = ms.vector_qlbs(
+        s, k, r, g, volatility, w, calculation_date, expiration_dates)
+    test_dataset['numpy_black_scholes'] = ms.vector_heston_price(
+        s, k, r, g, w, v0, kappa, theta, eta, rho, calculation_date, 
+        expiration_dates)
         
-        s = row['spot_price']
-        k = row['strike_price']
-        t = row['days_to_maturity']
-        r = row['risk_free_rate']
-        g = row['dividend_rate']
-        volatility = row['volatility']
-        w = row['w']
-        v0 = row['v0']
-        kappa = row['kappa']
-        theta = row['theta']
-        eta = row['eta']
-        rho = row['rho']
-        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
-        
-        
-        ql_bsp = ms.ql_black_scholes(
-            s,k,r,g,
-            volatility,w,
-            calculation_date, 
-            expiration_date
-            )
-        test_features.at[i,'ql_black_scholes'] =  ql_bsp
-        
-        h_price = ms.ql_heston_price(
-                s,k,r,g,w,
-                v0,kappa,theta,eta,rho,
-                calculation_date,
-                expiration_date)
-        test_features.at[i,'ql_heston_price'] = h_price
-        
-        my_bs = ms.black_scholes_price(s, k, t, r, volatility, w)
-        test_features.at[i,'black_scholes_price'] = my_bs
-        
-        
-    print_test = test_features[['w', 'moneyness', 'ql_heston_price',
-           'ql_black_scholes']].copy()
+    print_test = test_dataset[
+        ['w', 'spot_price','strike_price', 'days_to_maturity', 
+         'ql_heston_price', 'ql_black_scholes','numpy_black_scholes']].copy()
     
     print_test['relative_error'] = \
          (print_test['ql_black_scholes'] - print_test['ql_heston_price']
@@ -93,9 +63,10 @@ def test_heston_calibration(
     
     pd.set_option("display.max_columns",None)
     print(f"\ncalibration test:\n{print_test}\n"
-          f"average absolute relative error: {test_avg_print}"
+          f"repricing average absolute relative error: {test_avg_print}"
           f"\n{heston_parameters}\n")
     pd.reset_option("display.max_columns")
+    
     return heston_parameters
 
 

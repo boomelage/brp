@@ -6,21 +6,24 @@ example calibration
 
 """
 
-
-from routine_calibration_generation import calibration_dataset
+import QuantLib as ql
 from routine_calibration_global import calibrate_heston
-from Derman import derman_s
-s = derman_s
-calculation_date = ms.calculation_date
-ql.Settings.instance().evaluationDate = calculation_date
+from routine_calibration_testing import test_heston_calibration
 
+
+
+
+from routine_calibration_generation import calibration_dataset, calculation_date
+ql.Settings.instance().evaluationDate = calculation_date
+s = calibration_dataset['spot_price'].unique()[0]
 g = 0.001
 r = 0.04
 
 heston_parameters = calibrate_heston(
     calibration_dataset, s, r, g, calculation_date)
 
-test_features = calibration_dataset.copy()
-
 heston_parameters = test_heston_calibration(
-        test_features, heston_parameters,calculation_date,r,g)
+        calibration_dataset, heston_parameters, calculation_date,r,g)
+
+
+

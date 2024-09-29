@@ -67,6 +67,22 @@ def calibrate_heston(
     
     theta, kappa, eta, rho, v0 = model.params()
     
+    performance_columns = ['model','market','relative_error']
+    performance_np = np.zeros(
+        (calibration_dataset.shape[0],len(performance_columns)),
+        dtype=float)
+    performance = pd.DataFrame(performance_np)
+    performance.columns = performance_columns
+    
+    for i, opt in enumerate(heston_helpers):
+        performance.at[i,'model'] = opt.modelValue()
+        performance.at[i,'market'] = opt.marketValue()
+        performance.at[i,'relative_error'] = \
+            (opt.modelValue()-opt.marketValue())/opt.modelValue()
+    print('\ncalibration results:\n')
+    print(performance)
+    avg = np.average(np.abs(performance['relative_error']))
+    print(f"average absolute relative error: {round(avg*100,4)}%")
     param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price']
     
     heston_parameters_np = np.zeros(len(param_names),dtype=float)

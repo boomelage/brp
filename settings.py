@@ -15,25 +15,18 @@ from scipy.stats import norm
 class model_settings():
     
     def __init__(self):
-        
         sys.path.append('contract_details')
         sys.path.append('train_data')
         sys.path.append('historical_data')
         sys.path.append('misc')
-        
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
-        self.calculation_date   =    ql.Date.todaysDate()
-        
         self.default_bar = str("{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | "
         "{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining} | ")
-    
     """
     QuantLib time tools
     """    
     def expiration_datef(self,t,calculation_date=None):
-        if calculation_date is None:
-            calculation_date = self.calculation_date
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         return expiration_date
     
@@ -43,7 +36,6 @@ class model_settings():
         vdates = np.vectorize(self.expiration_datef)
         expiration_dates = vdates(T,calculation_date)
         return expiration_dates
-    
     
     """
     QuanLib object makers
@@ -58,10 +50,7 @@ class model_settings():
     
     def make_black_var_surface(
             self, expiration_dates, Ks, implied_vols_matrix, 
-            calculation_date=None):
-        
-        if calculation_date is None:
-            calculation_date = self.calculation_date
+            calculation_date):
         ql.Settings.instance().evaluationDate = calculation_date
         
         black_var_surface = ql.BlackVarianceSurface(
@@ -77,7 +66,6 @@ class model_settings():
             self.day_count)
         ts_object = ql.YieldTermStructureHandle(yield_object)
         return ts_object
-    
     
     """
     miscellaneous convenience
@@ -347,11 +335,18 @@ class model_settings():
     approximations
     """
 
+    def derman_volatility(self,s,k,t,coef,atm_vol):
+        volatility = atm_vol + (k-s)*coef
+        return volatility
+    
+    def derman_volatilities(self,s,k,t,coef,vol):
+        vols = np.vectorize(self.derman_volatility)
+        volatilities =  vols(s,k,t,coef,vol)
+        return volatilities
+            
     def make_bicubic_functional(self,
             s,K,T,atm_volvec,volatility_coefs
             ):
-        T = T.astype(int).tolist()
-        K = K.astype(int).tolist()
         ql_T = ql.Array(T)
         ql_K = ql.Array(K)
         ql_vols = ql.Matrix(len(K),len(T),0.00)
@@ -362,17 +357,14 @@ class model_settings():
         
         bicubic_vol = ql.BicubicSpline(ql_T, ql_K, ql_vols)
         return bicubic_vol
-    
-    
-    def make_derman_surface(self, 
-            s,K,T,volatility_coefs,atm_volvec
-            ):
-        ts_df = pd.DataFrame(np.zeros((len(K),len(T)),dtype=float))
-        ts_df.index = K
-        ts_df.columns = T
-        for k in K:
-            for t in T:
-                moneyness = k-s
-                ts_df.loc[k,t] = atm_volvec[t] + volatility_coefs[t]*moneyness
-        return ts_df
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
