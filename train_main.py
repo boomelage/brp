@@ -10,7 +10,6 @@ from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 from mlop import mlop
-from data_query import dirdatacsv
 sys.path.append(os.path.join(current_dir,'train_data'))
 
 train_start = time.time()
@@ -32,11 +31,11 @@ print(f"\n{train_start_tag}\n")
 
 "from archive"
 
-from train_data_barrier_collector import training_data
-title = 'Prediction errors for barrier options'
+# from train_data_barrier_collector import training_data
+# title = 'Prediction errors for barrier options'
 
-# from train_data_vanilla_collector import training_data
-# title = 'Prediction errors for Heston vanilla options'
+from train_data_vanilla_collector import training_data
+title = 'Prediction errors for Heston vanilla options'
 
 
 mlop = mlop(user_dataset = training_data)
@@ -59,13 +58,13 @@ print(f"\ntrain data count:\n{int(train_data.shape[0])}")
 single layer network
 """
 
-model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
 
 """
 deep neural network
 """
 
-# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest

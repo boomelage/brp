@@ -17,13 +17,14 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import time
 
 class mlop:
     
     def __init__(self,user_dataset):
-        self.user_dataset = user_dataset
+        self.user_dataset = user_dataset.copy().replace(0,np.nan).dropna()
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e4)
@@ -69,7 +70,7 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
@@ -84,15 +85,15 @@ class mlop:
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            # ("StandardScaler",StandardScaler(),self.numerical_features),
+            ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
-            ("PowerTransformer",PowerTransformer(),self.numerical_features),
+            # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             ("RobustScaler",RobustScaler(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
-            ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]   
 

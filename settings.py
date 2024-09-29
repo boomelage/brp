@@ -96,15 +96,17 @@ class model_settings():
         self.bicubic_vol = make_bicubic_functional(
             self.derman_ts, self.surf_K.tolist(), self.T)
     
-    
-    def compute_ql_maturity_dates(self, maturities, calculation_date=None):
+    def expiration_datef(self,t,calculation_date=None):
         if calculation_date is None:
             calculation_date = self.calculation_date
-        ql.Settings.instance().evaluationDate = calculation_date
-        expiration_dates = np.empty(len(maturities),dtype=object)
-        for i, maturity in enumerate(maturities):
-            expiration_dates[i] = calculation_date + ql.Period(
-                int(maturity), ql.Days)
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        return expiration_date
+    
+    def vexpiration_datef(self,T,calculation_date=None):
+        if calculation_date is None:
+            calculation_date = self.calculation_date
+        vdates = np.vectorize(self.expiration_datef)
+        expiration_dates = vdates(T,calculation_date)
         return expiration_dates
     
     def make_implied_vols_matrix(self, strikes, maturities, term_strucutre):

@@ -19,6 +19,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 sys.path.append(os.path.join(parent_dir,'train_data'))
 sys.path.append(os.path.join(parent_dir,'term_structure'))
+vanilla_csv_dir = os.path.join(current_dir,'historical_vanillas')
 from routine_calibration_global import calibrate_heston
 from bicubic_interpolation import make_bicubic_functional, bicubic_vol_row
 from train_generation_barriers import generate_barrier_features, \
@@ -35,7 +36,7 @@ historical_data = collect_historical_data()
 """
 
 r = 0.04
-historical_barriers = pd.DataFrame()
+historical_contracts = pd.DataFrame()
 for row_i, row in historical_data.iterrows():
     s = row['spot_price']
     g = row['dividend_rate']/100
@@ -43,9 +44,9 @@ for row_i, row in historical_data.iterrows():
     print_date = dtdate.strftime('%A %d %B %Y')
     calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
     
-                    ###############
-                    # CALIBRATION #
-                    ###############
+    ###############
+    # CALIBRATION #
+    ###############
                     
     T = ms.derman_coefs.index.astype(int)
     
@@ -98,9 +99,9 @@ for row_i, row in historical_data.iterrows():
     test_S = test_dataset['spot_price']
     test_K = test_dataset['strike_price']
     test_T = test_dataset['days_to_maturity']
-    expiration_date = np.empty(len(test_T),dtype=object)
+    test_dates = np.empty(len(test_T),dtype=object)
     for i,mat in enumerate(test_T):
-        expiration_date[i] = calculation_date + ql.Period(
+        test_dates[i] = calculation_date + ql.Period(
             int(mat),ql.Days)
         
     test_VOLS = test_dataset['volatility']
@@ -115,7 +116,7 @@ for row_i, row in historical_data.iterrows():
             test_S,test_K,r,g,
             test_VOLS,w,
             calculation_date, 
-            expiration_date
+            test_dates
         )
     test_dataset['ql_black_scholes'] = bs_prices
     
@@ -128,46 +129,119 @@ for row_i, row in historical_data.iterrows():
             heston_parameters['eta'],
             heston_parameters['rho'],
             calculation_date,
-            expiration_date
+            test_dates
         )
     test_dataset['ql_heston'] = hestons
     
     pd.set_option("display.max_columns",None)
     print_cols = ['np_black_scholes', 'ql_black_scholes', 'ql_heston']
     print(f"\n{test_dataset[print_cols]}\nspot: {s} | "
-          f"{row_i}/{historical_data.shape[0]} | {print_date}\n")
+           f"{row_i}/{historical_data.shape[0]} | {print_date}\n")
     pd.reset_option("display.max_columns")
     
-                ###################
-                # DATA GENERATION #
-                ###################
+    calibration_error = heston_parameters['avg']
     
-    T = [
+    ###################
+    # DATA GENERATION #
+    ###################
+                    
+                    
+    if abs(calibration_error) <= 0.2:
         
-        1,2
         
-        ]
-    K = np.linspace(s*0.8,s*1.2,75)
+        T = np.arange(
+            min(T),
+            (max(T)+1),
+            1
+            )
+        
+        K = np.linspace(s*0.8,s*1.2,120)
+        
+        W = ['call','put']
+        
+        
+        
+        ############
+        # VANILLAS #
+        ############
+        
+        
+        vanilla_features = pd.DataFrame(
+            product(
+                [float(s)],
+                K,
+                T,
+                W
+                ),
+            columns=[
+                "spot_price", 
+                "strike_price",
+                "days_to_maturity",
+                "w"
+                      ])
+        
+        
+        expiration_dates = ms.vexpiration_datef(
+            vanilla_features['days_to_maturity'],calculation_date)
+        
+        vanilla_features['calculation_date'] = calculation_date
+        vanilla_features['expiration_date'] = expiration_dates
+        
+        hestons = ms.vector_heston_price(
+                vanilla_features['spot_price'],
+                vanilla_features['strike_price'],
+                r,g,w,
+                heston_parameters['v0'],
+                heston_parameters['kappa'],
+                heston_parameters['theta'],
+                heston_parameters['eta'],
+                heston_parameters['rho'],
+                calculation_date,
+                vanilla_features['expiration_date']
+            )
+        vanilla_features['heston_price'] = hestons
+        
+        historical_contracts = pd.concat(
+            [historical_contracts, vanilla_features],
+            ignore_index = True
+            )
+        
+        os.path.join(current_dir,)
+        file_time = datetime.fromtimestamp(time.time())
+        file_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+        file_name = dtdate.strftime("%Y-%m-%d") + f" spot{int(s)} " + file_tag + r".csv"
+        historical_contracts.to_csv(os.path.join(vanilla_csv_dir,file_name))
     
-    up_barriers = np.linspace(s*1.01,s*1.19,50)
-    down_barriers = np.linspace(s*0.81,s*0.99,50)
+    ############
+    # BARRIERS #
+    ############
     
-    down_features = generate_barrier_features(
-        s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
-        )
-    
-    up_features = generate_barrier_features(
-        s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
-        )
-    
-    features = pd.concat([down_features,up_features],ignore_index=True)
-    features['barrier_type_name'] = features['updown'] + features['outin']
-    
-    barrier_options = generate_barrier_options(
-        features,calculation_date,heston_parameters, g, r'hist_outputs')
-    
-    historical_barriers = pd.concat(
-        [historical_barriers, barrier_options],ignore_index=True)
-    
-    print(f"\n{historical_barriers.describe()}\n{print_date}")
-    
+    # =============================================================================
+    #     # """
+    #     # # up_barriers = np.linspace(s*1.01,s*1.19,50)
+    #     # # down_barriers = np.linspace(s*0.81,s*0.99,50)
+    #     
+    #     # # down_features = generate_barrier_features(
+    #     # #     s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
+    #     # #     )
+    #     
+    #     # # up_features = generate_barrier_features(
+    #     # #     s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
+    #     # #     )
+    #     
+    #     # # features = pd.concat([down_features,up_features],ignore_index=True)
+    #     # # features['barrier_type_name'] = features['updown'] + features['outin']
+    #     
+    #     # # barrier_options = generate_barrier_options(
+    #     # #     features,calculation_date,heston_parameters, g, r'hist_outputs')
+    #     
+    #     # # historical_contracts = pd.concat(
+    #     # #     [historical_contracts, barrier_options],ignore_index=True)
+    #     # """
+    # =============================================================================
+        
+        
+        print(f"\n{historical_contracts.describe()}\n{print_date}")
+    else:
+        print(f"\nlarge calibration error:\n"
+              f"{round(calibration_error*100,2)}%\n")

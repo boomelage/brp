@@ -9,15 +9,17 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-grandparent_dir = os.path.dirname(parent_dir)
+historical_data_dir = os.path.join(parent_dir,'historical_data','historical_vanillas')
 sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
+sys.path.append(historical_data_dir)
 from data_query import dirdatacsv
 from settings import model_settings, compute_moneyness
-os.chdir(current_dir)
+
+COLLECTION_DIRECTORY = historical_data_dir
+os.chdir(COLLECTION_DIRECTORY)
+
 
 ms = model_settings()
 csvs = dirdatacsv()
@@ -25,7 +27,7 @@ csvs = dirdatacsv()
 print('\nloading data...\n')
 
 
-file_bar = ms.make_tqdm_bar(desc="file", total=len(csvs), unit='files')
+file_bar = ms.make_tqdm_bar(desc="file", total=len(csvs), unit='file')
 
 training_data = pd.DataFrame()
 for file in csvs:
@@ -38,6 +40,9 @@ file_bar.close()
 training_data = training_data.drop(
     columns=training_data.columns[0]).drop_duplicates()
 initial_count = training_data.shape[0]
+
+
+training_data = ms.noisyfier(training_data)
 """
 maturities filter
 """
@@ -55,7 +60,7 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 """"""
 training_data = compute_moneyness(training_data)
@@ -65,11 +70,11 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 
-otm_lower = -0.5
-otm_upper = -0.0
+otm_lower = -0.1
+otm_upper = -0.01
 
 itm_lower =  0.0
-itm_upper =  0.5
+itm_upper =  0.01
 
 training_data = training_data[
     
@@ -78,31 +83,30 @@ training_data = training_data[
       (training_data['moneyness'] <= otm_upper)
       )
    
-    |
+    # |
     
-    (
-      (training_data['moneyness'] >= itm_lower) & 
-      (training_data['moneyness'] <= itm_upper)
-      )
+    # (
+    #   (training_data['moneyness'] >= itm_lower) & 
+    #   (training_data['moneyness'] <= itm_upper)
+    #   )
 
 ]
 
 """"""
-
-training_data = training_data.loc[
-    training_data['observed_price'] >= 0.01*training_data['spot_price']
-    ]
 
 training_data['moneyness_tag'] = ms.encode_moneyness(training_data['moneyness'])
 
 training_data = training_data[
     [
      'spot_price', 'strike_price', 'days_to_maturity', 
-     'moneyness', 'moneyness_tag','w', 
+     'moneyness', 'moneyness_tag', 'w', 
      # 'theta', 'kappa', 'rho', 'eta', 'v0', 'heston_price', 
      'observed_price'
      ]
     ]
+
+
+training_data = training_data[training_data['observed_price']>0.10]
 
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())

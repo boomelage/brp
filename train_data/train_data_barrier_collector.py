@@ -64,8 +64,8 @@ maturities filter
 type filter
 """
  
-# training_data = training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'barrier_type_name'] == 'DownOut']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """"""
@@ -76,10 +76,10 @@ training_data = compute_moneyness(training_data)
 moneyness filter
 """
 
-# training_data = training_data[
-#     (training_data['moneyness']>=-1.0)&
-#     (training_data['moneyness']<=-0.0)
-#     ].reset_index(drop=True)
+training_data = training_data[
+    (training_data['moneyness']>=-1.0)&
+    (training_data['moneyness']<=-0.01)
+    ].reset_index(drop=True)
 
 
 """"""
@@ -100,12 +100,13 @@ B = np.sort(training_data['barrier_type_name'].unique())
 W = np.sort(training_data['w'].unique())
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())
+M = np.sort(training_data['moneyness_tag'].unique())
 training_data = training_data.dropna()
 total_contracts = training_data.shape[0]
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data.describe()}\nspot(s):\n{S}\n\nstrikes:\n{K}\n\n"
       f"maturities:\n{T}\n\ntypes:\n{W}\n{B}\ninitial count:\n{initial_count}"
-      f"\ntotal contracts:\n{total_contracts}\n")
+      f"\n{M}\ntotal contracts:\n{total_contracts}\n")
 pd.reset_option("display.max_columns")
 
 os.chdir(parent_dir)
