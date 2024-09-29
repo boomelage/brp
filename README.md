@@ -25,12 +25,13 @@ Following this eniqury into the felixbility of this method, it was considered wh
 To model the logarithmic price of our underlying security, we use the Heston (1993) model, described by the pair of stochastic differential equations:
 
 $$
-dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right), \quad (1)
+dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right) \quad (1)
 $$
 
 $$
-dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t \quad (1.1)
+\hspace{1.9cm}  dv_t = \kappa (\theta - v_t) dt + \eta \sqrt{v_t} dW_t \hspace{1.8cm} \quad (1.1)
 $$
+
 
 where
 - $v_0$ represents the initial variance,
@@ -44,7 +45,7 @@ where
 The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
 
 $$
-\sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0) \quad (2)
+\hspace{1cm} \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0) \hspace{1cm} \quad (2)
 $$
 
 ## 2.3 Calibration Procedure
