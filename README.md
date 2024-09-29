@@ -24,7 +24,7 @@ Following this eniqury into the felixbility of this method, it was considered wh
 
 To model the logarithmic price of our underlying security, we use the Heston (1993) model, described by the pair of stochastic differential equations:
 
-$$S
+$$
 dX_t = \left( r - \frac{v_t}{2} \right) dt + \sqrt{v_t} \left( \rho dW_t + \sqrt{1 - \rho^2} dB_t \right), \quad (1)
 $$
 
