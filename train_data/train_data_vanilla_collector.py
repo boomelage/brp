@@ -37,7 +37,7 @@ def filter_by_date(file_list, start_date=None, end_date=None):
     
     return filtered_files
 
-csvs = filter_by_date(csvs, start_date='2010-01-01', end_date='2011-01-01')
+csvs = filter_by_date(csvs, start_date='2010-01-01', end_date='2010-03-01')
 
 print('\nloading data...\n')
 price_counter = 0
