@@ -113,7 +113,7 @@ test_data = test_data[
      'spot_price', 'strike_price', 'days_to_maturity', 'predicted',
      'heston_price', 'error', 'moneyness', 'calculation_date', 'expiration_date'
      ]
-    ]
+    ].reset_index(drop=True)
 
 avg = np.average(np.abs(test_data['error']))
 

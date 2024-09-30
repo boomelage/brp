@@ -55,8 +55,8 @@ for row_i, row in historical_data.iterrows():
          ql.Period(3,ql.Months),
          ql.Period(6,ql.Months),
          ql.Period(12,ql.Months),
-         ql.Period(18,ql.Months),
-         ql.Period(24,ql.Months)
+         # ql.Period(18,ql.Months),
+         # ql.Period(24,ql.Months)
          ]
     
     expiration_dates = []
@@ -76,195 +76,214 @@ for row_i, row in historical_data.iterrows():
     
     atm_volvec = pd.Series(atm_volvec)
     atm_volvec.index = T
+    print(atm_volvec)
+    # if s < 1000:
+    #     spread = 0.15
+    # elif s < 1200:
+    #     spread = 0.1
+    # else:
+    #     spread = 0.05
     
+    # wing_size = 3
     
-    spread = 0.05
-    initial_spread = 0.005
-    wing_size = 3
+    # # put_K = np.linspace(s*(1-spread),s*0.995,wing_size)
     
-    put_K = np.linspace(s*(1-spread),s*0.995,wing_size)
+    # # call_K = np.linspace(s*1.005,s*(1+spread),wing_size)
     
-    call_K = np.linspace(s*1.005,s*(1+spread),wing_size)
+    # put_K = np.arange(
+    #     s-(wing_size)*5, 
+    #     s-5+1, 
+    #     5
+    #     )
     
-    K = np.unique(np.array([put_K,call_K]).flatten())
+    # call_K = np.arange(
+    #     s+5, 
+    #     s+(wing_size)*5+1, 
+    #     5
+    #     )
     
-    T = [30,60,95]
-    calibration_dataset =  pd.DataFrame(
-        product(
-            [s],
-            K,
-            T,
-            ),
-        columns=[
-            'spot_price', 
-            'strike_price',
-            'days_to_maturity',
-                  ])
+    # K = np.unique(np.array([put_K,call_K]).flatten())
     
+    # T = [
+    #     30,60,95,
+    #     186,368
+    #     ]
     
-    calibration_dataset['volatility'] = ms.derman_volatilities(
-        s, 
-        calibration_dataset['strike_price'],
-        calibration_dataset['days_to_maturity'],
-        calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
-        calibration_dataset['days_to_maturity'].map(atm_volvec)
-        )
+    # calibration_dataset =  pd.DataFrame(
+    #     product(
+    #         [s],
+    #         K,
+    #         T,
+    #         ),
+    #     columns=[
+    #         'spot_price', 
+    #         'strike_price',
+    #         'days_to_maturity',
+    #               ])
+    
+    # calibration_dataset['volatility'] = ms.derman_volatilities(
+    #     s, 
+    #     calibration_dataset['strike_price'],
+    #     calibration_dataset['days_to_maturity'],
+    #     calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
+    #     calibration_dataset['days_to_maturity'].map(atm_volvec)
+    #     )
 
-    heston_parameters = calibrate_heston(
-        calibration_dataset, s, r, g, calculation_date)
+    # heston_parameters = calibrate_heston(
+    #     calibration_dataset, s, r, g, calculation_date)
     
-    heston_parameters = test_heston_calibration(
-        calibration_dataset, heston_parameters, calculation_date, r, g)
-    print(f"^ {print_date}")
-    calibration_error = heston_parameters['relative_error']
-    historical_calibration_errors[dtdate] = calibration_error
+    # heston_parameters = test_heston_calibration(
+    #     calibration_dataset, heston_parameters, calculation_date, r, g)
+    # print(f"^ {print_date}")
+    # calibration_error = heston_parameters['relative_error']
+    # historical_calibration_errors[dtdate] = calibration_error
     
 
     ###################
     # DATA GENERATION #
     ###################
                     
-    if abs(calibration_error) <= 0.2:
+    # if abs(calibration_error) <= 0.2:
         
-        # T = np.arange(30,360,28)
+    #     # T = np.arange(30,360,28)
         
-        T = [186,368]
+    #     T = [186,368]
         
-        K = np.linspace(s*0.95,s*1.05,1400)
+    #     K = np.linspace(s*0.95,s*1.05,1400)
         
-        W = ['call','put']
-        
-        
-        ############
-        # VANILLAS #
-        ############
+    #     W = ['call','put']
         
         
-        vanilla_features = pd.DataFrame(
-            product(
-                [float(s)],
-                K,
-                T,
-                W
-                ),
-            columns=[
-                "spot_price", 
-                "strike_price",
-                "days_to_maturity",
-                "w"
-                      ])
+    #     ############
+    #     # VANILLAS #
+    #     ############
         
         
-        expiration_dates = ms.vexpiration_datef(
-            vanilla_features['days_to_maturity'],calculation_date)
+    #     vanilla_features = pd.DataFrame(
+    #         product(
+    #             [float(s)],
+    #             K,
+    #             T,
+    #             W
+    #             ),
+    #         columns=[
+    #             "spot_price", 
+    #             "strike_price",
+    #             "days_to_maturity",
+    #             "w"
+    #                   ])
         
-        vanilla_features['kappa'] = heston_parameters['kappa']
-        vanilla_features['theta']  = heston_parameters['theta']
-        vanilla_features['eta'] = heston_parameters['eta']
-        vanilla_features['rho'] = heston_parameters['rho']
-        vanilla_features['v0'] = heston_parameters['v0']
         
-        vanilla_features['volatility'] = ms.derman_volatilities(
-            s, 
-            vanilla_features['strike_price'],
-            vanilla_features['days_to_maturity'],
-            vanilla_features['days_to_maturity'].map(derman.derman_coefs), 
-            vanilla_features['days_to_maturity'].map(atm_volvec)
-            )
+    #     expiration_dates = ms.vexpiration_datef(
+    #         vanilla_features['days_to_maturity'],calculation_date)
         
-        vanilla_features['calculation_date'] = dtdate
+    #     vanilla_features['kappa'] = heston_parameters['kappa']
+    #     vanilla_features['theta']  = heston_parameters['theta']
+    #     vanilla_features['eta'] = heston_parameters['eta']
+    #     vanilla_features['rho'] = heston_parameters['rho']
+    #     vanilla_features['v0'] = heston_parameters['v0']
+        
+    #     vanilla_features['volatility'] = ms.derman_volatilities(
+    #         s, 
+    #         vanilla_features['strike_price'],
+    #         vanilla_features['days_to_maturity'],
+    #         vanilla_features['days_to_maturity'].map(derman.derman_coefs), 
+    #         vanilla_features['days_to_maturity'].map(atm_volvec)
+    #         )
+        
+    #     vanilla_features['calculation_date'] = dtdate
 
-        vanilla_features['expiration_date'] = expiration_dates
+    #     vanilla_features['expiration_date'] = expiration_dates
         
-        vanilla_features['numpy_black_scholes'] = ms.vector_black_scholes(
-                vanilla_features['spot_price'],
-                vanilla_features['strike_price'],
-                r,
-                vanilla_features['days_to_maturity'],
-                vanilla_features['volatility'],
-                vanilla_features['w']
+    #     vanilla_features['numpy_black_scholes'] = ms.vector_black_scholes(
+    #             vanilla_features['spot_price'],
+    #             vanilla_features['strike_price'],
+    #             r,
+    #             vanilla_features['days_to_maturity'],
+    #             vanilla_features['volatility'],
+    #             vanilla_features['w']
                 
-            )
+    #         )
         
-        vanilla_features['ql_black_scholes'] = ms.vector_qlbs(
-                vanilla_features['spot_price'],
-                vanilla_features['strike_price'],
-                r,g,
-                vanilla_features['volatility'],
-                vanilla_features['w'],
-                calculation_date,
-                vanilla_features['expiration_date']
-            )
+    #     vanilla_features['ql_black_scholes'] = ms.vector_qlbs(
+    #             vanilla_features['spot_price'],
+    #             vanilla_features['strike_price'],
+    #             r,g,
+    #             vanilla_features['volatility'],
+    #             vanilla_features['w'],
+    #             calculation_date,
+    #             vanilla_features['expiration_date']
+    #         )
         
-        vanilla_features['heston_price']  = ms.vector_heston_price(
-                vanilla_features['spot_price'],
-                vanilla_features['strike_price'],
-                r,g,
-                vanilla_features['w'],
-                heston_parameters['v0'],
-                heston_parameters['kappa'],
-                heston_parameters['theta'],
-                heston_parameters['eta'],
-                heston_parameters['rho'],
-                calculation_date,
-                vanilla_features['expiration_date']
-            )
+    #     vanilla_features['heston_price']  = ms.vector_heston_price(
+    #             vanilla_features['spot_price'],
+    #             vanilla_features['strike_price'],
+    #             r,g,
+    #             vanilla_features['w'],
+    #             heston_parameters['v0'],
+    #             heston_parameters['kappa'],
+    #             heston_parameters['theta'],
+    #             heston_parameters['eta'],
+    #             heston_parameters['rho'],
+    #             calculation_date,
+    #             vanilla_features['expiration_date']
+    #         )
         
-        dt_expiration_dates = []
-        for date in expiration_dates:
-            dt_expiration_dates.append(
-                datetime(date.year(),date.month(),date.dayOfMonth())
-                )
+    #     dt_expiration_dates = []
+    #     for date in expiration_dates:
+    #         dt_expiration_dates.append(
+    #             datetime(date.year(),date.month(),date.dayOfMonth())
+    #             )
         
-        vanilla_features['expiration_date'] = dt_expiration_dates
-        print(vanilla_features)
-        file_time = datetime.fromtimestamp(time.time())
-        file_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-        file_name = dtdate.strftime("%Y-%m-%d") \
-            + f" spot{int(s)} " + file_tag + r".csv"
-        vanilla_features.to_csv(os.path.join(vanilla_csv_dir,file_name))
-        print(f"\n{vanilla_features.describe()}\n{print_date}")
+    #     vanilla_features['expiration_date'] = dt_expiration_dates
+    #     print(vanilla_features)
+    #     file_time = datetime.fromtimestamp(time.time())
+    #     file_tag = file_time.strftime("%Y-%m-%d %H%M%S")
+    #     file_name = dtdate.strftime("%Y-%m-%d") \
+    #         + f" spot{int(s)} " + file_tag + r".csv"
+    #     vanilla_features.to_csv(os.path.join(vanilla_csv_dir,file_name))
+    #     print(f"\n{vanilla_features.describe()}\n{print_date}")
 
         
-        # """
+    #     # """
         
-        # # ############
-        # # # BARRIERS #
-        # # ############
+    #     # # ############
+    #     # # # BARRIERS #
+    #     # # ############
     
-        # # up_barriers = np.linspace(s*1.01,s*1.19,50)
-        # # down_barriers = np.linspace(s*0.81,s*0.99,50)
+    #     # # up_barriers = np.linspace(s*1.01,s*1.19,50)
+    #     # # down_barriers = np.linspace(s*0.81,s*0.99,50)
         
-        # # down_features = generate_barrier_features(
-        # #     s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
-        # #     )
+    #     # # down_features = generate_barrier_features(
+    #     # #     s,K,T,down_barriers,'Down', ['Out','In'], ['call','put']
+    #     # #     )
         
-        # # up_features = generate_barrier_features(
-        # #     s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
-        # #     )
+    #     # # up_features = generate_barrier_features(
+    #     # #     s,K,T,up_barriers,'Up', ['Out','In'], ['call','put']
+    #     # #     )
         
-        # # features = pd.concat([down_features,up_features],ignore_index=True)
-        # # features['barrier_type_name'] = features['updown'] + features['outin']
+    #     # # features = pd.concat([down_features,up_features],ignore_index=True)
+    #     # # features['barrier_type_name'] = features['updown'] + features['outin']
         
-        # # barrier_options = generate_barrier_options(
-        # #     features,calculation_date,heston_parameters, g, r'hist_outputs')
+    #     # # barrier_options = generate_barrier_options(
+    #     # #     features,calculation_date,heston_parameters, g, r'hist_outputs')
         
-        # # historical_contracts = pd.concat(
-        # #     [historical_contracts, barrier_options],ignore_index=True)
+    #     # # historical_contracts = pd.concat(
+    #     # #     [historical_contracts, barrier_options],ignore_index=True)
      
-        # """
+    #     # """
         
-    else:
-        test_large_error = str(f"### large calibration error: "
-                                f"{round(calibration_error*100,2)}% ###")
-        print('#'*len(test_large_error))
-        print('#'*len(test_large_error))
-        print('#'*len(test_large_error))
-        print(test_large_error)
-        print('#'*len(test_large_error))
-        print('#'*len(test_large_error))
-        print('#'*len(test_large_error))
-        print(print_date)
+    # else:
+    #     test_large_error = str(f"### large calibration error: "
+    #                             f"{round(calibration_error*100,2)}% ###")
+    #     print('#'*len(test_large_error))
+    #     print('#'*len(test_large_error))
+    #     print('#'*len(test_large_error))
+    #     print(test_large_error)
+    #     print('#'*len(test_large_error))
+    #     print('#'*len(test_large_error))
+    #     print('#'*len(test_large_error))
+    #     print(print_date)
         
         
         
