@@ -25,9 +25,9 @@ class mlop:
     
     def __init__(self,user_dataset):
         self.user_dataset = user_dataset.copy().replace(0,np.nan).dropna()
-        self.random_state = None
+        self.random_state = 1312
         self.test_size = 0.01
-        self.max_iter = int(1e4)
+        self.max_iter = int(1e3)
         self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
@@ -58,13 +58,24 @@ class mlop:
         self.rf_n_estimators = 50
         self.rf_min_samples_leaf = 2000
         
-        self.target_name = 'observed_price'
-        
-        self.numerical_features = [
+        self.target_list = [
             
-            'spot_price', 
-            'strike_price', 
-            'days_to_maturity',
+            # 'numpy_black_scholes',
+            
+            # 'ql_black_scholes',
+            
+            # 'heston_price',
+            
+            'observed_price'
+            
+            ]
+        self.numerical_features = [
+            'spot_price', 'strike_price', 'days_to_maturity', 
+            # 'moneyness', 
+            # 'volatility',
+            # 'kappa', 'theta', 'eta', 'rho', 'v0',  
+
+
             
             ]
         
@@ -76,7 +87,9 @@ class mlop:
             
             # 'updown',
             
-            'moneyness_tag',
+            # 'moneyness_tag',
+            
+            # 'calculation_date', 'expiration_date',
             
             'w'
             
@@ -84,7 +97,7 @@ class mlop:
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
-            # ("RobustScaler",RobustScaler(),self.numerical_features),
+            ("RobustScaler",RobustScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
             # ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
@@ -96,7 +109,7 @@ class mlop:
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]   
-
+        self.target_name = self.target_list[0]
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]

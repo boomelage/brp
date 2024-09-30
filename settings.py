@@ -344,8 +344,9 @@ class model_settings():
         return volatilities
             
     def make_bicubic_functional(self,
-            s,K,T,atm_volvec,volatility_coefs
+            s,K,atm_volvec,volatility_coefs
             ):
+        T = atm_volvec.index.tolist()
         ql_T = ql.Array(T)
         ql_K = ql.Array(K)
         ql_vols = ql.Matrix(len(K),len(T),0.00)

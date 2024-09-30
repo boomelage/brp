@@ -21,20 +21,7 @@ from data_query import dirdatacsv
 COLLECTION_DIRECTORY = historical_data_dir
 os.chdir(COLLECTION_DIRECTORY)
 
-
-def extract_date(file_name):
-    match = re.search(r'\d{4}-\d{2}-\d{2}', file_name)
-    if match:
-        return datetime.strptime(match.group(), date_format)
-    return None
-
-
-
-date_format = "%Y-%m-%d"
-start_date = datetime.strptime("2004-04-01", date_format)
-end_date = datetime.strptime("2030-03-31", date_format)
 csvs = dirdatacsv()
-csvs = [file for file in csvs if extract_date(file) and start_date <= extract_date(file) <= end_date]
 
 
 print('\nloading data...\n')
@@ -52,7 +39,6 @@ for file in csvs:
     file_bar.update(1)
 file_bar.close()
 training_data = training_data.drop(columns = training_data.columns[0])
-
 
 
 
