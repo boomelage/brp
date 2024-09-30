@@ -22,6 +22,7 @@ class model_settings():
         self.calendar           =    ql.UnitedStates(m=1)
         self.default_bar = str("{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | "
         "{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining} | ")
+        
     """
     QuantLib time tools
     """    
@@ -39,6 +40,7 @@ class model_settings():
     """
     QuanLib object makers
     """
+    
     def make_implied_vols_matrix(self, strikes, maturities, term_strucutre):
         implied_vols_matrix = ql.Matrix(len(strikes),len(maturities))
         for i, strike in enumerate(strikes):
@@ -92,7 +94,8 @@ class model_settings():
     
     def encode_moneyness(self, array):
         moneyness_tags = np.asarray(array)
-        moneyness_tags = np.empty_like(array, dtype=object)
+        moneyness_tags = np.full_like(
+            array, fill_value='not_encoded', dtype=object)
         moneyness_tags[array == 0] = 'atm'
         moneyness_tags[array < 0] = 'otm'
         moneyness_tags[array > 0] = 'itm'
@@ -109,16 +112,14 @@ class model_settings():
     pricing functions 
     """
     
-    def noisyfier(self,prices):
-        price = prices.columns[-1]
+    def noisy_prices(self, prices):
+        def noisify_price(price):
+            noisy_price = price + max(np.random.normal(scale=0.15),0)
+            return noisy_price
+        prices_noisyfier = np.vectorize(noisify_price)
+        noisy_prices = prices_noisyfier(prices)
+        return noisy_prices
         
-        prices['observed_price'] = prices[price]\
-                                .apply(lambda x: x + np.random.normal(
-                                    scale=0.15))
-        prices['observed_price'] = prices['observed_price']\
-                                .apply(lambda x: max(x, 0))
-        return prices
-
     def black_scholes_price(self,s,k,t,r,volatility,w): 
         if w == 'call':
             w = 1

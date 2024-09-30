@@ -51,15 +51,15 @@ def compute_derman_coefficients(s,T,K,atm_volvec,raw_ts):
             x = x.reshape(-1,1)
             model.fit(x,y)
             b = model.coef_[0]
-            derman_coefs[t] = b
-            if b >=0: 
+            if b < 0: 
+                derman_coefs[t] = b
+            else:
                 print(f"check t = {t}, b = {b}")
-            
+                derman_coefs = derman_coefs.drop(t)
         except Exception:
-            derman_coefs = derman_coefs.drop(int(t))
-            
-    print(f"Derman coefficients available for maturities:\n"
-          f"{derman_coefs.index.tolist()}")
+            pass         
+    derman_coefs = derman_coefs.replace(0,np.nan).dropna()
+
     return derman_coefs
             
 """
@@ -103,14 +103,12 @@ derman_coefs = compute_derman_coefficients(
     derman_s, derman_T, derman_K, raw_atm_vols, raw_ts)
 
 
-# test_T = derman_coefs.index
-# test_atm_vols = raw_atm_vols.loc[test_T]
+test_T = derman_coefs.index
+test_atm_vols = raw_atm_vols.loc[test_T]
 
-# plot_derman_test(derman_s,test_T,test_atm_vols,raw_ts,derman_coefs)
+plot_derman_test(derman_s,test_T,test_atm_vols,raw_ts,derman_coefs)
 
-
-
-
+print(f"\navailable Derman coefficients:\n{derman_coefs}")
 
 
 

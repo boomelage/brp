@@ -23,7 +23,7 @@ print(f"\n{train_start_tag}\n")
 """
 
 from train_vanillas import training_data
-title = 'Prediction errors for Heston vanilla options'
+title = 'Prediction errors for vanilla options'
 
 mlop = mlop(user_dataset = training_data)
 
@@ -40,8 +40,7 @@ print(f"\ntrain data count:\n{int(train_data.shape[0])}")
 """
 # =============================================================================
                               model selection                
-"""
-"""
+
 single layer network
 """
 

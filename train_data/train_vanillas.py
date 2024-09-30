@@ -16,27 +16,46 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
-from train_data_vanilla_collector import training_data
+from train_data_vanilla_collector import train_vanillas
 
+print('\npreparing data...')
+
+training_data = train_vanillas.copy()
 initial_count = training_data.shape[0]
-training_data = training_data.copy()
-training_data = ms.noisyfier(training_data)
+
 training_data['calculation_date'] = pd.to_datetime(
     training_data['calculation_date'])
 training_data['expiration_date'] = pd.to_datetime(
     training_data['expiration_date'])
 
+# training_data = training_data[
+#     training_data['numpy_black_scholes']>0.000001*training_data['spot_price']
+#     ]
+
+training_data.loc[:,'moneyness'] = ms.vmoneyness(
+    training_data['spot_price'],
+    training_data['strike_price'],
+    training_data['w']
+    )
+
+training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
+    training_data['moneyness']).astype(object)
+
+training_data['observed_price'] = ms.noisy_prices(
+    training_data['ql_black_scholes'])
+
 
 """
-
+date filter
 """
-training_data = training_data[
+
+# training_data = training_data[
     
-    (training_data['calculation_date']>=datetime(2010,2,1))
-    &
-    (training_data['calculation_date']<=datetime(2030,2,11))
+#     (training_data['calculation_date']>=datetime(2010,2,1))
+#     &
+#     (training_data['calculation_date']<=datetime(2030,2,11))
     
-    ].reset_index(drop=True)
+#     ].reset_index(drop=True)
 
 
 """
@@ -56,53 +75,41 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
-
-""""""
-training_data.loc[:,'moneyness'] = ms.vmoneyness(
-    training_data['spot_price'],
-    training_data['strike_price'],
-    training_data['w']
-    )
-""""""
 
 """
 moneyness filter
 """
 
-# otm_lower = -0.05
-# otm_upper = -0.02
+otm_lower = -0.9
+otm_upper = -0.01
 
-# itm_lower =  0.02
-# itm_upper =  0.05
-
-# training_data = training_data[
-    
-#     (
-#       (training_data['moneyness'] >= otm_lower) & 
-#       (training_data['moneyness'] <= otm_upper)
-#       )
-   
-#     |
-    
-#     (
-#       (training_data['moneyness'] >= itm_lower) & 
-#       (training_data['moneyness'] <= itm_upper)
-#       )
-
-# ]
-
-""""""
-
-training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
-    training_data['moneyness'])
-
-trainig_data = training_data[~(training_data['moneyness_tag']=='atm')]
+itm_lower =  0.02
+itm_upper =  0.9
 
 
 training_data = training_data[
-    training_data['observed_price']>training_data['spot_price']*0.01]
+    
+    (
+      (training_data['moneyness'] >= otm_lower) & 
+      (training_data['moneyness'] <= otm_upper)
+      )
+   
+    # |
+    
+    # (
+    #   (training_data['moneyness'] >= itm_lower) & 
+    #   (training_data['moneyness'] <= itm_upper)
+    #   )
+
+]
+
+
+training_data = training_data[training_data['moneyness_tag'] == str('otm')]
+
+
+""""""
 
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())
@@ -117,10 +124,13 @@ training_data = training_data[[
     'calculation_date', 'expiration_date',
     'numpy_black_scholes','ql_black_scholes','heston_price','observed_price']]
 
+
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data}")
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
+print(f"\n{training_data['moneyness_tag'].unique()}")
+print(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}")
 print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
 print(f"\ninitial count:\n{initial_count}")
 print(f"\ntotal prices:\n{training_data.shape[0]}\n")
