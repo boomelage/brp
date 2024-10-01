@@ -4,7 +4,6 @@
 Created on Mon Sep  2 16:24:36 2024
 
 """
-
 from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
@@ -17,11 +16,12 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
             QuantileTransformer, OrdinalEncoder,OneHotEncoder
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
+from datetime import datetime
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import time
-
 class mlop:
     
     def __init__(self,user_dataset):
@@ -227,7 +227,9 @@ class mlop:
         dnn_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
-        
+        dnn_end_tag = str(datetime.fromtimestamp(
+            dnn_end).strftime("%Y-%m-%d %H%M%S"))
+        joblib.dump(dnn_fit, str(f"dnn_model {dnn_end_tag}.pkl"))
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
