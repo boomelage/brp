@@ -91,7 +91,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
@@ -105,7 +105,7 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             # 
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]   

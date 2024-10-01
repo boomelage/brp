@@ -42,7 +42,7 @@ training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
     training_data['moneyness']).astype(object)
 
 training_data['observed_price'] = ms.noisy_prices(
-    training_data['ql_black_scholes'])
+    training_data['heston_price'])
 
 
 """
@@ -75,7 +75,7 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'put']
+# training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """
@@ -89,12 +89,12 @@ itm_lower =  0.02
 itm_upper =  0.9
 
 
-training_data = training_data[
+# training_data = training_data[
     
-    (
-      (training_data['moneyness'] >= otm_lower) & 
-      (training_data['moneyness'] <= otm_upper)
-      )
+#     (
+#       (training_data['moneyness'] >= otm_lower) & 
+#       (training_data['moneyness'] <= otm_upper)
+#       )
    
     # |
     
@@ -103,10 +103,10 @@ training_data = training_data[
     #   (training_data['moneyness'] <= itm_upper)
     #   )
 
-]
+# ]
 
 
-training_data = training_data[training_data['moneyness_tag'] == str('otm')]
+# training_data = training_data[training_data['moneyness_tag'] == str('otm')]
 
 
 """"""
@@ -118,12 +118,13 @@ W = np.sort(training_data['w'].unique())
 n_calls = training_data[training_data['w']=='call'].shape[0]
 n_puts = training_data[training_data['w']=='put'].shape[0]
 
-training_data = training_data[[
-    'spot_price', 'strike_price', 'days_to_maturity', 'w', 'moneyness', 
-    'moneyness_tag', 'kappa', 'theta', 'eta', 'rho', 'v0', 'volatility', 
-    'calculation_date', 'expiration_date',
-    'numpy_black_scholes','ql_black_scholes','heston_price','observed_price']]
-
+training_data = training_data[
+    [
+     'spot_price', 'strike_price', 'w', 'heston_price', 'days_to_maturity',
+     'moneyness','30D', '60D', '3M', '6M', '12M', '18M', '24M', 'calculation_date',
+     'expiration_date', 'moneyness_tag', 'observed_price'
+     ]
+    ]
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data}")
