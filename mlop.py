@@ -26,7 +26,7 @@ class mlop:
     
     def __init__(self,user_dataset):
         self.user_dataset = user_dataset.copy().replace(0,np.nan).dropna()
-        self.random_state = 1312
+        self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
         self.hidden_layer_sizes = (10,10,10)
@@ -233,7 +233,7 @@ class mlop:
         rf_fit = rf_pipeline.fit(train_X, train_y)
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
-        return rf_pipeline, rf_runtime
+        return rf_fit, rf_runtime
     
     def run_lm(self, train_X, train_y):
         print("\nLasso Regression")

@@ -31,12 +31,14 @@ mlop = mlop(user_dataset = training_data)
 # =============================================================================
                             preprocessing data
 """
+
 train_data, train_X, train_y, \
     test_data, test_X, test_y = mlop.split_user_data()
 
 preprocessor = mlop.preprocess()
 
 print(f"\ntrain data count:\n{int(train_data.shape[0])}")
+
 """
 # =============================================================================
                               model selection                
