@@ -5,21 +5,20 @@ Created on Sat Sep 21 13:54:06 2024
 @author: boomelage
 """
 import os
+import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 import pandas as pd
 from data_query import dirdatacsv
 os.chdir(current_dir)
-
+csvs = dirdatacsv()
 """
 data collection and cleaning
 """
 
-
-
 def collect_historical_data():
     historical_data = pd.DataFrame()
-    csvs = dirdatacsv()
+
     price_counter = 0
     for file in csvs:
         raw = pd.read_csv(file)
