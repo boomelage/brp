@@ -162,7 +162,8 @@ class mlop:
     model estimation
     """
     def run_nnet(self, preprocessor, train_X, train_y):
-        print("\nSingle Layer Network")
+        model_name = "Single Layer Network"
+        print(f"\n{model_name}")
         print(f"hidden layer size: {self.single_layer_size}")
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
@@ -192,10 +193,14 @@ class mlop:
         model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
+        estimation_end_tag = str(datetime.fromtimestamp(
+            nnet_end).strftime("%Y-%m-%d %H%M%S"))
+        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
         return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor,train_X,train_y):
-        print("\nDeep Neural Network")
+        model_name = "Deep Neural Network"
+        print(f"\n{model_name}")
         print(f"hidden layers sizes: {self.hidden_layer_sizes}")
         print(f"learning rate: {self.learning_rate}")
         print(f"activation: {self.activation_function}")
@@ -224,16 +229,17 @@ class mlop:
             transformer=self.target_transformer_pipeline 
         )
         
-        dnn_fit = dnn_scaled.fit(train_X,train_y)
+        model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
-        dnn_end_tag = str(datetime.fromtimestamp(
+        estimation_end_tag = str(datetime.fromtimestamp(
             dnn_end).strftime("%Y-%m-%d %H%M%S"))
-        joblib.dump(dnn_fit, str(f"dnn_model {dnn_end_tag}.pkl"))
-        return dnn_fit, dnn_runtime
+        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
+        return model_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
-        print("\nRandom Forest")
+        model_name = "Random Forest"
+        print(f"\n{model_name}")
         print(f"number of estimators: {self.rf_n_estimators}")
         print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
         print('\ntraining...')
@@ -254,14 +260,18 @@ class mlop:
             transformer=self.target_transformer_pipeline 
         )
         
-        rf_fit = rf_scaled.fit(train_X, train_y)
+        model_fit = rf_scaled.fit(train_X, train_y)
         
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
-        return rf_fit, rf_runtime
+        estimation_end_tag = str(datetime.fromtimestamp(
+            rf_end).strftime("%Y-%m-%d %H%M%S"))
+        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
+        return model_fit, rf_runtime
     
     def run_lm(self, train_X, train_y):
-        print("\nLasso Regression")
+        model_name = "Lasso Regression"
+        print(f"\n{model_name}")
         print(f"alpha: {self.alpha}")
         print('\ntraining...')
         lm_start = time.time()
@@ -277,11 +287,14 @@ class mlop:
             transformer=self.target_transformer_pipeline 
         )
         
-        lm_fit = lm_scaled.fit(train_X, train_y)
+        model_fit = lm_scaled.fit(train_X, train_y)
         
         lm_end = time.time()
         lm_runtime = lm_end - lm_start
-        return lm_fit, lm_runtime
+        estimation_end_tag = str(datetime.fromtimestamp(
+            lm_end).strftime("%Y-%m-%d %H%M%S"))
+        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
+        return model_fit, lm_runtime
 
 
     """
