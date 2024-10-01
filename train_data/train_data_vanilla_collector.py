@@ -37,9 +37,7 @@ def filter_by_date(file_list, start_date=None, end_date=None):
     
     return filtered_files
 
-csvs = filter_by_date(csvs, start_date='2001-01-01', end_date='2050-03-01')
-
-
+csvs = filter_by_date(csvs)
 
 print('\nloading data...\n')
 price_counter = 0
@@ -55,7 +53,6 @@ for file in csvs:
     file_bar.postfix = price_counter
     file_bar.update(1)
 file_bar.close()
-
 train_vanillas = train_vanillas.iloc[:,1:].copy().reset_index(drop=True)
 
 

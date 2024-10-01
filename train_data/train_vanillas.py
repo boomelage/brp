@@ -9,6 +9,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
@@ -28,9 +29,6 @@ training_data['calculation_date'] = pd.to_datetime(
 training_data['expiration_date'] = pd.to_datetime(
     training_data['expiration_date'])
 
-# training_data = training_data[
-#     training_data['numpy_black_scholes']>0.000001*training_data['spot_price']
-#     ]
 
 training_data.loc[:,'moneyness'] = ms.vmoneyness(
     training_data['spot_price'],
@@ -44,6 +42,16 @@ training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
 training_data['observed_price'] = ms.noisy_prices(
     training_data['heston_price'])
 
+
+
+"""
+# =============================================================================
+relative price filter 
+"""
+
+# training_data = training_data[
+#     training_data['observed_price']>0.001*training_data['spot_price']
+#     ]
 
 """
 date filter
@@ -66,7 +74,7 @@ maturities filter
     
 #     (training_data['days_to_maturity']>=0)
 #     &
-#     (training_data['days_to_maturity']<=31)
+#     (training_data['days_to_maturity']<=60)
     
 #     ].reset_index(drop=True)
 
@@ -82,34 +90,36 @@ type filter
 moneyness filter
 """
 
-otm_lower = -0.9
-otm_upper = -0.01
+# otm_lower = -0.06
+# otm_upper = -0.01
 
-itm_lower =  0.02
-itm_upper =  0.9
+itm_lower =  0.01
+itm_upper =  0.99
 
 
-# training_data = training_data[
+training_data = training_data[
     
-#     (
-#       (training_data['moneyness'] >= otm_lower) & 
-#       (training_data['moneyness'] <= otm_upper)
-#       )
+    # (
+    #   (training_data['moneyness'] >= otm_lower) & 
+    #   (training_data['moneyness'] <= otm_upper)
+    #   )
    
     # |
     
-    # (
-    #   (training_data['moneyness'] >= itm_lower) & 
-    #   (training_data['moneyness'] <= itm_upper)
-    #   )
+    (
+      (training_data['moneyness'] >= itm_lower) & 
+      (training_data['moneyness'] <= itm_upper)
+      )
 
-# ]
+]
 
 
 # training_data = training_data[training_data['moneyness_tag'] == str('otm')]
 
 
-""""""
+"""
+# =============================================================================
+"""
 
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())
@@ -118,11 +128,15 @@ W = np.sort(training_data['w'].unique())
 n_calls = training_data[training_data['w']=='call'].shape[0]
 n_puts = training_data[training_data['w']=='put'].shape[0]
 
+
+
 training_data = training_data[
     [
-     'spot_price', 'strike_price', 'w', 'heston_price', 'days_to_maturity',
-     'moneyness','30D', '60D', '3M', '6M', '12M', '18M', '24M', 'calculation_date',
-     'expiration_date', 'moneyness_tag', 'observed_price'
+     'spot_price', 'strike_price', 'w', 'heston_price', 
+     '30D', '60D', '3M', '6M', '12M', '18M', '24M', 'moneyness',
+     'risk_free_rate', 'dividend_rate',
+     'kappa', 'theta', 'rho', 'eta', 'v0', 'days_to_maturity',
+     'expiration_date', 'calculation_date', 'moneyness_tag', 'observed_price'
      ]
     ]
 
@@ -137,7 +151,14 @@ print(f"\ninitial count:\n{initial_count}")
 print(f"\ntotal prices:\n{training_data.shape[0]}\n")
 pd.reset_option("display.max_columns")
 
+plt.figure()
+plt.hist(
+    training_data['observed_price'],bins=500)
+plt.title("Distribution of observed prices")
+plt.ylabel("Frequency")
+plt.show()
+plt.close()
+plt.cla()
+plt.clf()
 
-
-
-
+print('\n\n')

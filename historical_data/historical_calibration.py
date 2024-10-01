@@ -124,13 +124,6 @@ for row_i, row in historical_data.iterrows():
             'days_to_maturity',
                   ])
     
-    calibration_dataset['volatility'] = ms.derman_volatilities(
-        s, 
-        calibration_dataset['strike_price'],
-        calibration_dataset['days_to_maturity'],
-        calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
-        calibration_dataset['days_to_maturity'].map(atm_volvec)
-        )
 
     heston_parameters = calibrate_heston(
         calibration_dataset, s, r, g, calculation_date)
@@ -139,7 +132,6 @@ for row_i, row in historical_data.iterrows():
         calibration_dataset, heston_parameters, calculation_date, r, g)
     
     historical_data.loc[row_i,param_names] = heston_parameters[param_names]
-    
     
     print(f"^ {print_date}")
     

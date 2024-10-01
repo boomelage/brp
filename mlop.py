@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.compose import TransformedTargetRegressor
 from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
     MinMaxScaler, RobustScaler, Normalizer, PowerTransformer, \
         SplineTransformer, PolynomialFeatures, KernelCenterer, \
@@ -31,8 +32,8 @@ class mlop:
         self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
-                    # "lbfgs",
-                    "sgd", 
+                    "lbfgs",
+                    # "sgd", 
                     # "adam"
                     ]
         
@@ -49,8 +50,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            # 'tanh',
-            'relu',
+            'tanh',
+            # 'relu',
             
             ]
         
@@ -59,24 +60,28 @@ class mlop:
         self.rf_min_samples_leaf = 2000
         
         self.target_list = [
-            
-            # 'numpy_black_scholes',
-            
-            # 'ql_black_scholes',
-            
             # 'heston_price',
-            
             'observed_price'
-            
             ]
+        self.target_name = self.target_list[0]
+        
+        """
+        [
+         'spot_price', 'strike_price', 'w', 'heston_price', 
+         '30D', '60D', '3M', '6M', '12M', '18M', '24M', 'moneyness',
+         'risk_free_rate', 'dividend_rate',
+         'kappa', 'theta', 'rho', 'eta', 'v0', 'days_to_maturity',
+         'expiration_date', 'calculation_date', 'moneyness_tag',
+         ]
+        """
+        
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
+            # '30D', '60D', '3M', '6M', '12M', '18M', '24M',
+            # 'risk_free_rate', 
+            'dividend_rate',
             # 'moneyness', 
-            # 'volatility',
             # 'kappa', 'theta', 'eta', 'rho', 'v0',  
-
-
-            
             ]
         
         self.categorical_features = [
@@ -91,25 +96,27 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
-            # ("RobustScaler",RobustScaler(),self.numerical_features),
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
             ("StandardScaler",StandardScaler(),self.numerical_features),
             # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
-            # 
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
-            ]   
-        self.target_name = self.target_list[0]
+            ]
+        self.target_transformers = [
+            ("RobustScaler",RobustScaler(),self.target_name),
+            ]
+        
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
@@ -141,7 +148,8 @@ class mlop:
             test_data, test_X, test_y
             
     def preprocess(self):
-        preprocessor = ColumnTransformer(transformers=self.transformers)
+        preprocessor = ColumnTransformer(
+            transformers=self.transformers)
         return preprocessor
     
 # =============================================================================
@@ -212,17 +220,20 @@ class mlop:
         rf_start = time.time()
         
         rf_model = RandomForestRegressor(
-        n_estimators=self.rf_n_estimators, 
-        min_samples_leaf=self.rf_min_samples_leaf, 
-        random_state=self.random_state)
+            n_estimators=self.rf_n_estimators, 
+            min_samples_leaf=self.rf_min_samples_leaf, 
+            random_state=self.random_state,
+        )
+        
         
         rf_pipeline = Pipeline([
             ("preprocessor", preprocessor),
             ("regressor", rf_model)])
+        
         rf_fit = rf_pipeline.fit(train_X, train_y)
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
-        return rf_fit, rf_runtime
+        return rf_pipeline, rf_runtime
     
     def run_lm(self, train_X, train_y):
         print("\nLasso Regression")
@@ -270,7 +281,7 @@ class mlop:
                    aes(x="moneyness", y="abs_relative_error")) + 
             geom_point(alpha=0.05) + 
             labs(x="relative moneyness", 
-                 y=f"absolute relative error ({round(runtime,4)} second runtime)",
+                 y=f"absolute relative error ({int(runtime)} second runtime)",
                  title=title) + 
             theme(legend_position="")
             )

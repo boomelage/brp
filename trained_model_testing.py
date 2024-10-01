@@ -16,6 +16,7 @@ os.chdir(current_dir)
 sys.path.append(os.path.join(current_dir,'term_structure'))
 from settings import model_settings
 from train_main import model_fit, training_data
+
 import Derman as derman
 pd.set_option("display.max_columns",None)
 print(f"{training_data.describe()}")
@@ -23,101 +24,69 @@ pd.reset_option("display.max")
 
 ms = model_settings()
 
+prediction_df = training_data.copy()
+
+
 day = 5
+trading_day = training_data.iloc[day]
 print(f"\n{training_data.iloc[day]}\n")
 
-dt_calc = training_data.iloc[day]['calculation_date']
-
-trading_day = training_data.iloc[day]
+dt_calc = trading_day['calculation_date']
 
 v0,kappa,theta,eta,rho = trading_day['v0'], trading_day['kappa'], \
     trading_day['theta'], trading_day['eta'], trading_day['rho'],  
 
+
 calculation_date = ql.Date(
     dt_calc.day,dt_calc.month,dt_calc.year
     )
-r = 0.04
-g = 0.001
+
+expiration_date = calculation_date + ql.Period()
 
 volatility = trading_day['volatility']
 
 
+r = 0.04
+g = 0.001
+
 s = trading_day['spot_price']
+k = s*0.98
+t = trading_day['days_to_maturity']
 
 
-up_K = np.arange(
-    int(s*1.01),
-    int(s*1.05),
-    1
+
+S = np.linspace(s,s,1)
+T = np.arange(t,180,1)
+K = np.linspace(k,k,1)
+
+prediction_features = pd.DataFrame(
+    product(
+        S,
+        K,
+        T
+        ),
+    columns = ['spot_price','strike_price','days_to_maturity']
     )
 
-down_K = np.arange(
-    int(s*0.95),
-    int(s*0.99),
-    1
+black_scholes = ms.vector_black_scholes(
+    S,
+    K,
+    T,
+    r,
+    volatility,
+    'put'
     )
 
-K = np.sort(np.array([down_K, up_K]).flatten().astype(float))
+predicted = model_fit.predict(prediction_features)
 
+error = predicted/black_scholes - 1
 
-T = np.arange(
-    min(training_data['days_to_maturity']),
-    max(training_data['days_to_maturity']),
-    7)
-
-test_data = pd.DataFrame(
-    product([s],K,T,),
-    columns= ['spot_price','strike_price','days_to_maturity']
-    )
-test_data
-test_data['predicted'] = model_fit.predict(test_data)
-
-
-test_data['moneyness'] = ms.vmoneyness(s,test_data['strike_price'], 'put')
-test_data['calculation_date'] = calculation_date
-test_data['expiration_date'] = ms.vexpiration_datef(
-    test_data['days_to_maturity'].tolist(),
-    calculation_date,
+prediction_df = pd.DataFrame(
+    np.array([black_scholes,predicted,error]).transpose(),
+    columns = ['black_scholes','predicted','error']
     )
 
-# test_data['numpy_black_scholes'] = ms.vector_black_scholes(
-#     test_data['spot_price'], 
-#     test_data['strike_price'], 
-#     test_data['days_to_maturity'],
-#     r, volatility, 
-#     'put')
+avg_abs_relative_error = np.average(np.abs(prediction_df['error']))
 
-# test_data['ql_black_scholes'] = ms.vector_qlbs(
-#     test_data['spot_price'],
-#     test_data['strike_price'],
-#     r, g, volatility, 'put',
-#     calculation_date,
-#     test_data['expiration_date']
-#     )
-
-test_data['heston_price'] = ms.vector_heston_price(
-    test_data['spot_price'],
-    test_data['strike_price'],
-    r,g,'put',
-    v0,kappa,theta,eta,rho,
-    calculation_date,
-    test_data['expiration_date']
-    )
-
-test_data['error'] = (
-    test_data['predicted']/test_data['heston_price']
-    )-1
-
-test_data = test_data[
-    [
-     'spot_price', 'strike_price', 'days_to_maturity', 'predicted',
-     'heston_price', 'error', 'moneyness', 'calculation_date', 'expiration_date'
-     ]
-    ].reset_index(drop=True)
-
-avg = np.average(np.abs(test_data['error']))
-
-pd.set_option("display.max_columns",None)
-print(f"{test_data}")
-print(f"\naverage absolute relative pricing error: {round(avg*100,2)}%\n")
-pd.reset_option("display.max")
+print(f"\n{prediction_df}\n\naverage absolute relative error: "
+      f"{round(avg_abs_relative_error*100,4)}%\n")

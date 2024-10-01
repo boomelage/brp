@@ -118,7 +118,9 @@ class model_settings():
         noisy_prices = prices_noisyfier(prices)
         return noisy_prices
         
-    def black_scholes_price(self,s,k,t,r,volatility,w): 
+    def black_scholes_price(self,
+            s,k,t,r,volatility,w
+            ): 
         if w == 'call':
             w = 1
         elif w == 'put':
@@ -180,7 +182,7 @@ class model_settings():
     
     def ql_heston_price(self,
             s,k,r,g,w,
-            v0,kappa,theta,eta,rho,
+            kappa,theta,rho,eta,v0,
             calculation_date,
             expiration_date
             ):
@@ -204,7 +206,9 @@ class model_settings():
             
             ql.QuoteHandle(ql.SimpleQuote(s)), 
             
-            v0, kappa, theta, eta, rho)
+            v0, kappa, theta, eta, rho
+            
+            )
         
         heston_model = ql.HestonModel(heston_process)
         
@@ -219,20 +223,24 @@ class model_settings():
     def ql_barrier_price(self,
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, eta, rho
+            kappa,theta,rho,eta,v0,
             ):
         ql.Settings.instance().evaluationDate = calculation_date
         flat_ts = self.make_ts_object(r)
         dividend_ts = self.make_ts_object(g)
         
-        spotHandle = ql.QuoteHandle(ql.SimpleQuote(s))
+        heston_process = ql.HestonProcess(
+            
+            flat_ts,dividend_ts, 
+            
+            ql.QuoteHandle(ql.SimpleQuote(s)), 
+            
+            v0, kappa, theta, eta, rho
+            
+            )
         
-        hestonProcess = ql.HestonProcess(
-            flat_ts, dividend_ts, spotHandle, 
-            v0, kappa, theta, eta, rho)
-        
-        hestonModel = ql.HestonModel(hestonProcess)
-        engine = ql.FdHestonBarrierEngine(hestonModel)
+        heston_model = ql.HestonModel(heston_process)
+        engine = ql.FdHestonBarrierEngine(heston_model)
         
         if w == 'call':
             option_type = ql.Option.Call
@@ -299,7 +307,7 @@ class model_settings():
     
     def vector_heston_price(self,
             s,k,r,g,w,
-            v0,kappa,theta,eta,rho,
+            kappa,theta,rho,eta,v0,
             calculation_date,
             expiration_date
             ):
@@ -307,7 +315,7 @@ class model_settings():
         vql_heston_price = np.vectorize(self.ql_heston_price)
         heston_prices = vql_heston_price(
             s,k,r,g,w,
-            v0,kappa,theta,eta,rho,
+            kappa,theta,rho,eta,v0,
             calculation_date,
             expiration_date
             )
@@ -316,14 +324,14 @@ class model_settings():
     def vector_barrier_price(self,
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, eta, rho
+            kappa,theta,rho,eta,v0
             ):
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
         
         barrier_prices = vql_barrier_price(
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
-            v0, kappa, theta, eta, rho
+            kappa,theta,rho,eta,v0,
             )
         
         return barrier_prices

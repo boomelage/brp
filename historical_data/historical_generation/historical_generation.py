@@ -18,12 +18,11 @@ np.set_printoptions(precision=10, suppress=True)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
-
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
+sys.path.append(os.path.join(grandparent_dir,'term_structure'))
 from settings import model_settings
 ms = model_settings()
-
 
 os.chdir(current_dir)
 
@@ -59,45 +58,53 @@ bar = tqdm(
     )
 for rowi, row in historical_calibrated.iterrows():
 
-    atm_vols = row[['30D', '60D', '3M', '6M', '12M', '18M', '24M']]    
+    atm_vols = row[
+        [
+         '30D', '60D', '3M', '6M', '12M', 
+          # '18M', '24M'
+         ]
+        ]
+    atm_vols.index = [
+        30,60,95,186,368,
+        # 547,730
+                      ]
+    
     
     calculation_date = row['date']
     ql_calc = ql.Date(calculation_date.day,calculation_date.month,calculation_date.year)
     
     s = row['spot_price']
     
-    spread = 0.2
-    wing_size = 250
+    spread = 0.1
+
+    atm_spread = 0.00
     
-    put_K = np.linspace(
-        s*(1-spread),
-        s*0.995,
-        wing_size)
+    K = np.arange(
+        int(s*(1-spread)),
+        int(s*(1+spread)),
+        1
+        ).astype(float)
     
-    call_K = np.linspace(
-        s*1.005,
-        s*(1+spread),
-        wing_size)
-    
-    K = np.unique(np.array([put_K,call_K]).flatten())
-    
-    T = np.arange(7,180,7)
-    
+    T = np.arange(
+        min(atm_vols.index),
+        187,
+        1
+        )
     
     features = pd.DataFrame(
         product(
             [s],
             K,
             T,
-            ['call','put'],
+            ['put'],
             [ql_calc],
-            [atm_vols.iloc[0]],
-            [atm_vols.iloc[1]],
-            [atm_vols.iloc[2]],
-            [atm_vols.iloc[3]],
-            [atm_vols.iloc[4]],
-            [atm_vols.iloc[5]],
-            [atm_vols.iloc[6]],
+            [row['30D']],
+            [row['60D']],
+            [row['3M']],
+            [row['6M']],
+            [row['12M']],
+            [row['18M']],
+            [row['24M']],
             ),
         columns=[
             'spot_price', 
@@ -114,35 +121,44 @@ for rowi, row in historical_calibrated.iterrows():
         features['calculation_date']
         )
     
-    theta = row['theta']
-    kappa = row['kappa']
-    rho = row['rho']
-    eta = row['eta']
-    v0 = row['v0']
-    g = row['dividend_rate']
-    r = 0.04
     
+    features['kappa'] = row['kappa']
+    features['theta'] = row['theta']
+    features['rho'] = row['rho']
+    features['v0'] = row['v0']
+    features['eta'] = row['eta']
+    features['dividend_rate'] = row['dividend_rate']
+    features['risk_free_rate'] = 0.04
+        
     features.loc[:,'heston_price'] = ms.vector_heston_price(
-                s,
+                features['spot_price'],
                 features['strike_price'],
-                r,g,
+                features['risk_free_rate'],
+                features['dividend_rate'],
                 features['w'],
-                v0,kappa,theta,eta,rho,
+                features['kappa'],
+                features['theta'],
+                features['rho'],
+                features['eta'],
+                features['v0'],
                 features['calculation_date'],
                 features['expiration_date']
         )
     
     features = features[
         [
-         'spot_price', 'strike_price',  'w','heston_price', 'days_to_maturity',
-         '30D', '60D', '3M', '6M', '12M', '18M', '24M',
-         'calculation_date', 'expiration_date'
-         ]
+          'spot_price', 'strike_price',  'w', 'heston_price',
+          '30D', '60D', '3M', '6M', '12M', '18M', '24M', 
+          'days_to_maturity', 'risk_free_rate', 'dividend_rate',
+          'kappa', 'theta', 'rho', 'eta', 'v0',
+          'calculation_date', 'expiration_date'
+          ]
         ]
     
     features['calculation_date'] = calculation_date
-    
-    features['expiration_date'] =  features['calculation_date'] + pd.to_timedelta(features['days_to_maturity'], unit='D')
+    features['expiration_date'] =  features[
+        'calculation_date'] + pd.to_timedelta(
+            features['days_to_maturity'], unit='D')
     
     historical_training_data = pd.concat(
         [historical_training_data, features],
@@ -156,10 +172,8 @@ for rowi, row in historical_calibrated.iterrows():
         r'historical_vanillas',
         str(hist_file_date+' '+file_tag+'.csv'),
         )
-
     
     features.to_csv(file_path)
     bar.update(1)
-    
 bar.close()
     
