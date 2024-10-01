@@ -79,8 +79,8 @@ class mlop:
             'spot_price', 'strike_price', 'days_to_maturity', 
             # '30D', '60D', '3M', '6M', '12M', '18M', '24M',
             # 'risk_free_rate', 
-            'dividend_rate',
-            # 'moneyness', 
+            # 'dividend_rate',
+            'moneyness', 
             # 'kappa', 'theta', 'eta', 'rho', 'v0',  
             ]
         
@@ -96,7 +96,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            'w'
+            # 'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
@@ -109,7 +109,7 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]

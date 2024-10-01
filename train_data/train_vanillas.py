@@ -114,7 +114,7 @@ moneyness filter
 # ]
 
 
-# training_data = training_data[training_data['moneyness_tag'] == str('otm')]
+training_data = training_data[training_data['moneyness_tag'] != str('atm')]
 
 
 """
