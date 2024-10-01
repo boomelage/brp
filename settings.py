@@ -31,8 +31,6 @@ class model_settings():
         return expiration_date
     
     def vexpiration_datef(self,T,calculation_date=None):
-        if calculation_date is None:
-            calculation_date = self.calculation_date
         vdates = np.vectorize(self.expiration_datef)
         expiration_dates = vdates(T,calculation_date)
         return expiration_dates

@@ -11,6 +11,7 @@ import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
+import matplotlib.pyplot as plt
 from itertools import product
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,7 +77,12 @@ for row_i, row in historical_data.iterrows():
     
     atm_volvec = pd.Series(atm_volvec)
     atm_volvec.index = T
-    print(atm_volvec)
+      
+    if dtdate > datetime(2008,10,1) and dtdate < datetime(2009,4,1):
+        spread = 0.3
+    else:
+        spread = 0.05
+    
     # if s < 1000:
     #     spread = 0.15
     # elif s < 1200:
@@ -84,11 +90,12 @@ for row_i, row in historical_data.iterrows():
     # else:
     #     spread = 0.05
     
-    # wing_size = 3
+    wing_size = 3
     
-    # # put_K = np.linspace(s*(1-spread),s*0.995,wing_size)
+    put_K = np.linspace(s*(1-spread),s*0.995,wing_size)
     
-    # # call_K = np.linspace(s*1.005,s*(1+spread),wing_size)
+    call_K = np.linspace(s*1.005,s*(1+spread),wing_size)
+    
     
     # put_K = np.arange(
     #     s-(wing_size)*5, 
@@ -102,43 +109,45 @@ for row_i, row in historical_data.iterrows():
     #     5
     #     )
     
-    # K = np.unique(np.array([put_K,call_K]).flatten())
     
-    # T = [
-    #     30,60,95,
-    #     186,368
-    #     ]
     
-    # calibration_dataset =  pd.DataFrame(
-    #     product(
-    #         [s],
-    #         K,
-    #         T,
-    #         ),
-    #     columns=[
-    #         'spot_price', 
-    #         'strike_price',
-    #         'days_to_maturity',
-    #               ])
+    K = np.unique(np.array([put_K,call_K]).flatten())
     
-    # calibration_dataset['volatility'] = ms.derman_volatilities(
-    #     s, 
-    #     calibration_dataset['strike_price'],
-    #     calibration_dataset['days_to_maturity'],
-    #     calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
-    #     calibration_dataset['days_to_maturity'].map(atm_volvec)
-    #     )
+    T = [
+        30,60,95,
+        186,368
+        ]
+    
+    calibration_dataset =  pd.DataFrame(
+        product(
+            [s],
+            K,
+            T,
+            ),
+        columns=[
+            'spot_price', 
+            'strike_price',
+            'days_to_maturity',
+                  ])
+    
+    calibration_dataset['volatility'] = ms.derman_volatilities(
+        s, 
+        calibration_dataset['strike_price'],
+        calibration_dataset['days_to_maturity'],
+        calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
+        calibration_dataset['days_to_maturity'].map(atm_volvec)
+        )
 
-    # heston_parameters = calibrate_heston(
-    #     calibration_dataset, s, r, g, calculation_date)
+    heston_parameters = calibrate_heston(
+        calibration_dataset, s, r, g, calculation_date)
     
-    # heston_parameters = test_heston_calibration(
-    #     calibration_dataset, heston_parameters, calculation_date, r, g)
-    # print(f"^ {print_date}")
-    # calibration_error = heston_parameters['relative_error']
-    # historical_calibration_errors[dtdate] = calibration_error
-    
+    heston_parameters = test_heston_calibration(
+        calibration_dataset, heston_parameters, calculation_date, r, g)
+    print(f"^ {print_date}")
+    calibration_error = heston_parameters['relative_error']
+    historical_calibration_errors[dtdate] = calibration_error
 
+    
     ###################
     # DATA GENERATION #
     ###################
@@ -285,8 +294,12 @@ for row_i, row in historical_data.iterrows():
     #     print('#'*len(test_large_error))
     #     print(print_date)
         
-        
-        
+plt.figure()
+plt.plot(historical_calibration_errors,color = 'black')
+plt.title("Hisotorical calibration error")
+plt.ylabel("absolute relative error") 
+print(f"\nhistorical average absolute relative calibration error: "
+      f"{round(np.average(np.abs(calibration_error)),2)}%") 
         
             
             
