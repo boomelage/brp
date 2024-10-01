@@ -52,13 +52,13 @@ single layer network
 deep neural network
 """
 
-# model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
 
 """
 random forest
 """
 
-model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
+# model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
 
 """
 lasso regression

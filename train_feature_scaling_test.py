@@ -40,8 +40,7 @@ preprocessor = mlop.preprocess()
 
 
 target_transformer_pipeline = Pipeline([
-        ("scaler1", MinMaxScaler()),
-        # ("scaler2", RobustScaler()), 
+        ("scaler1", StandardScaler())
         ])
             
 print(f"\ntarget transformations:\n{target_transformer_pipeline}\n")
@@ -92,12 +91,13 @@ deepnnet_model = MLPRegressor(
     random_state = mlop.random_state,
     learning_rate_init=mlop.learning_rate_init
     )
-              
 
-deepnnet_pipeline = Pipeline([
-    ("preprocessor", preprocessor),
-    ("regressor", deepnnet_model)
-])
+deepnnet_pipeline = Pipeline(
+    [
+     ("preprocessor", preprocessor),
+     ("regressor", deepnnet_model)
+     ]
+    )
 
 dnn_scaled = TransformedTargetRegressor(
     regressor=deepnnet_pipeline,
@@ -111,3 +111,6 @@ dnn_prediction = dnn_fit.predict(test_X)
 dnn_avg = np.average(np.abs(dnn_prediction/test_y-1))
 
 print(f"\ndeep neural network absolute average error: {round(dnn_avg*100,2)}%")
+
+
+

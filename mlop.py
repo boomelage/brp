@@ -50,8 +50,8 @@ class mlop:
             
             # 'identity',
             # 'logistic',
-            'tanh',
-            # 'relu',
+            # 'tanh',
+            'relu',
             
             ]
         
@@ -96,23 +96,28 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            # 'w'
+            'w'
             
             ]
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            # ("StandardScaler",StandardScaler(),self.numerical_features),
-            ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
+            ("StandardScaler",StandardScaler(),self.numerical_features),
+            # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]
+        
+        self.target_transformer_pipeline = Pipeline([
+                ("StandardScaler", StandardScaler()),
+                # ("RobustScaler", RobustScaler()),
+                ])
         
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
@@ -122,13 +127,16 @@ class mlop:
         print(f"maximum iterations: {self.max_iter}")
         print(f"\ntarget: \n{self.target_name}")
         print(f"\nfeatures: \n{self.feature_set}")
-        print("\ntransformers:")
+        print("\nfeature transformer(s):")
         for i in self.transformers:
-            print(f"\n{i}")
-        
-# =============================================================================
-                                                                # Preprocessing
-
+            print(f"{i}\n")
+        print("target transformer(s):")
+        for i in self.target_transformer_pipeline:
+            print(f"{i}")
+    """            
+    ===========================================================================
+    preprocessing
+    """
     def split_user_data(self):
         train_data, test_data = train_test_split(
             self.user_dataset, 
@@ -149,9 +157,10 @@ class mlop:
             transformers=self.transformers)
         return preprocessor
     
-# =============================================================================
-                                                             # Model Estimation
-
+    """
+    ===========================================================================
+    model estimation
+    """
     def run_nnet(self, preprocessor, train_X, train_y):
         print("\nSingle Layer Network")
         print(f"hidden layer size: {self.single_layer_size}")
@@ -175,7 +184,12 @@ class mlop:
             ("regressor", nnet_model)
             ])
         
-        model_fit = nnet_pipeline.fit(train_X, train_y)
+        nnet_scaled = TransformedTargetRegressor(
+            regressor=nnet_pipeline,
+            transformer=self.target_transformer_pipeline 
+        )
+        
+        model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
         return model_fit, nnet_runtime
@@ -200,13 +214,20 @@ class mlop:
             learning_rate_init=self.learning_rate_init
             )
                                   
-        deepnnet_pipeline = Pipeline([
+        dnn_pipeline = Pipeline([
             ("preprocessor", preprocessor),
             ("regressor", deepnnet_model)
         ])
-        dnn_fit = deepnnet_pipeline.fit(train_X,train_y)
+        
+        dnn_scaled = TransformedTargetRegressor(
+            regressor=dnn_pipeline,
+            transformer=self.target_transformer_pipeline 
+        )
+        
+        dnn_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
+        
         return dnn_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
@@ -226,7 +247,13 @@ class mlop:
             ("preprocessor", preprocessor),
             ("regressor", rf_model)])
         
-        rf_fit = rf_pipeline.fit(train_X, train_y)
+        rf_scaled = TransformedTargetRegressor(
+            regressor=rf_pipeline,
+            transformer=self.target_transformer_pipeline 
+        )
+        
+        rf_fit = rf_scaled.fit(train_X, train_y)
+        
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
         return rf_fit, rf_runtime
@@ -242,15 +269,24 @@ class mlop:
                                     include_bias=True)),
             ("scaler", StandardScaler()),
             ("regressor", Lasso(alpha=self.alpha))])
-
-        lm_fit = lm_pipeline.fit(train_X, train_y)
+        
+        lm_scaled = TransformedTargetRegressor(
+            regressor=lm_pipeline,
+            transformer=self.target_transformer_pipeline 
+        )
+        
+        lm_fit = lm_scaled.fit(train_X, train_y)
+        
         lm_end = time.time()
         lm_runtime = lm_end - lm_start
         return lm_fit, lm_runtime
 
-# =============================================================================
-                                                                # Model Testing
 
+    """
+    ===========================================================================
+    standard model testing
+    """
+    
     def test_model(self,test_data,test_X,test_y,model_fit):
         training_results = test_X.copy()
         training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']

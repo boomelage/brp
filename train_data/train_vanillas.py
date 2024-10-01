@@ -50,7 +50,7 @@ relative price filter
 """
 
 # training_data = training_data[
-#     training_data['observed_price']>0.001*training_data['spot_price']
+#     training_data['observed_price']>0.01*training_data['spot_price']
 #     ]
 
 """
@@ -85,9 +85,6 @@ type filter
 
 training_data = training_data[training_data.loc[:,'w'] == 'put']
 
-# training_data = training_data[
-#     training_data.loc[:,'observed_price'] > 0.01
-#     ]
 
 """
 moneyness filter
@@ -130,7 +127,6 @@ T = np.sort(training_data['days_to_maturity'].unique())
 W = np.sort(training_data['w'].unique())
 n_calls = training_data[training_data['w']=='call'].shape[0]
 n_puts = training_data[training_data['w']=='put'].shape[0]
-
 
 
 training_data = training_data[
