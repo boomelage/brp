@@ -57,7 +57,7 @@ bar = tqdm(
     unit = 'day'
     )
 for rowi, row in historical_calibrated.iterrows():
-
+    
     atm_vols = row[
         [
          '30D', '60D', '3M', '6M', '12M', 
@@ -68,7 +68,6 @@ for rowi, row in historical_calibrated.iterrows():
         30,60,95,186,368,
         # 547,730
                       ]
-    
     
     calculation_date = row['date']
     ql_calc = ql.Date(calculation_date.day,calculation_date.month,calculation_date.year)
@@ -96,7 +95,7 @@ for rowi, row in historical_calibrated.iterrows():
             [s],
             K,
             T,
-            ['put'],
+            ['call'],
             [ql_calc],
             [row['30D']],
             [row['60D']],

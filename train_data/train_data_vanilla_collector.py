@@ -48,13 +48,17 @@ file_bar = tqdm(
 train_vanillas = pd.DataFrame()
 for file in csvs:
     vanilla_subset = pd.read_csv(file)
-    train_vanillas = pd.concat([train_vanillas,vanilla_subset],ignore_index=True)
+    train_vanillas = pd.concat([train_vanillas,vanilla_subset],ignore_index=False)
     price_counter += vanilla_subset.shape[0]
     file_bar.postfix = price_counter
     file_bar.update(1)
 file_bar.close()
-train_vanillas = train_vanillas.iloc[:,1:].copy().reset_index(drop=True)
 
 
+before_drop_count = train_vanillas.shape[0]
+train_vanillas = train_vanillas.iloc[:,1:].copy(
+    ).drop_duplicates().reset_index(drop=True)
+after_drop_count = train_vanillas.shape[0]
 
+print(f"\nduplicates dropped: {before_drop_count-after_drop_count}")
 

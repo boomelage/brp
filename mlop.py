@@ -32,8 +32,8 @@ class mlop:
         self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
-                    "lbfgs",
-                    # "sgd", 
+                    # "lbfgs",
+                    "sgd", 
                     # "adam"
                     ]
         
@@ -103,8 +103,8 @@ class mlop:
         
         self.transformers = [
             # ("QuantileTransformer",QuantileTransformer(),self.numerical_features),
-            ("StandardScaler",StandardScaler(),self.numerical_features),
-            # ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
+            # ("StandardScaler",StandardScaler(),self.numerical_features),
+            ("MinMaxScaler",MinMaxScaler(),self.numerical_features),
             # ("MaxAbsScaler",MaxAbsScaler(),self.numerical_features),
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
@@ -112,9 +112,6 @@ class mlop:
             # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
-            ]
-        self.target_transformers = [
-            ("RobustScaler",RobustScaler(),self.target_name),
             ]
         
         self.activation_function = self.activation_function[0]
@@ -224,7 +221,6 @@ class mlop:
             min_samples_leaf=self.rf_min_samples_leaf, 
             random_state=self.random_state,
         )
-        
         
         rf_pipeline = Pipeline([
             ("preprocessor", preprocessor),

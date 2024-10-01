@@ -21,7 +21,7 @@ from train_data_vanilla_collector import train_vanillas
 
 print('\npreparing data...')
 
-training_data = train_vanillas.copy()
+training_data = train_vanillas.copy().drop_duplicates()
 initial_count = training_data.shape[0]
 
 training_data['calculation_date'] = pd.to_datetime(
@@ -83,8 +83,11 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
+# training_data = training_data[
+#     training_data.loc[:,'observed_price'] > 0.01
+#     ]
 
 """
 moneyness filter
@@ -93,11 +96,11 @@ moneyness filter
 # otm_lower = -0.06
 # otm_upper = -0.01
 
-itm_lower =  0.01
-itm_upper =  0.99
+# itm_lower =  0.01
+# itm_upper =  0.99
 
 
-training_data = training_data[
+# training_data = training_data[
     
     # (
     #   (training_data['moneyness'] >= otm_lower) & 
@@ -106,12 +109,12 @@ training_data = training_data[
    
     # |
     
-    (
-      (training_data['moneyness'] >= itm_lower) & 
-      (training_data['moneyness'] <= itm_upper)
-      )
+#     (
+#       (training_data['moneyness'] >= itm_lower) & 
+#       (training_data['moneyness'] <= itm_upper)
+#       )
 
-]
+# ]
 
 
 # training_data = training_data[training_data['moneyness_tag'] == str('otm')]
