@@ -12,7 +12,6 @@ import pandas as pd
 import numpy as np
 import QuantLib as ql
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 from itertools import product
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +33,7 @@ historical_data = historical_data.copy()
 # =============================================================================
                         historical calibration routine
 """
-# historical_data = historical_data[historical_data['date'] == datetime(2008,11,20)]
+
 param_names = ['theta','kappa','rho','eta','v0','relative_error']
 historical_data.loc[:,param_names] = np.nan
 
@@ -124,10 +123,19 @@ for row_i, row in historical_data.iterrows():
             'days_to_maturity',
                   ])
     
-
+    calibration_dataset['volatility'] = ms.derman_volatilities(
+        s, 
+        calibration_dataset['strike_price'], 
+        calibration_dataset['days_to_maturity'],
+        calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
+        calibration_dataset['days_to_maturity'].map(atm_volvec)
+        )
+    
     heston_parameters = calibrate_heston(
         calibration_dataset, s, r, g, calculation_date)
+    
     time.sleep(0.01)
+    
     heston_parameters = test_heston_calibration(
         calibration_dataset, heston_parameters, calculation_date, r, g)
     

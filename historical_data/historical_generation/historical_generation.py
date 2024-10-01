@@ -49,7 +49,6 @@ pd.set_option("display.max_columns",None)
 
 historical_training_data = pd.DataFrame()
 
-# row = historical_calibrated.iloc[0]
 
 bar = tqdm(
     total = historical_calibrated.shape[0],
@@ -57,17 +56,6 @@ bar = tqdm(
     unit = 'day'
     )
 for rowi, row in historical_calibrated.iterrows():
-    
-    atm_vols = row[
-        [
-         '30D', '60D', '3M', '6M', '12M', 
-          # '18M', '24M'
-         ]
-        ]
-    atm_vols.index = [
-        30,60,95,186,368,
-        # 547,730
-                      ]
     
     calculation_date = row['date']
     ql_calc = ql.Date(calculation_date.day,calculation_date.month,calculation_date.year)
@@ -85,8 +73,8 @@ for rowi, row in historical_calibrated.iterrows():
         ).astype(float)
     
     T = np.arange(
-        min(atm_vols.index),
-        187,
+        1,
+        7+1,
         1
         )
     
