@@ -20,7 +20,7 @@ os.chdir(current_dir)
 from settings import model_settings
 ms = model_settings()
 dnn_vanilla_price = joblib.load(
-    os.path.join(current_dir,'dnn_model 2024-10-01 212117.pkl')
+    r"E:/git/machine-learning-option-pricing/Models/SPX/2024-10-02 160145/deep_neural_network SPX 2024-10-02 160145.pkl"
     )
 
 
@@ -33,7 +33,7 @@ print(dnn_vanilla_price)
 
 s = 1391
 S = [s]
-K = np.linspace(s*0.9,s*1.1,int(1e3)).astype(int)
+K = np.linspace(s*0.9,s*1.1,int(1e1)).astype(int)
 T = np.arange(31,180,7)
 W = ['put']
 

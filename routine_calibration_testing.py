@@ -16,8 +16,6 @@ def test_heston_calibration(
         calibration_dataset, heston_parameters,calculation_date,r,g
         ):
     
-    ts_r, ts_g = ms.ql_ts_rg(r,g,calculation_date)
-    
     test_dataset = calibration_dataset.copy()
     for i, row in test_dataset.iterrows():
         s = row['spot_price']
@@ -48,7 +46,7 @@ def test_heston_calibration(
         s, k, t, r, volatility, w)
     
     test_dataset['ql_heston_price'] = ms.vector_heston_price(
-            s, k, t, ts_r, ts_g, w,
+            s, k, t, r, g, w,
             kappa,theta,rho,eta,v0,
             calculation_date
             )

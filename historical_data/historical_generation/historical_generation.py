@@ -29,16 +29,14 @@ os.chdir(current_dir)
 from data_query import dirdatacsv
 csvs = dirdatacsv()
 historical_calibrated = pd.read_csv(csvs[0])
-historical_calibrated = historical_calibrated.iloc[:,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:1,1:].copy(
     ).reset_index(drop=True)
+
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 
 os.chdir(current_dir)
 
 pd.set_option("display.max_columns",None)
-
-
-
 
 """
 ###########
@@ -66,32 +64,27 @@ for rowi, row in historical_calibrated.iterrows():
     spread = 0.2
     K = np.linspace(
         s*(1-spread),
-        s,
-        int(
-            (s-s*(1-spread))*2
-            )
+        s*(1+spread),
+        # int(
+        #     (s-s*(1-spread))*2
+        #     )
+        5
         )
     
-    T = np.arange(
-        30,
-        180,
-        1
-        )
+    # T = np.arange(
+    #     30,
+    #     180,
+    #     14
+    #     )
+    T = [30]
     
     features = pd.DataFrame(
         product(
             [s],
             K,
             T,
-            ['put'],
+            ['call'],
             [ql_calc],
-            [row['30D']],
-            [row['60D']],
-            [row['3M']],
-            [row['6M']],
-            [row['12M']],
-            [row['18M']],
-            [row['24M']],
             ),
         columns=[
             'spot_price', 
@@ -99,7 +92,6 @@ for rowi, row in historical_calibrated.iterrows():
             'days_to_maturity',
             'w',
             'calculation_date',
-            '30D', '60D', '3M', '6M', '12M', '18M', '24M'
                   ]
         )
      
@@ -122,6 +114,7 @@ for rowi, row in historical_calibrated.iterrows():
     features.loc[:,'heston_price'] = ms.vector_heston_price(
                 features['spot_price'],
                 features['strike_price'],
+                features['days_to_maturity'],
                 features['risk_free_rate'],
                 features['dividend_rate'],
                 features['w'],
@@ -130,19 +123,22 @@ for rowi, row in historical_calibrated.iterrows():
                 features['rho'],
                 features['eta'],
                 features['v0'],
-                features['calculation_date'],
-                features['expiration_date']
+                features['calculation_date']
         )
+    
+    
+    
     
     features = features[
         [
           'spot_price', 'strike_price',  'w', 'heston_price',
-          '30D', '60D', '3M', '6M', '12M', '18M', '24M', 
           'days_to_maturity', 'risk_free_rate', 'dividend_rate',
           'kappa', 'theta', 'rho', 'eta', 'v0',
           'calculation_date', 'expiration_date'
           ]
         ]
+    
+    
     
     features['calculation_date'] = calculation_date
     features['expiration_date'] =  features[
@@ -152,6 +148,8 @@ for rowi, row in historical_calibrated.iterrows():
     historical_training_data = pd.concat(
         [historical_training_data, features],
         ignore_index = True)
+    
+    
     
     hist_file_date = calculation_date.strftime("%Y-%m-%d") 
     file_datetime = datetime.fromtimestamp(time.time())

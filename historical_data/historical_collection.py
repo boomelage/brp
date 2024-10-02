@@ -8,9 +8,15 @@ import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 import pandas as pd
+
+os.chdir(parent_dir)
 from data_query import dirdatacsv
+
+
 os.chdir(current_dir)
 csvs = dirdatacsv()
+
+
 """
 data collection and cleaning
 """
@@ -54,5 +60,18 @@ def collect_historical_data():
         
     return historical_data
 
-
 historical_data = collect_historical_data()
+
+historical_data['date'] = pd.to_datetime(historical_data['date'])
+
+os.chdir(current_dir)
+
+pd.set_option("display.max_columns",None)
+
+historical_data[
+    ['30D', '60D', '3M', '6M', '12M', '18M', '24M', 'dividend_rate']
+    ] = historical_data[
+        ['30D', '60D', '3M', '6M', '12M', '18M', '24M', 'dividend_rate']
+        ]/100
+
+

@@ -4,31 +4,18 @@ Created on Thu Sep 26 17:33:55 2024
 
 """
 
-import os
+import sys
 import time
 import numpy as np
 import pandas as pd
 import QuantLib as ql
 from itertools import product
 from datetime import datetime
+sys.path.append(r'E:/git/machine-learning-option-pricing')
 from settings import model_settings
 ms = model_settings()
 
 
-def make_barriers(
-        s, updown, n_barriers, barrier_spread,n_barrier_spreads):
-    if updown == "Up":
-        flag = 1
-    elif updown == "Down":
-        flag = -1
-    else:
-        raise ValueError("updown error")
-    barriers = np.linspace(
-        s*(1+flag*barrier_spread*n_barrier_spreads),
-        s*(1+flag*barrier_spread),
-        n_barriers
-        )
-    return barriers
 
 def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     
@@ -59,7 +46,7 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
 
 
 def generate_barrier_options(
-        features, calculation_date, heston_parameters, g, output_folder):
+        features, calculation_date, heston_parameters, output_folder):
     
     spot_date = datetime(
         calculation_date.year(), 
@@ -76,9 +63,6 @@ def generate_barrier_options(
     features['heston_price'] = np.nan
     features['barrier_price'] = np.nan
     
-    pricing_bar = ms.make_tqdm_bar(
-        desc='pricing', unit='contracts', leave=True, total = features.shape[0]
-        )
     
     for i, row in features.iterrows():
         
@@ -95,16 +79,9 @@ def generate_barrier_options(
         theta = row['theta']
         eta = row['eta']
         rho = row['rho']
-        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
-        r = 0.04
-        rebate = 0.
         
-        heston_price = ms.ql_heston_price(
-            s,k,r,g,w,
-            v0,kappa,theta,eta,rho,
-            calculation_date,
-            expiration_date
-            )
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        
         
         features.at[i,'expiration_date'] = datetime(
             expiration_date.year(), 
@@ -112,19 +89,21 @@ def generate_barrier_options(
             expiration_date.dayOfMonth()
             )
         
-        features.at[i,'heston_price'] = heston_price
-        
-        barrier_price = ms.ql_barrier_price(
-                s,k,t,r,g,calculation_date,w,
-                barrier_type_name,barrier,rebate,
-                v0, kappa, theta, eta, rho)
+        features.at[i,'heston_price'] = ms.ql_heston_price(
+            s,k,t,r,g,w,
+            kappa,theta,rho,eta,v0,
+            calculation_date
+            )
     
-        features.at[i,'barrier_price'] = barrier_price
-        pricing_bar.update(1)
-    pricing_bar.close()
+        features.at[i,'barrier_price'] = ms.ql_barrier_price(
+            s,k,t,r,g,calculation_date, w,
+            barrier_type_name,barrier,rebate,
+            kappa,theta,rho,eta,v0
+            )
+        
     training_data = features.copy()
     
-    training_data = ms.noisyfier(training_data)
+    # training_data = ms.noisyfier(training_data)
     
     pd.set_option("display.max_columns",None)
     print(f'\n{training_data}\n')
@@ -134,10 +113,49 @@ def generate_barrier_options(
     date_tag = spot_date.strftime("%Y-%m-%d")
     file_time = datetime.fromtimestamp(time.time())
     file_time_tag = file_time.strftime("%Y-%m-%d %H%M%S")
-    training_data.to_csv(os.path.join(
-        output_folder,f'barriers {date_tag} {file_time_tag}.csv'))
+    # training_data.to_csv(os.path.join(
+    #     output_folder,f'barriers {date_tag} {file_time_tag}.csv'))
 
     return training_data
+
+
+
+caldf = pd.read_csv(r'E:/git/machine-learning-option-pricing/historical_data/historical_generation/SPX2007-2012_calibrated.csv')
+
+caldf = caldf.iloc[:1]
+
+
+calculation_date = ql.Date(3,1,2007)
+
+from oneoff_calibration_testing import heston_parameters
+s = caldf['spot_price'].iloc[0]
+g = caldf['dividend_rate'].iloc[0]
+r = 0.04
+rebate = 0.
+spread = s*0.2
+step = 1
+atm_spread = 1
+r = 0.04
+
+
+K = np.linspace(s*0.8,s*1.2,5).tolist()
+T = [30,60,90]
+updown = 'Down'
+OUTIN = ['Out']
+W = ['put']
+barriers = np.linspace(s*0.5,s*0.99,5).tolist()
+
+features = generate_barrier_features(s, K, T, barriers, updown, OUTIN, W)
+
+
+features['dividend_rate'] = caldf['dividend_rate'].iloc[0]
+features['risk_free_rate'] = 0.04
+
+generate_barrier_options(
+        features, calculation_date, heston_parameters, "")
+pd.set_option("display.max_columns",None)
+pd.set_option("display.max_rows",None)
+features
 
 
 

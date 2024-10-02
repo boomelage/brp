@@ -161,7 +161,7 @@ class mlop:
     """
     def run_nnet(self, preprocessor, train_X, train_y):
         specs = [
-            f"\nSingle Layer Network",
+            "\nSingle Layer Network",
             f"hidden layer size: {self.single_layer_size}",
             f"learning rate: {self.learning_rate}",
             f"activation: {self.activation_function}",
@@ -195,7 +195,7 @@ class mlop:
         model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
-        return model_fit, nnet_runtime
+        return model_fit, nnet_runtime, specs
     
     def run_dnn(self, preprocessor,train_X,train_y):
         model_name = "Deep Neural Network"
@@ -239,10 +239,12 @@ class mlop:
     
     def run_rf(self, preprocessor, train_X, train_y):
         model_name = "Random Forest"
-        print(f"\n{model_name}")
-        print(f"number of estimators: {self.rf_n_estimators}")
-        print(f"minimum samples per leaf: {self.rf_min_samples_leaf}")
+        specs = ["\n{model_name}",
+        f"number of estimators: {self.rf_n_estimators}",
+        f"minimum samples per leaf: {self.rf_min_samples_leaf}"]
         print('\ntraining...')
+        for spec in specs:
+            print(spec)
         rf_start = time.time()
         
         rf_model = RandomForestRegressor(
@@ -267,13 +269,15 @@ class mlop:
         estimation_end_tag = str(datetime.fromtimestamp(
             rf_end).strftime("%Y-%m-%d %H%M%S"))
         joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
-        return model_fit, rf_runtime
+        return model_fit, rf_runtime, specs
     
     def run_lm(self, train_X, train_y):
         model_name = "Lasso Regression"
-        print(f"\n{model_name}")
-        print(f"alpha: {self.alpha}")
+        specs = [f"\n{model_name}",
+        f"alpha: {self.alpha}"]
         print('\ntraining...')
+        for spec in specs:
+            print(spec)
         lm_start = time.time()
         lm_pipeline = Pipeline([
             ("polynomial", PolynomialFeatures(degree=5, 
@@ -291,7 +295,7 @@ class mlop:
         
         lm_end = time.time()
         lm_runtime = lm_end - lm_start
-        return model_fit, lm_runtime
+        return model_fit, lm_runtime, specs
 
 
     """

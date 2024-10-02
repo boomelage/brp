@@ -49,9 +49,9 @@ training_data['observed_price'] = ms.noisy_prices(
 relative price filter 
 """
 
-training_data = training_data[
-    training_data['observed_price']>0.01*training_data['spot_price']
-    ]
+# training_data = training_data[
+#     training_data['observed_price']>0.001*training_data['spot_price']
+#     ]
 
 """
 date filter
@@ -90,19 +90,19 @@ type filter
 moneyness filter
 """
 
-otm_lower = -0.1
-otm_upper = -0.0
+# otm_lower = -0.1
+# otm_upper = -0.0
 
 # itm_lower =  0.01
 # itm_upper =  0.99
 
 
-training_data = training_data[
+# training_data = training_data[
     
-    (
-      (training_data['moneyness'] >= otm_lower) & 
-      (training_data['moneyness'] <= otm_upper)
-      )
+#     (
+#       (training_data['moneyness'] >= otm_lower) & 
+#       (training_data['moneyness'] <= otm_upper)
+#       )
    
     # |
     
@@ -111,7 +111,7 @@ training_data = training_data[
     #   (training_data['moneyness'] <= itm_upper)
     #   )
 
-]
+# ]
 
 
 training_data = training_data[training_data['moneyness_tag'] != str('atm')]

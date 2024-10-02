@@ -29,24 +29,26 @@ os.chdir(current_dir)
 from historical_collection import historical_data
 historical_data = historical_data.copy()
 
+
 """
 # =============================================================================
                         historical calibration routine
 """
-
 param_names = ['theta','kappa','rho','eta','v0','relative_error']
 historical_data.loc[:,param_names] = np.nan
-
+historical_data
 hist_dtdates = np.array(
-    pd.to_datetime(historical_data['date']),
-    dtype=object)
+    historical_data['date'],
+    dtype=object
+    )
+
 r = 0.04
 
 historical_calibration_errors = pd.Series()
 test_vols = pd.Series(np.zeros(len(hist_dtdates),dtype=float),index=hist_dtdates)
 for row_i, row in historical_data.iterrows():
     s = row['spot_price']
-    g = row['dividend_rate']/100
+    g = row['dividend_rate']
     dtdate = row['date']
     print_date = dtdate.strftime('%A %d %B %Y')
     calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
@@ -58,14 +60,14 @@ for row_i, row in historical_data.iterrows():
     """   
              
     ql_T = [
-         ql.Period(30,ql.Days),
-         ql.Period(60,ql.Days),
-         ql.Period(3,ql.Months),
-         ql.Period(6,ql.Months),
-         ql.Period(12,ql.Months),
-         # ql.Period(18,ql.Months),
-         # ql.Period(24,ql.Months)
-         ]
+          ql.Period(30,ql.Days),
+          ql.Period(60,ql.Days),
+          ql.Period(3,ql.Months),
+          ql.Period(6,ql.Months),
+          ql.Period(12,ql.Months),
+          # ql.Period(18,ql.Months),
+          # ql.Period(24,ql.Months)
+          ]
     
     expiration_dates = []
     for t in ql_T:
@@ -80,7 +82,7 @@ for row_i, row in historical_data.iterrows():
         [
             '30D', '60D', '3M', '6M', '12M', 
             ]
-        ]/100,dtype=float)
+        ],dtype=float)
     
     atm_volvec = pd.Series(atm_volvec)
     atm_volvec.index = T
@@ -149,6 +151,9 @@ for row_i, row in historical_data.iterrows():
     
 print(f"\nhistorical average absolute relative calibration error: "
       f"{round(np.average(np.abs(calibration_error*100)),4)}%")       
+
+
+
 
 plt.figure()
 plt.plot(

@@ -169,10 +169,9 @@ class model_settings():
         return price
     
     def ql_black_scholes(self,
-            s, k, ts_r, ts_g,
+            s, k, t, r,
             volatility,w,
             calculation_date, 
-            expiration_date
             ):
 
         if w == 'call':
@@ -181,6 +180,16 @@ class model_settings():
             option_type = ql.Option.Put
         else:
             raise KeyError("quantlib black scholes flag error")
+        
+        ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        
+        ts_r = ql.YieldTermStructureHandle(
+            ql.FlatForward(
+                calculation_date, r, 
+                self.day_count, self.compounding, self.frequency
+                )
+            )
         
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
         
@@ -193,8 +202,8 @@ class model_settings():
                 )
             )
 
-        process = ql.GeneralizedBlackScholesProcess(
-            initialValue, ts_g, ts_r, volTS)
+        process = ql.BlackScholesProcess(
+            initialValue, ts_r, volTS)
         
         engine = ql.AnalyticEuropeanEngine(process)
         
@@ -213,7 +222,6 @@ class model_settings():
             ):
         ql.Settings.instance().evaluationDate = calculation_date
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
-        
         ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         
         if w == 'call':
@@ -249,7 +257,7 @@ class model_settings():
     def ql_barrier_price(self,
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
-            kappa,theta,rho,eta,v0,
+            kappa,theta,rho,eta,v0
             ):
         ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         ql.Settings.instance().evaluationDate = calculation_date

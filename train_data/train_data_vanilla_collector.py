@@ -19,7 +19,7 @@ from data_query import dirdatacsv
 COLLECTION_DIRECTORY = historical_data_dir
 os.chdir(COLLECTION_DIRECTORY)
 
-csvs = dirdatacsv()[-10:]
+csvs = dirdatacsv()
 
 print('\nloading data...\n')
 price_counter = 0
@@ -41,6 +41,7 @@ before_drop_count = train_vanillas.shape[0]
 train_vanillas = train_vanillas.iloc[:,1:].copy(
     ).drop_duplicates().reset_index(drop=True)
 after_drop_count = train_vanillas.shape[0]
+
 
 print(f"\nduplicates dropped: {before_drop_count-after_drop_count}")
 
