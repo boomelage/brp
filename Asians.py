@@ -10,29 +10,35 @@ riskFreeTS = ql.YieldTermStructureHandle(
     ql.FlatForward(today, 0.05, ql.Actual365Fixed()))
 dividendTS = ql.YieldTermStructureHandle(ql.FlatForward(
     today, 0.01, ql.Actual365Fixed()))
-initialValue = ql.QuoteHandle(ql.SimpleQuote(100))
-k = 80
+
+s = 100.00
+s0 = ql.QuoteHandle(ql.SimpleQuote(s))
+k = 80.00
 option_type = ql.Option.Call
 v0 = 0.01 
 kappa = 0.2
 theta = 0.02
 rho = -0.75
 eta = 0.5
-hestonProcess = ql.HestonProcess(
-    riskFreeTS, dividendTS, initialValue, v0, kappa, theta, eta, rho)
 
 rng = "pseudorandom" # could use "lowdiscrepancy"
 numPaths = 100000
-
-
-engine = ql.MCDiscreteGeometricAPHestonEngine(
-    hestonProcess, rng, requiredSamples=numPaths)
-
 periods = [
     ql.Period("6M"), ql.Period("12M"), ql.Period("18M"), ql.Period("24M")
     ]
 
 pastFixings = 0 # Empty because this is a new contract
+
+
+hestonProcess = ql.HestonProcess(
+    riskFreeTS, dividendTS, s0, 
+    v0, kappa, theta, eta, rho)
+
+
+engine = ql.MCDiscreteGeometricAPHestonEngine(
+    hestonProcess, rng, requiredSamples=numPaths)
+
+
 asianFutureFixingDates = [today + period for period in periods]
 asianExpiryDate = today + periods[-1]
 
