@@ -24,16 +24,15 @@ csvs = dirdatacsv()[-100:]
 print('\nloading data...\n')
 price_counter = 0
 file_bar = tqdm(
-    desc='collecting',total=len(csvs),unit='files',postfix=price_counter,
-    bar_format= str(
-        '{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | {rate_fmt} '
-    '| Elapsed: {elapsed} | Remaining: {remaining} | Prices: {postfix}'))
+    desc='collecting', total=len(csvs), unit='files',
+    postfix={'price count': price_counter},
+    )
 train_vanillas = pd.DataFrame()
 for file in csvs:
     vanilla_subset = pd.read_csv(file)
     train_vanillas = pd.concat([train_vanillas,vanilla_subset],ignore_index=False)
     price_counter += vanilla_subset.shape[0]
-    file_bar.postfix = price_counter
+    file_bar.set_postfix({'Price Count': price_counter})
     file_bar.update(1)
 file_bar.close()
 

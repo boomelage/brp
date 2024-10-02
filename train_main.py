@@ -6,7 +6,6 @@ Created on Tue Sep 17 17:13:18 2024
 import os
 import sys
 import time
-import joblib
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
@@ -16,7 +15,9 @@ sys.path.append(os.path.join(current_dir,'train_data'))
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
-print(f"\n{train_start_tag}\n")
+
+print("\n"+"#"*18+"\n# training start #\n"+
+      "#"*18+"\n"+f"\n{train_start_tag}\n")
 
 """
 # =============================================================================

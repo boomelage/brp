@@ -64,12 +64,19 @@ for rowi, row in historical_calibrated.iterrows():
     
     
     
-    spread = s*0.2
+    # spread = s*0.2
+    # atm_spread = 0
+    # step = 1
+    # K = ms.make_K(s, spread, atm_spread, step)
     
-    atm_spread = 0
-    step = 1
-    K = ms.make_K(s, spread, atm_spread, step)
-    
+    spread = 0.2
+    K = np.linspace(
+        s*(1-spread),
+        s,
+        int(
+            (s-s*(1-spread))*2
+            )
+        )
     
     T = np.arange(
         30,
