@@ -13,7 +13,6 @@ import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
 from datetime import datetime
-np.set_printoptions(precision=10, suppress=True)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -29,7 +28,7 @@ os.chdir(current_dir)
 from data_query import dirdatacsv
 csvs = dirdatacsv()
 historical_calibrated = pd.read_csv(csvs[0])
-historical_calibrated = historical_calibrated.iloc[:1,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:,1:].copy(
     ).reset_index(drop=True)
 
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
@@ -65,18 +64,12 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*(1-spread),
         s*(1+spread),
-        # int(
-        #     (s-s*(1-spread))*2
-        #     )
-        5
+        int(
+            (s-s*(1-spread*2))*3
+            )
         )
     
-    # T = np.arange(
-    #     30,
-    #     180,
-    #     14
-    #     )
-    T = [30]
+    T = np.arange(30,366,28)
     
     features = pd.DataFrame(
         product(
@@ -126,9 +119,6 @@ for rowi, row in historical_calibrated.iterrows():
                 features['calculation_date']
         )
     
-    
-    
-    
     features = features[
         [
           'spot_price', 'strike_price',  'w', 'heston_price',
@@ -137,8 +127,6 @@ for rowi, row in historical_calibrated.iterrows():
           'calculation_date', 'expiration_date'
           ]
         ]
-    
-    
     
     features['calculation_date'] = calculation_date
     features['expiration_date'] =  features[
@@ -160,6 +148,8 @@ for rowi, row in historical_calibrated.iterrows():
         str(hist_file_date + ' ' + file_tag + '.csv'),
         )
     features.to_csv(file_path)
+    
+    
     bar.update(1)
 bar.close()
     

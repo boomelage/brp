@@ -73,14 +73,14 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            # 'risk_free_rate', 
-            # 'dividend_rate',
+            'risk_free_rate', 
+            'dividend_rate',
             # 'moneyness', 
             ]
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
@@ -90,7 +90,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            'w'
+            # 'w'
             
             ]
         
@@ -104,14 +104,14 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]
         
         self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
-                ("RobustScaler", RobustScaler()),
+                # ("RobustScaler", RobustScaler()),
                 ])
         
         self.activation_function = self.activation_function[0]

@@ -39,10 +39,17 @@ training_data.loc[:,'moneyness'] = ms.vmoneyness(
 training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
     training_data['moneyness']).astype(object)
 
-training_data.loc[:,'observed_price'] = ms.noisy_prices(training_data.loc[:,'barrier_price'])
-
+try:
+    training_data.loc[:,'observed_price'] = ms.noisy_prices(
+        training_data.loc[:,'barrier_price'])
+except Exception:
+    training_data.loc[:,'observed_price'] = ms.noisy_prices(
+        training_data.loc[:,'heston_price'])
 """
+# =============================================================================
+
 date filter
+
 """
 
 # training_data = training_data[
@@ -71,7 +78,7 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'call']
 
 
 """
@@ -79,10 +86,10 @@ moneyness filter
 """
 
 # otm_lower = -0.05
-# otm_upper = -0.01
+# otm_upper = -0.0
 
-# itm_lower =  0.01
-# itm_upper =  0.05
+# itm_lower =  0.00
+# itm_upper =  0.00
 
 
 # training_data = training_data[
@@ -133,16 +140,5 @@ print(f"\ninitial count:\n{initial_count}")
 print(f"\ntotal prices:\n{training_data.shape[0]}\n")
 pd.reset_option("display.max_columns")
 
-plt.figure()
-plt.hist(
-    training_data['observed_price'],bins=50)
-plt.title("Distribution of observed prices")
-plt.ylabel("Frequency")
-plt.show()
-plt.close()
-plt.cla()
-plt.clf()
-
-print('\n\n')
 
 

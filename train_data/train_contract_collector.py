@@ -21,7 +21,7 @@ sys.path.append(historical_barriers_dir)
 from data_query import dirdatacsv
 
 
-COLLECTION_DIRECTORY = historical_barriers_dir
+COLLECTION_DIRECTORY = historical_vanillas_dir
 
 os.chdir(COLLECTION_DIRECTORY)
 
@@ -31,7 +31,7 @@ print('\nloading data...\n')
 price_counter = 0
 file_bar = tqdm(
     desc='collecting', total=len(csvs), unit='files',
-    postfix={'price count': price_counter},
+    postfix={'price count': int(price_counter)},
     )
 train_contracts = pd.DataFrame()
 for file in csvs:
@@ -47,7 +47,6 @@ before_drop_count = train_contracts.shape[0]
 train_contracts = train_contracts.iloc[:,1:].copy(
     ).drop_duplicates().reset_index(drop=True)
 after_drop_count = train_contracts.shape[0]
-
 
 print(f"\nduplicates dropped: {before_drop_count-after_drop_count}")
 

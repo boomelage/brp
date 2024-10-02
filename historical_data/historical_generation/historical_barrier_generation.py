@@ -14,7 +14,6 @@ from tqdm import tqdm
 from itertools import product
 from datetime import datetime
 
-
 def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     
     barrier_features =  pd.DataFrame(
@@ -42,24 +41,13 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     
     return barrier_features
 
-
-np.set_printoptions(precision=10, suppress=True)
-pd.set_option("display.max_columns",None)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
-sys.path.append(grandparent_dir)
-sys.path.append(os.path.join(grandparent_dir,'train_data'))
 from settings import model_settings
-
 from data_query import dirdatacsv
-
 ms = model_settings()
-
 os.chdir(current_dir)
-
-csvs = dirdatacsv()
 
 """
 ###########
@@ -67,11 +55,10 @@ csvs = dirdatacsv()
 ###########
 """
 
-historical_calibrated = pd.read_csv(csvs[0])
+historical_calibrated = pd.read_csv(dirdatacsv()[0])
 historical_calibrated = historical_calibrated.iloc[:,1:].copy(
     ).reset_index(drop=True)
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
-
 
 historical_barriers = pd.DataFrame()
 
@@ -98,9 +85,7 @@ for rowi, row in historical_calibrated.iterrows():
         s*1.1,
         5
         )
-    T = [
-        30,60,90,180,360
-        ]
+    T = [30,60,90,180,360]
     OUTIN = ['Out','In']
     W = ['call','put']
         
@@ -137,7 +122,6 @@ for rowi, row in historical_calibrated.iterrows():
             
     features['calculation_date'] = calculation_date
     
-    
     features['barrier_price'] = ms.vector_barrier_price(
             features['spot_price'],
             features['strike_price'],
@@ -166,7 +150,6 @@ for rowi, row in historical_calibrated.iterrows():
     file_tag = f'{str(file_time)} barriers.csv'
     file_path = os.path.join(parent_dir,'historical_barriers',file_tag)
     features.to_csv(file_path)
-    
     
     bar.update(1)
 bar.close()
