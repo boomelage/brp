@@ -43,7 +43,6 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     return barrier_features
 
 
-
 np.set_printoptions(precision=10, suppress=True)
 pd.set_option("display.max_columns",None)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -96,22 +95,28 @@ for rowi, row in historical_calibrated.iterrows():
     step = 1
     atm_spread = 1
     r = 0.04
-    K = np.linspace(s*0.8,s*1.2,50).tolist()
-    T = [30,60,90,180,360]
+    K = np.arange(
+        int(s*0.8),int(s*1.2),
+        int(s*0.01)
+        ).astype(float).tolist()
+    T = [
+        30,
+        # 60,90,180,360
+        ]
     OUTIN = ['Out','In']
     W = ['put']
-    n_barriers = 5
     
-    
-    heston_parameters = historical_calibrated.loc[
-        rowi,['theta', 'kappa', 'rho', 'eta', 'v0']
-        ]
-    
-    barriers = np.linspace(s*0.5,s*0.99,n_barriers).tolist()
+    barriers = np.arange(
+        int(s*0.5),int(s*0.99),
+        int(s*0.01)
+        ).astype(float).tolist()
     down_features = generate_barrier_features(
         s, K, T, barriers, 'Down', OUTIN, W)
     
-    barriers = np.linspace(s*1.01,s*1.5,n_barriers).tolist()
+    barriers = np.arange(
+        int(s*1.01),int(s*1.5),
+        int(s*0.01)
+        ).astype(float).tolist()
     up_features = generate_barrier_features(
         s, K, T, barriers, 'Up', OUTIN, W)
     
@@ -119,21 +124,30 @@ for rowi, row in historical_calibrated.iterrows():
         [down_features,up_features],
         ignore_index = True
         )
-    
+    features[
+        ['theta', 'kappa', 'rho', 'eta', 'v0']
+        ] = historical_calibrated.loc[
+            rowi, ['theta', 'kappa', 'rho', 'eta', 'v0']
+            ].values
     features['barrier_price'] = ms.vector_barrier_price(
             s,
+            
             features['strike_price'],
             features['days_to_maturity'],
+            
             r,g,calculation_date, 
+            
             features['w'],
             features['barrier_type_name'],
             features['barrier'],
+            
             rebate,
-            heston_parameters['kappa'],
-            heston_parameters['theta'],
-            heston_parameters['rho'],
-            heston_parameters['eta'],
-            heston_parameters['v0']
+            
+            features['kappa'],
+            features['theta'],
+            features['rho'],
+            features['eta'],
+            features['v0']
         )
     
     historical_barriers = pd.concat(
@@ -147,4 +161,3 @@ for rowi, row in historical_calibrated.iterrows():
     file_path = os.path.join(parent_dir,'historical_barriers',file_tag)
     features.to_csv(file_path)
     
-historical_barriers
