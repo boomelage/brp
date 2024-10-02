@@ -13,15 +13,17 @@ from scipy.stats import norm
 
 class model_settings():
     
+
+    
     def __init__(self):
         sys.path.append('contract_details')
         sys.path.append('train_data')
         sys.path.append('historical_data')
         sys.path.append('misc')
+        self.today              =    ql.Date.todaysDate()
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
-        self.default_bar = str("{percentage:3.0f}% | {n_fmt}/{total_fmt} {unit} | "
-        "{rate_fmt} | Elapsed: {elapsed} | Remaining: {remaining} | ")
+            
         
     """
     QuantLib time tools
@@ -58,13 +60,6 @@ class model_settings():
             implied_vols_matrix, self.day_count)
         return black_var_surface
 
-    def make_ts_object(self, rate):
-        yield_object = ql.FlatForward(
-            0, ql.NullCalendar(), 
-            ql.QuoteHandle(ql.SimpleQuote(rate)), 
-            self.day_count)
-        ts_object = ql.YieldTermStructureHandle(yield_object)
-        return ts_object
     
     """
     miscellaneous convenience
@@ -133,7 +128,7 @@ class model_settings():
         prices_noisyfier = np.vectorize(noisify_price)
         noisy_prices = prices_noisyfier(prices)
         return noisy_prices
-        
+    
     def black_scholes_price(self,
             s,k,t,r,volatility,w
             ): 
@@ -155,7 +150,7 @@ class model_settings():
         return price
     
     def ql_black_scholes(self,
-            s,k,r,g,
+            s, k, r, g,
             volatility,w,
             calculation_date, 
             expiration_date
@@ -168,22 +163,22 @@ class model_settings():
         else:
             raise KeyError("quantlib black scholes flag error")
         
-        flat_ts = self.make_ts_object(r)
-        divident_ts = self.make_ts_object(g)
+        flat_r = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, r, self.day_count))
+        flat_g = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, g, self.day_count))
         
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
         
         volTS = ql.BlackVolTermStructureHandle(
             ql.BlackConstantVol(
                 calculation_date, 
-                ql.NullCalendar(), 
+                self.calendar, 
                 ql.QuoteHandle(ql.SimpleQuote(volatility)), 
                 self.day_count
                 )
             )
         
         process = ql.GeneralizedBlackScholesProcess(
-            initialValue, divident_ts, flat_ts, volTS)
+            initialValue, flat_g, flat_r, volTS)
         
         engine = ql.AnalyticEuropeanEngine(process)
         
@@ -195,14 +190,14 @@ class model_settings():
         ql_black_scholes_price = european_option.NPV()
         return ql_black_scholes_price
     
-    
     def ql_heston_price(self,
-            s,k,r,g,w,
+            s,k,t,r,g,w,
             kappa,theta,rho,eta,v0,
-            calculation_date,
-            expiration_date
+            calculation_date
             ):
+        
         ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(t,ql.Days)
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
@@ -214,11 +209,11 @@ class model_settings():
         exercise = ql.EuropeanExercise(expiration_date)
         european_option = ql.VanillaOption(payoff, exercise)
         
-        flat_ts = self.make_ts_object(float(r))
-        dividend_ts = self.make_ts_object(float(g))
+        flat_r = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, r, self.day_count))
+        flat_g = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, g, self.day_count))
         heston_process = ql.HestonProcess(
             
-            flat_ts,dividend_ts, 
+            flat_r,flat_g, 
             
             ql.QuoteHandle(ql.SimpleQuote(s)), 
             
@@ -235,19 +230,18 @@ class model_settings():
         h_price = european_option.NPV()
         return h_price
     
-    
     def ql_barrier_price(self,
             s,k,t,r,g,calculation_date, w,
             barrier_type_name,barrier,rebate,
             kappa,theta,rho,eta,v0,
             ):
         ql.Settings.instance().evaluationDate = calculation_date
-        flat_ts = self.make_ts_object(r)
-        dividend_ts = self.make_ts_object(g)
+        flat_r = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, r, self.day_count))
+        flat_g = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, g, self.day_count))
         
         heston_process = ql.HestonProcess(
             
-            flat_ts,dividend_ts, 
+            flat_r,flat_g, 
             
             ql.QuoteHandle(ql.SimpleQuote(s)), 
             
@@ -290,6 +284,34 @@ class model_settings():
         
         return barrier_price
     
+    def ql_bates_vanilla_price(self,
+            s,k,t,r,g,
+            kappa,theta,rho,eta,v0,
+            lambda_, nu, delta, calculation_date
+            ):
+        
+        expiration_date = calculation_date + ql.Period(t,ql.Days)
+        
+        flat_r = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, r, self.day_count))
+        flat_g = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, g, self.day_count))
+        
+        bates_process = ql.BatesProcess(
+            flat_r, 
+            flat_g,
+            ql.QuoteHandle(ql.SimpleQuote(s)),
+            v0, kappa, theta, eta, rho,
+            lambda_, nu, delta,
+        )
+        engine = ql.BatesEngine(ql.BatesModel(bates_process))
+        
+        payoff = ql.PlainVanillaPayoff(ql.Option.Call, float(k))
+        europeanExercise = ql.EuropeanExercise(expiration_date)
+        european_option = ql.VanillaOption(payoff, europeanExercise)
+        european_option.setPricingEngine(engine)
+        
+        bates = european_option.NPV()
+        return bates
+    
     """
     vectorized pricing functions
     """
@@ -320,20 +342,18 @@ class model_settings():
                 )
         return ql_bsps
         
-    
     def vector_heston_price(self,
-            s,k,r,g,w,
+            s,k,r,t,g,w,
             kappa,theta,rho,eta,v0,
             calculation_date,
-            expiration_date
             ):
+        
         
         vql_heston_price = np.vectorize(self.ql_heston_price)
         heston_prices = vql_heston_price(
-            s,k,r,g,w,
+            s,k,r,t,g,w,
             kappa,theta,rho,eta,v0,
             calculation_date,
-            expiration_date
             )
         return heston_prices
     
@@ -352,7 +372,21 @@ class model_settings():
         
         return barrier_prices
     
-    
+    def vector_bates_vanillas(self,
+            s,k,t,r,g,
+            kappa,theta,rho,eta,v0,
+            lambda_, nu, delta, calculation_date
+            ):
+        v_bates = np.vectorize(self.ql_bates_vanilla_price)
+        
+        bates_vanillas = v_bates(
+            s,k,t,r,g,
+            kappa,theta,rho,eta,v0,
+            lambda_, nu, delta, calculation_date
+            )
+        
+        return bates_vanillas
+        
     """
     approximations
     """
