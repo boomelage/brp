@@ -77,11 +77,9 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            # '30D', '60D', '3M', '6M', '12M', '18M', '24M',
             # 'risk_free_rate', 
             # 'dividend_rate',
             # 'moneyness', 
-            # 'kappa', 'theta', 'eta', 'rho', 'v0',  
             ]
         
         self.categorical_features = [

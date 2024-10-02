@@ -50,7 +50,7 @@ relative price filter
 """
 
 training_data = training_data[
-    training_data['observed_price']>0.0001*training_data['spot_price']
+    training_data['observed_price']>0.01*training_data['spot_price']
     ]
 
 """

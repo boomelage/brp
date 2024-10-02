@@ -62,19 +62,18 @@ for rowi, row in historical_calibrated.iterrows():
     
     s = row['spot_price']
     
-    spread = 0.1
     
-    atm_spread = 0.00
     
-    K = np.arange(
-        int(s*(1-spread)),
-        int(s*(1+0)),
-        1
-        ).astype(float)
+    spread = s*0.2
+    
+    atm_spread = 0
+    step = 1
+    K = ms.make_K(s, spread, atm_spread, step)
+    
     
     T = np.arange(
         30,
-        90,
+        180,
         1
         )
     

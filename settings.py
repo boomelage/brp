@@ -105,6 +105,22 @@ class model_settings():
             df[para] = heston_parameters[para]
         return df
     
+    def make_K(self,
+            s,spread,atm_spread,step
+            ):
+        
+        K = np.sort(np.unique(
+            np.concatenate(
+                [
+                    np.arange(
+                        int(s - spread), int(s - atm_spread), step),
+                    np.arange(
+                        int(s + atm_spread), int(s + spread) + step, step)
+                ]
+            )
+        ).astype(float)).tolist()
+        
+        return K
     
     """
     pricing functions 
