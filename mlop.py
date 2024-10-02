@@ -25,7 +25,7 @@ import time
 class mlop:
     
     def __init__(self,user_dataset):
-        self.user_dataset = user_dataset.copy().replace(0,np.nan).dropna()
+        self.user_dataset = user_dataset.copy()
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
@@ -59,11 +59,7 @@ class mlop:
         self.rf_n_estimators = 50
         self.rf_min_samples_leaf = 2000
         
-        self.target_list = [
-            # 'heston_price',
-            'observed_price'
-            ]
-        self.target_name = self.target_list[0]
+        self.target_name = 'observed_price'
         
         """
         [
@@ -84,7 +80,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -94,9 +90,10 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            # 'w'
+            'w'
             
             ]
+        
         self.feature_set = self.numerical_features + self.categorical_features
         
         self.transformers = [
@@ -107,19 +104,20 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]
         
         self.target_transformer_pipeline = Pipeline([
                 ("StandardScaler", StandardScaler()),
-                # ("RobustScaler", RobustScaler()),
+                ("RobustScaler", RobustScaler()),
                 ])
         
         self.activation_function = self.activation_function[0]
         self.learning_rate = self.learning_rate[0]
         self.solver = self.solver[0]
+        
         print(f"test size: {round(self.test_size*100,0)}%")
         print(f"random state: {self.random_state}")
         print(f"maximum iterations: {self.max_iter}")
@@ -137,9 +135,10 @@ class mlop:
     """
     def split_user_data(self):
         train_data, test_data = train_test_split(
-            self.user_dataset, 
-            test_size=self.test_size, 
-            random_state=self.random_state)
+            self.user_dataset,
+            test_size=self.test_size,
+            random_state=self.random_state
+            )
          
         train_X = train_data[self.feature_set]
         test_X = test_data[self.feature_set]

@@ -17,17 +17,17 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from settings import model_settings
 ms = model_settings()
-from train_data_vanilla_collector import train_vanillas
+from train_contract_collector import train_contracts
 
 print('\npreparing data...')
 
-training_data = train_vanillas.copy().drop_duplicates()
+training_data = train_contracts.copy().drop_duplicates()
 initial_count = training_data.shape[0]
 
-training_data['calculation_date'] = pd.to_datetime(
-    training_data['calculation_date'])
-training_data['expiration_date'] = pd.to_datetime(
-    training_data['expiration_date'])
+# training_data['calculation_date'] = pd.to_datetime(
+#     training_data['calculation_date'])
+# training_data['expiration_date'] = pd.to_datetime(
+#     training_data['expiration_date'])
 
 
 training_data.loc[:,'moneyness'] = ms.vmoneyness(
@@ -39,19 +39,7 @@ training_data.loc[:,'moneyness'] = ms.vmoneyness(
 training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
     training_data['moneyness']).astype(object)
 
-training_data['observed_price'] = ms.noisy_prices(
-    training_data['heston_price'])
-
-
-
-"""
-# =============================================================================
-relative price filter 
-"""
-
-# training_data = training_data[
-#     training_data['observed_price']>0.001*training_data['spot_price']
-#     ]
+training_data.loc[:,'observed_price'] = ms.noisy_prices(training_data.loc[:,'barrier_price'])
 
 """
 date filter
@@ -83,18 +71,18 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 
 """
 moneyness filter
 """
 
-# otm_lower = -0.1
-# otm_upper = -0.0
+# otm_lower = -0.05
+# otm_upper = -0.01
 
 # itm_lower =  0.01
-# itm_upper =  0.99
+# itm_upper =  0.05
 
 
 # training_data = training_data[
@@ -104,17 +92,17 @@ moneyness filter
 #       (training_data['moneyness'] <= otm_upper)
 #       )
    
-    # |
+#     |
     
-    # (
-    #   (training_data['moneyness'] >= itm_lower) & 
-    #   (training_data['moneyness'] <= itm_upper)
-    #   )
+#     (
+#       (training_data['moneyness'] >= itm_lower) & 
+#       (training_data['moneyness'] <= itm_upper)
+#       )
 
 # ]
 
 
-training_data = training_data[training_data['moneyness_tag'] != str('atm')]
+# training_data = training_data[training_data['moneyness_tag'] != str('atm')]
 
 
 """
@@ -129,21 +117,16 @@ n_calls = training_data[training_data['w']=='call'].shape[0]
 n_puts = training_data[training_data['w']=='put'].shape[0]
 
 
-training_data = training_data[
-    [
-     'spot_price', 'strike_price', 'w', 'heston_price', 
-     '30D', '60D', '3M', '6M', '12M', '18M', '24M', 'moneyness',
-     'risk_free_rate', 'dividend_rate',
-     'kappa', 'theta', 'rho', 'eta', 'v0', 'days_to_maturity',
-     'expiration_date', 'calculation_date', 'moneyness_tag', 'observed_price'
-     ]
-    ]
 
 pd.set_option("display.max_columns",None)
 print(f"\n{training_data}")
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
 print(f"\n{training_data['moneyness_tag'].unique()}")
+try:
+    print(f"\n{training_data['barrier_type_name'].unique()}")
+except Exception:
+    pass
 print(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}")
 print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
 print(f"\ninitial count:\n{initial_count}")
@@ -152,7 +135,7 @@ pd.reset_option("display.max_columns")
 
 plt.figure()
 plt.hist(
-    training_data['observed_price'],bins=500)
+    training_data['observed_price'],bins=50)
 plt.title("Distribution of observed prices")
 plt.ylabel("Frequency")
 plt.show()
@@ -161,3 +144,5 @@ plt.cla()
 plt.clf()
 
 print('\n\n')
+
+

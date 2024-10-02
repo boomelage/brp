@@ -68,7 +68,7 @@ csvs = dirdatacsv()
 """
 
 historical_calibrated = pd.read_csv(csvs[0])
-historical_calibrated = historical_calibrated.iloc[:1,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:,1:].copy(
     ).reset_index(drop=True)
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 
@@ -82,67 +82,73 @@ bar = tqdm(
     )
 for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
-    g = row['dividend_rate']
-    r = 0.04
+    
     calc_dtdate = row['date']
     
     calculation_date = ql.Date(
         calc_dtdate.day,calc_dtdate.month,calc_dtdate.year)
     
-    
+    r = 0.04 
     rebate = 0.
-    spread = s*0.2
     step = 1
     atm_spread = 1
     r = 0.04
-    K = np.arange(
-        int(s*0.8),int(s*1.2),
-        int(s*0.01)
-        ).astype(float).tolist()
+    K = np.linspace(
+        s*0.9,
+        s*1.1,
+        5
+        )
     T = [
-        30,
-        # 60,90,180,360
+        30,60,90,180,360
         ]
     OUTIN = ['Out','In']
-    W = ['put']
+    W = ['call','put']
+        
     
-    barriers = np.arange(
-        int(s*0.5),int(s*0.99),
-        int(s*0.01)
+    barriers = np.linspace(
+        s*0.5,s*0.99,
+        5
         ).astype(float).tolist()
     down_features = generate_barrier_features(
         s, K, T, barriers, 'Down', OUTIN, W)
     
-    barriers = np.arange(
-        int(s*1.01),int(s*1.5),
-        int(s*0.01)
+    
+    barriers = np.linspace(
+        s*1.01,s*1.5,
+        5
         ).astype(float).tolist()
     up_features = generate_barrier_features(
         s, K, T, barriers, 'Up', OUTIN, W)
+    
     
     features = pd.concat(
         [down_features,up_features],
         ignore_index = True
         )
+    features['rebate'] = rebate
+    features['dividend_rate'] = row['dividend_rate']
+    features['risk_free_rate'] = r
+
     features[
         ['theta', 'kappa', 'rho', 'eta', 'v0']
         ] = historical_calibrated.loc[
             rowi, ['theta', 'kappa', 'rho', 'eta', 'v0']
             ].values
-    features['barrier_price'] = ms.vector_barrier_price(
-            s,
             
+    features['calculation_date'] = calculation_date
+    
+    
+    features['barrier_price'] = ms.vector_barrier_price(
+            features['spot_price'],
             features['strike_price'],
             features['days_to_maturity'],
-            
-            r,g,calculation_date, 
-            
+            features['risk_free_rate'],
+            features['dividend_rate'],
+            features['calculation_date'],
             features['w'],
             features['barrier_type_name'],
             features['barrier'],
-            
-            rebate,
-            
+            features['rebate'],
             features['kappa'],
             features['theta'],
             features['rho'],
@@ -161,3 +167,6 @@ for rowi, row in historical_calibrated.iterrows():
     file_path = os.path.join(parent_dir,'historical_barriers',file_tag)
     features.to_csv(file_path)
     
+    
+    bar.update(1)
+bar.close()
