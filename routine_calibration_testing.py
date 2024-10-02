@@ -15,6 +15,9 @@ ms = model_settings()
 def test_heston_calibration(
         calibration_dataset, heston_parameters,calculation_date,r,g
         ):
+    
+    ts_r, ts_g = ms.ql_ts_rg(r,g,calculation_date)
+    
     test_dataset = calibration_dataset.copy()
     for i, row in test_dataset.iterrows():
         s = row['spot_price']
@@ -36,6 +39,7 @@ def test_heston_calibration(
     eta = heston_parameters['eta']
     rho = heston_parameters['rho']
     
+    
     expiration_dates = []
     for mat in t:
         expiration_dates.append(calculation_date + ql.Period(int(mat),ql.Days))
@@ -44,15 +48,18 @@ def test_heston_calibration(
         s, k, t, r, volatility, w)
     
     test_dataset['ql_heston_price'] = ms.vector_heston_price(
-        s, k, r, 0.00, w, kappa, theta, rho, eta, v0, calculation_date, 
-        expiration_dates)
-        
+            s, k, t, ts_r, ts_g, w,
+            kappa,theta,rho,eta,v0,
+            calculation_date
+            )
+    
     print_test = test_dataset[
         ['w', 'spot_price','strike_price', 'days_to_maturity', 
-         'ql_heston_price','black_scholes']].copy()
+          'ql_heston_price',
+        'black_scholes']].copy()
     
     print_test['relative_error'] = \
-         (print_test['ql_heston_price']/print_test['black_scholes'])-1
+          (print_test['ql_heston_price']/print_test['black_scholes'])-1
          
     test_avg = np.average(np.abs(np.array(print_test['relative_error'])))
     test_avg_print = f"{round(test_avg*100,4)}%"

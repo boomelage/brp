@@ -21,13 +21,13 @@ def calibrate_heston(
         calendar = ms.calendar,
         day_count = ms.day_count
         ):
-    ql.Settings.instance().evaluationDate = calculation_date
-    flat_ts = ms.make_ts_object(r)
-    dividend_ts = ms.make_ts_object(g)
 
+    ql.Settings.instance().evaluationDate = calculation_date
+    flat_ts, dividend_ts = ms.ql_ts_rg(r, g, calculation_date)
     S_handle = ql.QuoteHandle(ql.SimpleQuote(s))
+
     heston_helpers = []
-    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; eta = 0.5; 
+    v0 = 0.01; kappa = 0.2; theta = 0.02; rho = -0.75; eta = 0.5;
     process = ql.HestonProcess(
         flat_ts,                
         dividend_ts,            

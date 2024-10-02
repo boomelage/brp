@@ -58,16 +58,10 @@ bar = tqdm(
 for rowi, row in historical_calibrated.iterrows():
     
     calculation_date = row['date']
-    ql_calc = ql.Date(calculation_date.day,calculation_date.month,calculation_date.year)
+    ql_calc = ql.Date(
+        calculation_date.day,calculation_date.month,calculation_date.year)
     
     s = row['spot_price']
-    
-    
-    
-    # spread = s*0.2
-    # atm_spread = 0
-    # step = 1
-    # K = ms.make_K(s, spread, atm_spread, step)
     
     spread = 0.2
     K = np.linspace(
@@ -123,7 +117,8 @@ for rowi, row in historical_calibrated.iterrows():
     features['eta'] = row['eta']
     features['dividend_rate'] = row['dividend_rate']
     features['risk_free_rate'] = 0.04
-        
+    
+    
     features.loc[:,'heston_price'] = ms.vector_heston_price(
                 features['spot_price'],
                 features['strike_price'],
@@ -164,9 +159,8 @@ for rowi, row in historical_calibrated.iterrows():
     file_path = os.path.join(
         parent_dir,
         r'historical_vanillas',
-        str(hist_file_date+' '+file_tag+'.csv'),
+        str(hist_file_date + ' ' + file_tag + '.csv'),
         )
-    
     features.to_csv(file_path)
     bar.update(1)
 bar.close()

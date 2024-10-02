@@ -14,7 +14,7 @@ ms = model_settings()
 
 
 s = 100
-k = 50
+k = 110
 r = 0.04
 g = 0.0
 kappa = 2.0
@@ -32,6 +32,7 @@ t = 1
 
 w = 'put'
 
+
 bates = ms.ql_bates_vanilla_price(
     s, k, t, r, g, 
     kappa, theta, rho, eta, v0, lambda_, nu, delta, 
@@ -44,12 +45,27 @@ black_scholes = ms.black_scholes_price(
     s, k, t, r, volatility, w
     )
 
+
 heston = ms.ql_heston_price(
     s, k, t, r, g, w, kappa, theta, rho, eta, v0, 
     calculation_date
     )
 
 
-print(f"\nBates: {bates}\nHeston: {heston}\nBlack Scholes: {black_scholes}\n")
+barrier_type_name= 'UpIn'
+b = 100
+rebate = 0.0 
+
+
+
+barrier = ms.ql_barrier_price(
+    s, k, t, r, g, 
+    calculation_date, w, 
+    barrier_type_name, b, rebate, 
+    kappa, theta, rho, eta, v0)
+
+
+print(f"\nBates: {bates}\nHeston: {heston}"
+      f"\nBlack Scholes: {black_scholes}\nfd barrier B=S: {barrier}\n")
 
 

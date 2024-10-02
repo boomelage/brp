@@ -160,14 +160,18 @@ class mlop:
     model estimation
     """
     def run_nnet(self, preprocessor, train_X, train_y):
-        model_name = "Single Layer Network"
-        print(f"\n{model_name}")
-        print(f"hidden layer size: {self.single_layer_size}")
-        print(f"learning rate: {self.learning_rate}")
-        print(f"activation: {self.activation_function}")
-        print(f"solver: {self.solver}")
-        print(f"alpha: {self.alpha}")
+        specs = [
+            f"\nSingle Layer Network",
+            f"hidden layer size: {self.single_layer_size}",
+            f"learning rate: {self.learning_rate}",
+            f"activation: {self.activation_function}",
+            f"solver: {self.solver}",
+            f"alpha: {self.alpha}"
+        ]
+        for spec in specs:
+            print(spec)
         print('\ntraining...')
+
         nnet_start = time.time()
         
         nnet_model = MLPRegressor(
@@ -195,13 +199,17 @@ class mlop:
     
     def run_dnn(self, preprocessor,train_X,train_y):
         model_name = "Deep Neural Network"
-        print(f"\n{model_name}")
-        print(f"hidden layers sizes: {self.hidden_layer_sizes}")
-        print(f"learning rate: {self.learning_rate}")
-        print(f"activation: {self.activation_function}")
-        print(f"solver: {self.solver}")
-        print(f"alpha: {self.alpha}")
-        print('\ntraining...')
+        specs= [
+            f"\n{model_name}",
+            f"hidden layers sizes: {self.hidden_layer_sizes}",
+            f"learning rate: {self.learning_rate}",
+            f"activation: {self.activation_function}",
+            f"solver: {self.solver}",
+            f"alpha: {self.alpha}"
+            ]
+        print('\ntraining...\n')
+        for spec in specs:
+            print(spec)
         dnn_start = time.time()
         deepnnet_model = MLPRegressor(
             hidden_layer_sizes= self.hidden_layer_sizes,
@@ -227,7 +235,7 @@ class mlop:
         model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
-        return model_fit, dnn_runtime
+        return model_fit, dnn_runtime, specs
     
     def run_rf(self, preprocessor, train_X, train_y):
         model_name = "Random Forest"

@@ -4,17 +4,24 @@ Created on Wed Oct  2 13:52:21 2024
 
 """
 import QuantLib as ql
+from settings import model_settings
+ms = model_settings()
 
-today = ql.Date().todaysDate()
-riskFreeTS = ql.YieldTermStructureHandle(
-    ql.FlatForward(today, 0.05, ql.Actual365Fixed()))
-dividendTS = ql.YieldTermStructureHandle(ql.FlatForward(
-    today, 0.01, ql.Actual365Fixed()))
+"""
+# =============================================================================
 
+inputs
+
+"""
+calculation_date = ql.Date.todaysDate()
+
+r = 0.05
+g = 0.02
 s = 100.00
-s0 = ql.QuoteHandle(ql.SimpleQuote(s))
 k = 80.00
+
 option_type = ql.Option.Call
+
 v0 = 0.01 
 kappa = 0.2
 theta = 0.02
@@ -23,31 +30,45 @@ eta = 0.5
 
 rng = "pseudorandom" # could use "lowdiscrepancy"
 numPaths = 100000
+
 periods = [
     ql.Period("6M"), ql.Period("12M"), ql.Period("18M"), ql.Period("24M")
     ]
-
 pastFixings = 0 # Empty because this is a new contract
 
+"""
+# =============================================================================
 
-hestonProcess = ql.HestonProcess(
-    riskFreeTS, dividendTS, s0, 
-    v0, kappa, theta, eta, rho)
+settings
 
+"""
+ql.Settings.instance().evaluationDate = calculation_date
 
-engine = ql.MCDiscreteGeometricAPHestonEngine(
-    hestonProcess, rng, requiredSamples=numPaths)
+s0 = ql.QuoteHandle(ql.SimpleQuote(s))
 
+asianFutureFixingDates = [calculation_date + period for period in periods]
 
-asianFutureFixingDates = [today + period for period in periods]
-asianExpiryDate = today + periods[-1]
-
+asianExpiryDate = calculation_date + periods[-1]
 
 vanillaPayoff = ql.PlainVanillaPayoff(option_type, k)
 europeanExercise = ql.EuropeanExercise(asianExpiryDate)
 
+flat_r, flat_g = ms.ql_flat_rg(
+    r,g,calculation_date
+    )
+
+hestonProcess = ql.HestonProcess(
+    flat_r, flat_g, s0, 
+    v0, kappa, theta, eta, rho)
+
+engine = ql.MCDiscreteGeometricAPHestonEngine(
+    hestonProcess, rng, requiredSamples=numPaths)
+
 """
+# =============================================================================
+
 mc arithmetic discrete
+
 """
 
 arithmeticRunningAccumulator = 0.0
@@ -72,12 +93,22 @@ discreteGeometricAsianOption = ql.DiscreteAveragingAsianOption(
 
 discreteGeometricAsianOption.setPricingEngine(engine)
 
-"""
-continuous
-
-continuousGeometricAsianOption = ql.ContinuousAveragingAsianOption(
-    geometricAverage, vanillaPayoff, europeanExercise)
-"""
 
 
-discreteGeometricAsianOption.NPV()
+geo = discreteGeometricAsianOption.NPV()
+arith = discreteArithmeticAsianOption.NPV()
+print(f"\narithmetic: {arith}\ngeometric: {geo}\n")
+
+
+
+
+
+# """
+# continuous
+
+# continuousGeometricAsianOption = ql.ContinuousAveragingAsianOption(
+#     geometricAverage, vanillaPayoff, europeanExercise)
+# """
+
+
+

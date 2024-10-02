@@ -7,6 +7,9 @@ import os
 import sys
 import time
 from datetime import datetime
+import joblib
+import numpy as np
+import pandas as pd
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 from mlop import mlop
@@ -24,9 +27,11 @@ print("\n"+"#"*18+"\n# training start #\n"+
                                 importing data
 """
 
-from train_vanillas import training_data
+import train_vanillas
+
 title = 'Prediction errors for vanilla options'
 
+training_data = train_vanillas.training_data
 mlop = mlop(user_dataset = training_data)
 
 """
@@ -54,16 +59,10 @@ single layer network
 deep neural network
 """
 
-model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
 estimation_end_time = time.time()
-estimation_end_tag = str(datetime.fromtimestamp(
-    estimation_end_time).strftime("%Y-%m-%d %H%M%S"))
+model_name = r'deep_neural_network SPX vanillas'
 
-# joblib.dump(model_fit, os.path.join(
-#             current_dir,
-#             str(f"deep_neural_network SPX {estimation_end_tag}.pkl")
-#             )
-#     )
 
 """
 random forest
@@ -82,16 +81,47 @@ lasso regression
                                 model testing
 """
 
-stats = mlop.test_model(test_data, test_X, test_y, model_fit)
+stats = mlop.test_model(
+    test_data, test_X, test_y, model_fit)
 
-predictive_performance_plot = mlop.plot_model_performance(stats,runtime,title)
+predictive_performance_plot = mlop.plot_model_performance(
+    stats,runtime,title)
+
 
 """
 # =============================================================================
 """
 
-train_end = time.time()
-train_time = train_end - train_start
 
-print(f"\nruntime: {int(train_time)} seconds")
+estimation_end_tag = str(datetime.fromtimestamp(
+    estimation_end_time).strftime(
+        "%Y-%m-%d %H%M%S")
+        )
+file_name = str(
+    model_name + estimation_end_tag + f" ser{np.random.randint(1,999)}"
+    )
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.makedirs(file_name, exist_ok=True)
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),file_name))
+
+
+joblib.dump(model_fit,str(f"{file_name}.pkl"))
+
+pd.set_option("display.max_columns",None)
+with open(f"{file_name}.txt", "w") as f:
+    f.write(f"\n{training_data}\n")
+    f.write(f"\n{training_data.describe()}\n")
+    f.write(
+        f"\nspot(s):\n{train_vanillas.S}\n\nstrikes:\n{train_vanillas.K}\n\n")
+    f.write(f"maturities:\n{train_vanillas.T}\n\ntypes:\n{train_vanillas.W}\n")
+    f.write(f"\n{training_data['moneyness_tag'].unique()}\n")
+    f.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
+    f.write("\nnumber of calls, puts:")
+    f.write("\n{train_vanillas.n_calls},{train_vanillas.n_puts}\n")
+    f.write(f"\ninitial count:\n{train_vanillas.initial_count}\n")
+    f.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
+    f.write(f"\n{stats.describe()}\n")
+    for spec in specs:
+        f.write(f"\n{spec}")
+pd.reset_option("display.max_columns")
 
