@@ -58,11 +58,11 @@ estimation_end_time = time.time()
 estimation_end_tag = str(datetime.fromtimestamp(
     estimation_end_time).strftime("%Y-%m-%d %H%M%S"))
 
-joblib.dump(model_fit, os.path.join(
-            current_dir,
-            str(f"deep_neural_network SPX {estimation_end_tag}.pkl")
-            )
-    )
+# joblib.dump(model_fit, os.path.join(
+#             current_dir,
+#             str(f"deep_neural_network SPX {estimation_end_tag}.pkl")
+#             )
+#     )
 
 """
 random forest

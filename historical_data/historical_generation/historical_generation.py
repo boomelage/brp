@@ -63,18 +63,18 @@ for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
     spread = 0.1
-
+    
     atm_spread = 0.00
     
     K = np.arange(
         int(s*(1-spread)),
-        int(s*(1+spread)),
+        int(s*(1+0)),
         1
         ).astype(float)
     
     T = np.arange(
-        1,
-        7+1,
+        30,
+        90,
         1
         )
     
@@ -83,7 +83,7 @@ for rowi, row in historical_calibrated.iterrows():
             [s],
             K,
             T,
-            ['call'],
+            ['put'],
             [ql_calc],
             [row['30D']],
             [row['60D']],
@@ -100,7 +100,8 @@ for rowi, row in historical_calibrated.iterrows():
             'w',
             'calculation_date',
             '30D', '60D', '3M', '6M', '12M', '18M', '24M'
-                  ])
+                  ]
+        )
      
     
     features['expiration_date'] = ms.vexpiration_datef(
