@@ -6,6 +6,7 @@ Created on Tue Sep 17 17:13:18 2024
 import os
 import sys
 import time
+import joblib
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
@@ -53,6 +54,15 @@ deep neural network
 """
 
 model_fit, runtime = mlop.run_dnn(preprocessor,train_X,train_y)
+estimation_end_time = time.time()
+estimation_end_tag = str(datetime.fromtimestamp(
+    estimation_end_time).strftime("%Y-%m-%d %H%M%S"))
+
+joblib.dump(model_fit, os.path.join(
+            current_dir,
+            str(f"deep_neural_network SPX {estimation_end_tag}.pkl")
+            )
+    )
 
 """
 random forest

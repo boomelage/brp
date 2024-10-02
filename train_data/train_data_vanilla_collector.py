@@ -19,7 +19,7 @@ from data_query import dirdatacsv
 COLLECTION_DIRECTORY = historical_data_dir
 os.chdir(COLLECTION_DIRECTORY)
 
-csvs = dirdatacsv()
+csvs = dirdatacsv()[-100:]
 
 print('\nloading data...\n')
 price_counter = 0

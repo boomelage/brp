@@ -80,7 +80,7 @@ class mlop:
             # '30D', '60D', '3M', '6M', '12M', '18M', '24M',
             # 'risk_free_rate', 
             # 'dividend_rate',
-            'moneyness', 
+            # 'moneyness', 
             # 'kappa', 'theta', 'eta', 'rho', 'v0',  
             ]
         
@@ -193,9 +193,6 @@ class mlop:
         model_fit = nnet_scaled.fit(train_X, train_y)
         nnet_end = time.time()
         nnet_runtime = int(nnet_end - nnet_start)
-        estimation_end_tag = str(datetime.fromtimestamp(
-            nnet_end).strftime("%Y-%m-%d %H%M%S"))
-        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
         return model_fit, nnet_runtime
     
     def run_dnn(self, preprocessor,train_X,train_y):
@@ -232,9 +229,6 @@ class mlop:
         model_fit = dnn_scaled.fit(train_X,train_y)
         dnn_end = time.time()
         dnn_runtime = int(dnn_end - dnn_start)
-        estimation_end_tag = str(datetime.fromtimestamp(
-            dnn_end).strftime("%Y-%m-%d %H%M%S"))
-        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
         return model_fit, dnn_runtime
     
     def run_rf(self, preprocessor, train_X, train_y):
@@ -291,9 +285,6 @@ class mlop:
         
         lm_end = time.time()
         lm_runtime = lm_end - lm_start
-        estimation_end_tag = str(datetime.fromtimestamp(
-            lm_end).strftime("%Y-%m-%d %H%M%S"))
-        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
         return model_fit, lm_runtime
 
 

@@ -6,32 +6,70 @@ Created on Tue Oct  1 20:46:00 2024
 """
 
 import os
-import pandas as pd
 import time
 import joblib
+import pandas as pd
+import numpy as np
+from itertools import product
 from datetime import datetime
+
+
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
-from train_main import test_X, test_data, test_y, model_fit
-
-training_results = test_X.copy()
-training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
-training_results['target'] = test_y
-training_results['prediciton'] = model_fit.predict(test_X)
-training_results['abs_relative_error'] = abs(
-    training_results['prediciton']/training_results['target']-1)
-
-descriptive_stats = training_results['abs_relative_error'].describe()
-test_count = int(descriptive_stats['count'])
-descriptive_stats = descriptive_stats[1:]
-pd.set_option('display.float_format', '{:.10f}'.format)
-print(
-    f"\nresults:\n--------\ntest data count: {test_count}"
-    f"\n{descriptive_stats}\n"
+from settings import model_settings
+ms = model_settings()
+dnn_vanilla_price = joblib.load(
+    os.path.join(current_dir,'dnn_model 2024-10-01 212117.pkl')
     )
-pd.reset_option('display.float_format')
 
-dnn_end = time.time()
-dnn_end_tag = str(datetime.fromtimestamp(
-    dnn_end).strftime("%Y-%m-%d %H%M%S"))
-joblib.dump(model_fit, str(f"dnn_model {dnn_end_tag}.pkl"))
+
+test_start_time = time.time()
+test_start_tag = datetime.fromtimestamp(
+    test_start_time).strftime("%c")
+
+print(test_start_tag)
+print(dnn_vanilla_price)
+
+s = 1391
+S = [s]
+K = np.linspace(s*0.9,s*1.1,int(1e3)).astype(int)
+T = np.arange(31,180,7)
+W = ['put']
+
+test_df = pd.DataFrame(
+    product(
+        S, 
+        K,
+        T,
+        W
+        ),
+    columns = [
+        'spot_price','strike_price','days_to_maturity','w'
+        ]
+    )
+test_df['moneyness'] = ms.vmoneyness(
+    test_df['spot_price'], test_df['strike_price'], test_df['w']
+    )
+
+test_df['predicted'] = dnn_vanilla_price.predict(
+    test_df[
+        ['spot_price',
+         'strike_price',
+         'days_to_maturity',
+         'moneyness']
+        ]
+    )
+
+print(f"\n{test_df}")
+
+
+test_end_time = time.time()
+test_end_tag = datetime.fromtimestamp(
+    test_end_time).strftime("%c")
+
+test_runtime = test_end_time-test_start_time
+
+print(
+      f"\n{test_end_tag}\ntest runtime: {round(test_runtime,3)} seconds"
+      )

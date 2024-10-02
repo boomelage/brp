@@ -90,19 +90,19 @@ training_data = training_data[training_data.loc[:,'w'] == 'put']
 moneyness filter
 """
 
-# otm_lower = -0.06
-# otm_upper = -0.01
+otm_lower = -0.06
+otm_upper = -0.00
 
 # itm_lower =  0.01
 # itm_upper =  0.99
 
 
-# training_data = training_data[
+training_data = training_data[
     
-    # (
-    #   (training_data['moneyness'] >= otm_lower) & 
-    #   (training_data['moneyness'] <= otm_upper)
-    #   )
+    (
+      (training_data['moneyness'] >= otm_lower) & 
+      (training_data['moneyness'] <= otm_upper)
+      )
    
     # |
     
@@ -111,7 +111,7 @@ moneyness filter
 #       (training_data['moneyness'] <= itm_upper)
 #       )
 
-# ]
+]
 
 
 training_data = training_data[training_data['moneyness_tag'] != str('atm')]
