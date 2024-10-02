@@ -14,7 +14,7 @@ ms = model_settings()
 
 
 s = 100
-k = 90
+k = 50
 r = 0.04
 g = 0.0
 kappa = 2.0
@@ -30,15 +30,24 @@ delta = 0.02  # Jump size standard deviation
 calculation_date = ms.today
 t = 1
 
+w = 'put'
 
 bates = ms.ql_bates_vanilla_price(
-    s, k, t, r, g, kappa, theta, rho, eta, v0, lambda_, nu, delta, calculation_date)
+    s, k, t, r, g, 
+    kappa, theta, rho, eta, v0, lambda_, nu, delta, 
+    w, calculation_date
+    )
 
-black_scholes = ms.black_scholes_price(s, k, t, r, 0.18, 'call')
+volatility = 0.18
+
+black_scholes = ms.black_scholes_price(
+    s, k, t, r, volatility, w
+    )
 
 heston = ms.ql_heston_price(
-    s, k, t, r, g, 'call', kappa, theta, rho, eta, v0, 
-    calculation_date)
+    s, k, t, r, g, w, kappa, theta, rho, eta, v0, 
+    calculation_date
+    )
 
 
 print(f"\nBates: {bates}\nHeston: {heston}\nBlack Scholes: {black_scholes}\n")

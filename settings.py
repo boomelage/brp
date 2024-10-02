@@ -287,13 +287,21 @@ class model_settings():
     def ql_bates_vanilla_price(self,
             s,k,t,r,g,
             kappa,theta,rho,eta,v0,
-            lambda_, nu, delta, calculation_date
+            lambda_, nu, delta, 
+            w, calculation_date
             ):
-        
+        if w == 'call':
+            option_type = ql.Option.Call
+        elif w == 'put':
+            option_type = ql.Option.Put
+        else:
+            raise ValueError("call/put flag w sould be either 'call' or 'put'")
         expiration_date = calculation_date + ql.Period(t,ql.Days)
         
-        flat_r = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, r, self.day_count))
-        flat_g = ql.YieldTermStructureHandle(ql.FlatForward(calculation_date, g, self.day_count))
+        flat_r = ql.YieldTermStructureHandle(
+            ql.FlatForward(calculation_date, r, self.day_count))
+        flat_g = ql.YieldTermStructureHandle(
+            ql.FlatForward(calculation_date, g, self.day_count))
         
         bates_process = ql.BatesProcess(
             flat_r, 
@@ -304,7 +312,7 @@ class model_settings():
         )
         engine = ql.BatesEngine(ql.BatesModel(bates_process))
         
-        payoff = ql.PlainVanillaPayoff(ql.Option.Call, float(k))
+        payoff = ql.PlainVanillaPayoff(option_type, float(k))
         europeanExercise = ql.EuropeanExercise(expiration_date)
         european_option = ql.VanillaOption(payoff, europeanExercise)
         european_option.setPricingEngine(engine)
