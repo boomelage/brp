@@ -83,9 +83,9 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*0.9,
         s*1.1,
-        5
+        10
         )
-    T = [30,60,90,180,360]
+    T = [90,180,360]
     OUTIN = ['Out','In']
     W = ['call','put']
         
@@ -145,9 +145,10 @@ for rowi, row in historical_calibrated.iterrows():
         ignore_index=True
         )
     
+    dt_calc_tag = calc_dtdate.strftime("%Y-%m-%d")
     file_time = datetime.fromtimestamp(
         time.time()).strftime("%Y-%m-%d %H-%M-%S")
-    file_tag = f'{str(file_time)} barriers.csv'
+    file_tag = f'{dt_calc_tag} {str(file_time)} barriers.csv'
     file_path = os.path.join(parent_dir,'historical_barriers',file_tag)
     features.to_csv(file_path)
     

@@ -72,8 +72,9 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            'risk_free_rate', 
-            'dividend_rate',
+            'barrier',
+            # 'risk_free_rate', 
+            # 'dividend_rate',
             # 'moneyness', 
             ]
         

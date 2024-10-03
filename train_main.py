@@ -91,11 +91,11 @@ estimation_end_time = time.time()
                                 model testing
 """
 
-# stats = mlop.test_model(
-#     test_data, test_X, test_y, model_fit)
+stats = mlop.test_model(
+    test_data, test_X, test_y, model_fit)
 
-# predictive_performance_plot = mlop.plot_model_performance(
-#     stats,runtime,title)
+predictive_performance_plot = mlop.plot_model_performance(
+    stats,runtime,title)
 
 
 """

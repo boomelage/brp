@@ -142,7 +142,7 @@ class model_settings():
     
     def noisy_prices(self, prices):
         def noisify_price(price):
-            noisy_price = price + max(np.random.normal(scale=0.15),0)
+            noisy_price = max(price + np.random.normal(scale=0.15),0)
             return noisy_price
         prices_noisyfier = np.vectorize(noisify_price)
         noisy_prices = prices_noisyfier(prices)

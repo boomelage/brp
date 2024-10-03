@@ -21,7 +21,7 @@ sys.path.append(BARRIERS)
 from data_query import dirdatacsv
 
 
-COLLECTION_DIRECTORY = BARRIERS
+COLLECTION_DIRECTORY = VANILLAS
 
 os.chdir(COLLECTION_DIRECTORY)
 
