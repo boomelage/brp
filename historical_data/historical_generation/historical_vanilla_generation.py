@@ -63,13 +63,13 @@ for rowi, row in historical_calibrated.iterrows():
     spread = 0.2
     K = np.linspace(
         s*(1-spread),
-        s*(1+spread),
-        int(
-            (s-s*(1-spread*2))*3
-            )
+        s*(1+spread), 5
+        # int(
+        #     (s-s*(1-spread*2))*3
+        #     )
         )
     
-    T = np.arange(30,366,28)
+    T = np.arange(30,180,30)
     
     features = pd.DataFrame(
         product(
@@ -133,23 +133,16 @@ for rowi, row in historical_calibrated.iterrows():
         'calculation_date'] + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
     
-    historical_training_data = pd.concat(
-        [historical_training_data, features],
-        ignore_index = True)
+    hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
+
+    calls = features[features['w'] == 'call']
+    with pd.HDFStore('SPXvanillas.h5') as store:
+        store.put(f'/call/{hist_file_date}', calls)
     
-    
-    
-    hist_file_date = calculation_date.strftime("%Y-%m-%d") 
-    file_datetime = datetime.fromtimestamp(time.time())
-    file_tag = file_datetime.strftime("%Y-%m-%d %H%M%S") 
-    file_path = os.path.join(
-        parent_dir,
-        r'historical_vanillas',
-        str(hist_file_date + ' ' + file_tag + '.csv'),
-        )
-    features.to_csv(file_path)
-    
-    
+    puts = features[features['w'] == 'put']
+    with pd.HDFStore('SPXvanillas.h5') as store:
+        store.put(f'/put/{hist_file_date}', puts)
+        
     bar.update(1)
 bar.close()
     

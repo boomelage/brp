@@ -2,4 +2,5 @@
 *.xls
 *.xlsx
 *.pkl
+*.h5
 /__pycache__
