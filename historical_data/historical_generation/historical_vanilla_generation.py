@@ -63,10 +63,10 @@ for rowi, row in historical_calibrated.iterrows():
     spread = 0.2
     K = np.linspace(
         s*(1-spread),
-        s*(1+spread), 5
-        # int(
-        #     (s-s*(1-spread*2))*3
-        #     )
+        s*(1+spread),
+        int(
+            (s-s*(1-spread*2))*3
+            )
         )
     
     T = np.arange(30,180,30)
@@ -76,7 +76,7 @@ for rowi, row in historical_calibrated.iterrows():
             [s],
             K,
             T,
-            ['call'],
+            ['call','put'],
             [ql_calc],
             ),
         columns=[
@@ -136,12 +136,11 @@ for rowi, row in historical_calibrated.iterrows():
     hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
 
     calls = features[features['w'] == 'call']
-    with pd.HDFStore('SPXvanillas.h5') as store:
-        store.put(f'/call/{hist_file_date}', calls)
-    
     puts = features[features['w'] == 'put']
+    
     with pd.HDFStore('SPXvanillas.h5') as store:
-        store.put(f'/put/{hist_file_date}', puts)
+        store.append(f'/call/{hist_file_date}', calls, format='table', append=True)
+        store.append(f'/put/{hist_file_date}', puts, format='table', append=True)
         
     bar.update(1)
 bar.close()
