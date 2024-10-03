@@ -11,17 +11,17 @@ import pandas as pd
 from tqdm import tqdm
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-historical_vanillas_dir = os.path.join(
+VANILLAS = os.path.join(
     parent_dir,'historical_data','historical_vanillas')
-historical_barriers_dir = os.path.join(
+BARRIERS = os.path.join(
     parent_dir,'historical_data','historical_barriers')
 sys.path.append(parent_dir)
-sys.path.append(historical_vanillas_dir)
-sys.path.append(historical_barriers_dir)
+sys.path.append(VANILLAS)
+sys.path.append(BARRIERS)
 from data_query import dirdatacsv
 
 
-COLLECTION_DIRECTORY = historical_vanillas_dir
+COLLECTION_DIRECTORY = BARRIERS
 
 os.chdir(COLLECTION_DIRECTORY)
 

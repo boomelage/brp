@@ -29,7 +29,7 @@ print("\n"+"#"*18+"\n# training start #\n"+
 
 import train_contracts
 
-title = 'Prediction errors for barrier options'
+title = 'Prediction errors'
 
 dataset = train_contracts.training_data.copy()
 mlop = mlop(user_dataset = dataset)
@@ -63,7 +63,7 @@ deep neural network
 
 
 model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
-model_name = r'deep_neural_network SPX vanillas'
+model_name = r'deep_neural_network'
 
 
 """
@@ -91,11 +91,11 @@ estimation_end_time = time.time()
                                 model testing
 """
 
-stats = mlop.test_model(
-    test_data, test_X, test_y, model_fit)
+# stats = mlop.test_model(
+#     test_data, test_X, test_y, model_fit)
 
-predictive_performance_plot = mlop.plot_model_performance(
-    stats,runtime,title)
+# predictive_performance_plot = mlop.plot_model_performance(
+#     stats,runtime,title)
 
 
 """
@@ -107,7 +107,7 @@ estimation_end_tag = str(datetime.fromtimestamp(
         "%Y-%m-%d %H%M%S")
         )
 file_name = str(
-    model_name + estimation_end_tag + f" ser{np.random.randint(1,999)}"
+    model_name + " " + estimation_end_tag + f" ser{np.random.randint(1,999)}"
     )
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 os.makedirs(file_name, exist_ok=True)

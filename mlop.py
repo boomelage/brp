@@ -19,7 +19,6 @@ from plotnine import ggplot, aes, geom_point, labs, theme
 from datetime import datetime
 import joblib
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import time
 class mlop:
@@ -80,7 +79,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -90,7 +89,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            # 'w'
+            'w'
             
             ]
         
@@ -104,7 +103,7 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]
