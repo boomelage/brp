@@ -43,7 +43,9 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
+grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
+sys.path.append(grandparent_dir)
 from settings import model_settings
 from data_query import dirdatacsv
 ms = model_settings()
@@ -60,12 +62,9 @@ historical_calibrated = historical_calibrated.iloc[:,1:].copy(
     ).reset_index(drop=True)
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 
-historical_barriers = pd.DataFrame()
-
 bar = tqdm(
     total = historical_calibrated.shape[0],
     desc = 'generating',
-    unit = 'day'
     )
 for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
@@ -85,7 +84,11 @@ for rowi, row in historical_calibrated.iterrows():
         s*1.1,
         10
         )
-    T = [90,180,360]
+    T = [
+        60,
+        90,
+        180,360,540,720
+        ]
     OUTIN = ['Out','In']
     W = ['call','put']
         
@@ -113,15 +116,15 @@ for rowi, row in historical_calibrated.iterrows():
     features['rebate'] = rebate
     features['dividend_rate'] = row['dividend_rate']
     features['risk_free_rate'] = r
-
-    features[
-        ['theta', 'kappa', 'rho', 'eta', 'v0']
-        ] = historical_calibrated.loc[
-            rowi, ['theta', 'kappa', 'rho', 'eta', 'v0']
-            ].values
-            
-    features['calculation_date'] = calculation_date
     
+    param_names = ['theta', 'kappa', 'rho', 'eta', 'v0']
+    features[param_names] = historical_calibrated.loc[
+        rowi, param_names].values
+    features[param_names] = features[param_names].apply(
+        pd.to_numeric, errors='coerce')
+    features = features.dropna()
+    
+    features['calculation_date'] = calculation_date
     features['barrier_price'] = ms.vector_barrier_price(
             features['spot_price'],
             features['strike_price'],
@@ -140,17 +143,23 @@ for rowi, row in historical_calibrated.iterrows():
             features['v0']
         )
     
-    historical_barriers = pd.concat(
-        [historical_barriers, features],
-        ignore_index=True
+    features['calculation_date'] = datetime(
+        calculation_date.year(),
+        calculation_date.month(),
+        calculation_date.dayOfMonth()
         )
+    features['expiration_date'] =  features[
+        'calculation_date'] + pd.to_timedelta(
+            features['days_to_maturity'], unit='D')
     
-    dt_calc_tag = calc_dtdate.strftime("%Y-%m-%d")
-    file_time = datetime.fromtimestamp(
-        time.time()).strftime("%Y-%m-%d %H-%M-%S")
-    file_tag = f'{dt_calc_tag} {str(file_time)} barriers.csv'
-    file_path = os.path.join(parent_dir,'historical_barriers',file_tag)
-    features.to_csv(file_path)
+    h5_key = str('date_'+ calc_dtdate.strftime("%Y_%m_%d"))
+    calls = features[features['w'] == 'call']
+    puts = features[features['w'] == 'put']
+    with pd.HDFStore('SPXbarriers.h5') as store:
+        store.append(
+            f'/call/{h5_key}', calls, format='table', append=True)
+        store.append(
+            f'/put/{h5_key}', puts, format='table', append=True)
     
     bar.update(1)
 bar.close()

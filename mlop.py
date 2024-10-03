@@ -72,7 +72,7 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            'barrier',
+            # 'barrier',
             # 'risk_free_rate', 
             # 'dividend_rate',
             # 'moneyness', 
@@ -80,7 +80,7 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
