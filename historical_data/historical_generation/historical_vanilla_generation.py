@@ -69,14 +69,14 @@ for rowi, row in historical_calibrated.iterrows():
             )
         )
     
-    T = np.arange(30,180,30)
+    T = np.arange(30,360,1)
     
     features = pd.DataFrame(
         product(
             [s],
             K,
             T,
-            ['call','put'],
+            ['call'],
             [ql_calc],
             ),
         columns=[
@@ -120,28 +120,46 @@ for rowi, row in historical_calibrated.iterrows():
         )
     
     features = features[
-        [
-          'spot_price', 'strike_price',  'w', 'heston_price',
-          'days_to_maturity', 'risk_free_rate', 'dividend_rate',
-          'kappa', 'theta', 'rho', 'eta', 'v0',
-          'calculation_date', 'expiration_date'
-          ]
+        ['spot_price', 'strike_price', 'w', 'heston_price', 'days_to_maturity',
+         'risk_free_rate', 'dividend_rate', 
+         'kappa', 'theta', 'rho', 'eta', 'v0',
+         'calculation_date', 'expiration_date']
         ]
     
     features['calculation_date'] = calculation_date
     features['expiration_date'] =  features[
         'calculation_date'] + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
+
+    features[
+        ['calculation_date', 'expiration_date']
+        ] = features[['calculation_date', 'expiration_date']].astype(str)
+    features['days_to_maturity'] = features['days_to_maturity'].astype('int64')
     
     hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
 
-    calls = features[features['w'] == 'call']
-    puts = features[features['w'] == 'put']
+    calls = features[features['w'] == 'call'].reset_index(drop=True)
+    puts = features[features['w'] == 'put'].reset_index(drop=True)
     
     with pd.HDFStore('SPXvanillas.h5') as store:
-        store.append(f'/call/{hist_file_date}', calls, format='table', append=True)
-        store.append(f'/put/{hist_file_date}', puts, format='table', append=True)
-        
+        try:
+            store.append(
+                f'/call/{hist_file_date}', calls, format='table', append=True)
+            store.append(
+                f'/put/{hist_file_date}', puts, format='table', append=True)
+        except Exception:
+            print()
+            print(store.select(f'/call/{hist_file_date}').columns)
+            print()
+            print(store.select(f'/call/{hist_file_date}').columns)
+            print()
+            print(features.columns)
+            print()
+            print(calls.dtypes)
+            print()
+            print(puts.dtypes)
+            print()
+            print(store.select(f'/call/{hist_file_date}').dtypes)
     bar.update(1)
 bar.close()
     

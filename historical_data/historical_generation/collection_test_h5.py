@@ -52,10 +52,10 @@ def collect_dataframes_from_h5(
 
 
 
-h5filename = 'SPXbarriers.h5'
+h5filename = 'SPXvanillas.h5'
 
-start_date = datetime.strptime("2000-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2020-01-01", "%Y-%m-%d")
+start_date = datetime.strptime("2008-01-01", "%Y-%m-%d")
+end_date = datetime.strptime("2008-01-04", "%Y-%m-%d")
 
 
 contracts = collect_dataframes_from_h5(
@@ -63,17 +63,17 @@ contracts = collect_dataframes_from_h5(
     ).drop_duplicates().reset_index(drop=True)
 
 
-check = contracts[
-    ['spot_price','strike_price','barrier',
-     'barrier_price','barrier_type_name','w','days_to_maturity']
-    ]
+# check = contracts[
+#     ['spot_price','strike_price','barrier',
+#      'barrier_price','barrier_type_name','w','days_to_maturity']
+#     ]
 
-check.columns = ['s','k','B','price','type','w','t']
-pd.set_option("display.max_rows",None)
-pd.set_option("display.max_columns",None)
-print(f"\n{check.sort_values(by='price')}\n")
-pd.reset_option("display.max_rows")
-pd.reset_option("display.max_columns")
+# check.columns = ['s','k','B','price','type','w','t']
+# pd.set_option("display.max_rows",None)
+# pd.set_option("display.max_columns",None)
+# print(f"\n{check.sort_values(by='price')}\n")
+# pd.reset_option("display.max_rows")
+# pd.reset_option("display.max_columns")
 
 
-
+contracts.columns
