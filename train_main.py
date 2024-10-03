@@ -70,9 +70,8 @@ model_name = r'deep_neural_network'
 random forest
 """
 
-
-# model_fit, runtime = mlop.run_rf(preprocessor,train_X,train_y)
-
+# model_fit, runtime, specs = mlop.run_rf(preprocessor,train_X,train_y)
+# model_name = r'random_forest'
 
 """
 lasso regression
@@ -109,31 +108,33 @@ estimation_end_tag = str(datetime.fromtimestamp(
 file_name = str(
     model_name + " " + estimation_end_tag + f" ser{np.random.randint(1,999)}"
     )
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-os.makedirs(file_name, exist_ok=True)
-os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),file_name))
-joblib.dump(model_fit,str(f"{file_name}.pkl"))
-pd.set_option("display.max_columns",None)
-with open(f"{file_name}.txt", "w") as f:
-    f.write(f"\n{dataset}\n")
-    f.write(f"\n{dataset.describe()}\n")
-    f.write(
-        f"\nspot(s):\n{train_contracts.S}\n\nstrikes:\n{train_contracts.K}\n\n")
-    f.write(f"maturities:\n{train_contracts.T}\n\ntypes:\n{train_contracts.W}\n")
-    f.write(f"\n{dataset['moneyness_tag'].unique()}\n")
-    try:
-        f.write(f"\n{dataset['barrier_type_name'].unique()}")
-    except Exception:
-        pass
-    f.write(f"\nmoneyness:\n{np.sort(dataset['moneyness'].unique())}\n")
-    f.write("\nnumber of calls, puts:")
-    f.write("\n{train_contracts.n_calls},{train_contracts.n_puts}\n")
-    f.write(f"\ninitial count:\n{train_contracts.initial_count}\n")
-    f.write(f"\ntotal prices:\n{dataset.shape[0]}\n")
-    f.write(f"\n{stats.describe()}\n")
-    for spec in specs:
-        f.write(f"\n{spec}")
-pd.reset_option("display.max_columns")
+
+def save_model():
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    os.makedirs(file_name, exist_ok=True)
+    os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),file_name))
+    joblib.dump(model_fit,str(f"{file_name}.pkl"))
+    pd.set_option("display.max_columns",None)
+    with open(f"{file_name}.txt", "w") as f:
+        f.write(f"\n{dataset}\n")
+        f.write(f"\n{dataset.describe()}\n")
+        f.write(
+            f"\nspot(s):\n{train_contracts.S}\n\nstrikes:\n{train_contracts.K}\n\n")
+        f.write(f"maturities:\n{train_contracts.T}\n\ntypes:\n{train_contracts.W}\n")
+        f.write(f"\n{dataset['moneyness_tag'].unique()}\n")
+        try:
+            f.write(f"\n{dataset['barrier_type_name'].unique()}")
+        except Exception:
+            pass
+        f.write(f"\nmoneyness:\n{np.sort(dataset['moneyness'].unique())}\n")
+        f.write("\nnumber of calls, puts:")
+        f.write("\n{train_contracts.n_calls},{train_contracts.n_puts}\n")
+        f.write(f"\ninitial count:\n{train_contracts.initial_count}\n")
+        f.write(f"\ntotal prices:\n{dataset.shape[0]}\n")
+        f.write(f"\n{stats.describe()}\n")
+        for spec in specs:
+            f.write(f"\n{spec}")
+    pd.reset_option("display.max_columns")
 
 
 

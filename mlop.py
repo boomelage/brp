@@ -31,8 +31,8 @@ class mlop:
         self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
-                    # "lbfgs",
-                    "sgd", 
+                    "lbfgs",
+                    # "sgd", 
                     # "adam"
                     ]
         
@@ -63,8 +63,7 @@ class mlop:
         """
         [
          'spot_price', 'strike_price', 'w', 'heston_price', 
-         '30D', '60D', '3M', '6M', '12M', '18M', '24M', 'moneyness',
-         'risk_free_rate', 'dividend_rate',
+         'risk_free_rate', 'dividend_rate', 'moneyness'
          'kappa', 'theta', 'rho', 'eta', 'v0', 'days_to_maturity',
          'expiration_date', 'calculation_date', 'moneyness_tag',
          ]
@@ -90,7 +89,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            'w'
+            # 'w'
             
             ]
         
@@ -104,7 +103,7 @@ class mlop:
             # ("PowerTransformer",PowerTransformer(),self.numerical_features),
             # ("Normalizer",Normalizer(),self.numerical_features),
             
-            ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
+            # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
             # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
 
             ]

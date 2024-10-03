@@ -13,16 +13,12 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 
 def collect_dataframes_from_h5(
-        file_path,
+        paths,
+        h5_file_path,
         start_date=None,
         end_date=None
         ):
     
-    with pd.HDFStore(file_path) as store:
-        paths = store.keys()
-        
-    date_pattern = re.compile(r'date_(\d{4}_\d{2}_\d{2})')
-    h5_keys = []
     
     for path in paths:
         match = date_pattern.search(path)
@@ -30,12 +26,12 @@ def collect_dataframes_from_h5(
             date_str = match.group(1)
             date_obj = datetime.strptime(date_str, "%Y_%m_%d")
             if start_date <= date_obj <= end_date:
-                h5_keys.append(path)
+                paths.append(path)
     
-    bar = tqdm(total=len(h5_keys),desc='collecting')
+    bar = tqdm(total=len(paths),desc='collecting')
     contracts = pd.DataFrame()
-    with pd.HDFStore(file_path, 'r') as hdf_store:
-        for key in h5_keys:
+    with pd.HDFStore(h5_file_path, 'r') as hdf_store:
+        for key in paths:
             if key in hdf_store:
                 contracts = pd.concat(
                     [contracts, hdf_store.get(key)],
@@ -52,28 +48,50 @@ def collect_dataframes_from_h5(
 
 
 
-h5filename = 'SPXvanillas.h5'
+h5_file_path = 'SPXvanillas.h5'
+start_date = datetime.strptime("2011-01-01", "%Y-%m-%d")
+end_date = datetime.strptime("2011-01-06", "%Y-%m-%d")
+date_pattern = re.compile(r'date_(\d{4}_\d{2}_\d{2})')
 
-start_date = datetime.strptime("2008-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2008-01-04", "%Y-%m-%d")
 
+
+paths = []
+with pd.HDFStore(h5_file_path) as store:
+    paths = store.keys()
 
 contracts = collect_dataframes_from_h5(
-    h5filename,start_date,end_date
+    paths, h5_file_path, start_date,end_date
     ).drop_duplicates().reset_index(drop=True)
 
+check = contracts[
+    [
+    
+     'spot_price','strike_price',
+     
+     # 'barrier','barrier_price','barrier_type_name',
+     
+     'heston_price',
+     
+     'w','days_to_maturity'
+     
+     ]
+    ]
 
-# check = contracts[
-#     ['spot_price','strike_price','barrier',
-#      'barrier_price','barrier_type_name','w','days_to_maturity']
-#     ]
-
-# check.columns = ['s','k','B','price','type','w','t']
-# pd.set_option("display.max_rows",None)
-# pd.set_option("display.max_columns",None)
-# print(f"\n{check.sort_values(by='price')}\n")
-# pd.reset_option("display.max_rows")
-# pd.reset_option("display.max_columns")
+check.columns = [
+    
+    's','k','price',
+    
+    # 'B','type',
+    
+    'w','t'
+    
+    ]
 
 
-contracts.columns
+pd.set_option("display.max_rows",None)
+pd.set_option("display.max_columns",None)
+print(f"\n{check.head(100)}\n")
+pd.reset_option("display.max_rows")
+pd.reset_option("display.max_columns")
+
+

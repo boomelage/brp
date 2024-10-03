@@ -9,7 +9,6 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
@@ -34,14 +33,14 @@ initial_count = training_data.shape[0]
 #     training_data['expiration_date'])
 
 
-training_data.loc[:,'moneyness'] = ms.vmoneyness(
-    training_data['spot_price'],
-    training_data['strike_price'],
-    training_data['w']
-    )
+# training_data.loc[:,'moneyness'] = ms.vmoneyness(
+#     training_data['spot_price'],
+#     training_data['strike_price'],
+#     training_data['w']
+#     )
 
-training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
-    training_data['moneyness']).astype(object)
+# training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
+#     training_data['moneyness']).astype(object)
 
 try:
     training_data.loc[:,'observed_price'] = ms.noisy_prices(
@@ -82,7 +81,7 @@ maturities filter
 type filter
 """
 
-# training_data = training_data[training_data.loc[:,'w'] == 'call']
+training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 # training_data = training_data[training_data['barrier_type_name']=='DownOut']
 
@@ -91,31 +90,31 @@ type filter
 moneyness filter
 """
 
-# otm_lower = -0.1
-# otm_upper = -0.00
+otm_lower = -0.1
+otm_upper = -0.00
 
-# itm_lower =  0.00
-# itm_upper =  0.00
+itm_lower =  0.00
+itm_upper =  0.00
 
 
-# training_data = training_data[
+training_data = training_data[
     
-#     (
-#       (training_data['moneyness'] >= otm_lower) & 
-#       (training_data['moneyness'] <= otm_upper)
-#       )
+    (
+      (training_data['moneyness'] >= otm_lower) & 
+      (training_data['moneyness'] <= otm_upper)
+      )
    
-#     |
+    |
     
-#     (
-#       (training_data['moneyness'] >= itm_lower) & 
-#       (training_data['moneyness'] <= itm_upper)
-#       )
+    (
+      (training_data['moneyness'] >= itm_lower) & 
+      (training_data['moneyness'] <= itm_upper)
+      )
 
-# ]
+]
 
 
-# training_data = training_data[training_data['moneyness_tag'] != str('atm')]
+training_data = training_data[training_data['moneyness_tag'] != str('atm')]
 
 
 """
