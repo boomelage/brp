@@ -20,27 +20,27 @@ sys.path.append(
     )
 from settings import model_settings
 ms = model_settings()
-from collection_test_h5 import contracts
+from HDF_collection import contracts
 
 print('\npreparing data...')
 
 training_data = contracts.copy().drop_duplicates()
 initial_count = training_data.shape[0]
 
-# training_data['calculation_date'] = pd.to_datetime(
-#     training_data['calculation_date'])
-# training_data['expiration_date'] = pd.to_datetime(
-#     training_data['expiration_date'])
+training_data['calculation_date'] = pd.to_datetime(
+    training_data['calculation_date'])
+training_data['expiration_date'] = pd.to_datetime(
+    training_data['expiration_date'])
 
 
-# training_data.loc[:,'moneyness'] = ms.vmoneyness(
-#     training_data['spot_price'],
-#     training_data['strike_price'],
-#     training_data['w']
-#     )
+training_data.loc[:,'moneyness'] = ms.vmoneyness(
+    training_data['spot_price'],
+    training_data['strike_price'],
+    training_data['w']
+    )
 
-# training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
-#     training_data['moneyness']).astype(object)
+training_data.loc[:,'moneyness_tag'] = ms.encode_moneyness(
+    training_data['moneyness']).astype(object)
 
 try:
     training_data.loc[:,'observed_price'] = ms.noisy_prices(
@@ -90,28 +90,28 @@ training_data = training_data[training_data.loc[:,'w'] == 'put']
 moneyness filter
 """
 
-otm_lower = -0.1
-otm_upper = -0.00
+# otm_lower = -0.2
+# otm_upper = -0.00
 
-itm_lower =  0.00
-itm_upper =  0.00
+# itm_lower =  0.00
+# itm_upper =  0.00
 
 
-training_data = training_data[
+# training_data = training_data[
     
-    (
-      (training_data['moneyness'] >= otm_lower) & 
-      (training_data['moneyness'] <= otm_upper)
-      )
+#     (
+#       (training_data['moneyness'] >= otm_lower) & 
+#       (training_data['moneyness'] <= otm_upper)
+#       )
    
-    |
+#     |
     
-    (
-      (training_data['moneyness'] >= itm_lower) & 
-      (training_data['moneyness'] <= itm_upper)
-      )
+#     (
+#       (training_data['moneyness'] >= itm_lower) & 
+#       (training_data['moneyness'] <= itm_upper)
+#       )
 
-]
+# ]
 
 
 training_data = training_data[training_data['moneyness_tag'] != str('atm')]

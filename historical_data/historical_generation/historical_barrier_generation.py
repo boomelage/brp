@@ -123,7 +123,15 @@ for rowi, row in historical_calibrated.iterrows():
         pd.to_numeric, errors='coerce')
     features = features.dropna()
     
+    features['calculation_date'] = datetime(
+        calculation_date.year(),
+        calculation_date.month(),
+        calculation_date.dayOfMonth()
+        )
+    features['calculation_date'] = features['calculation_date'].astype('datetime64[ns]')
+    
     features['calculation_date'] = calculation_date
+    
     features['barrier_price'] = ms.vector_barrier_price(
             features['spot_price'],
             features['strike_price'],
@@ -142,23 +150,25 @@ for rowi, row in historical_calibrated.iterrows():
             features['v0']
         )
     
-    features['calculation_date'] = datetime(
-        calculation_date.year(),
-        calculation_date.month(),
-        calculation_date.dayOfMonth()
-        )
+
     features['expiration_date'] =  features[
         'calculation_date'] + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
+            
     
     h5_key = str('date_'+ calc_dtdate.strftime("%Y_%m_%d"))
     calls = features[features['w'] == 'call']
     puts = features[features['w'] == 'put']
-    with pd.HDFStore('SPXbarriers.h5') as store:
-        store.append(
-            f'/call/{h5_key}', calls, format='table', append=True)
-        store.append(
-            f'/put/{h5_key}', puts, format='table', append=True)
-    
+    with pd.HDFStore('SPX barriers.h5') as store:
+        try:
+            store.append(
+                f'/call/{h5_key}', calls, format='table', append=True)
+            store.append(
+                f'/put/{h5_key}', puts, format='table', append=True)
+        except Exception as e:
+            print(store.get(f'/call/{h5_key}').dtypes)
+            print(calls.dtypes)  
+            raise KeyError(f"Error with key '{h5_key}': {e}")
+                    
     bar.update(1)
 bar.close()

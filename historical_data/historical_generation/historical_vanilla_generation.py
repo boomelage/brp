@@ -6,11 +6,13 @@ Created on Sat Sep 21 13:54:06 2024
 """
 import os
 import sys
+import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
+from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -132,6 +134,7 @@ for rowi, row in historical_calibrated.iterrows():
     features[
         ['calculation_date', 'expiration_date']
         ] = features[['calculation_date', 'expiration_date']].astype(str)
+    
     features['days_to_maturity'] = features['days_to_maturity'].astype('int64')
     
     hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
@@ -158,7 +161,6 @@ for rowi, row in historical_calibrated.iterrows():
             print(puts.dtypes)
             print()
             print(store.select(f'/call/{hist_file_date}').dtypes)
-            print()
     bar.update(1)
 bar.close()
     
