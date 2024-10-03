@@ -15,13 +15,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
+sys.path.append(
+    os.path.join(
+        parent_dir,'historical_data','historical_generation')
+    )
 from settings import model_settings
 ms = model_settings()
-from train_contract_collector import train_contracts
+from collection_test_h5 import contracts
 
 print('\npreparing data...')
 
-training_data = train_contracts.copy().drop_duplicates()
+training_data = contracts.copy().drop_duplicates()
 initial_count = training_data.shape[0]
 
 # training_data['calculation_date'] = pd.to_datetime(
@@ -78,7 +82,7 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'call']
+# training_data = training_data[training_data.loc[:,'w'] == 'call']
 
 # training_data = training_data[training_data['barrier_type_name']=='DownOut']
 
