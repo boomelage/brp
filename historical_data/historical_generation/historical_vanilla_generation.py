@@ -64,12 +64,10 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*(1-spread),
         s*(1+spread),
-        int(
-            (s-s*(1-spread*2))*3
-            )
+        3#int((s-s*(1-spread*2))*3)
         )
     
-    T = np.arange(30,360,1)
+    T = np.arange(30,360,30)
     
     features = pd.DataFrame(
         product(
@@ -143,7 +141,7 @@ for rowi, row in historical_calibrated.iterrows():
     calls = features[features['w'] == 'call'].reset_index(drop=True)
     puts = features[features['w'] == 'put'].reset_index(drop=True)
     
-    with pd.HDFStore('SPXvanillas.h5') as store:
+    with pd.HDFStore('SPX vanillas.h5') as store:
         try:
             store.append(
                 f'/call/{hist_file_date}', calls, format='table', append=True)
