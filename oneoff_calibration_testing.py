@@ -30,7 +30,6 @@ heston_parameters = test_heston_calibration(
         calibration_dataset, heston_parameters, calculation_date,r,g)
 
 
-# calibration_dataset['days_to_maturity']
 
 
 

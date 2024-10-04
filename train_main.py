@@ -29,8 +29,6 @@ print("\n"+"#"*18+"\n# training start #\n"+
 
 from train_contracts import training_data
 
-title = 'Prediction errors'
-
 dataset = training_data.copy()
 mlop = mlop(user_dataset = dataset)
 
@@ -104,3 +102,38 @@ RSME = np.sqrt(np.average(sqdifference))
 MAE = np.average(absdifference)
 print(f"\nRSME: {RSME}\nMAE: {MAE}")
 print(f"\ntrain runtime: {round(train_runtime,3)} seconds")
+
+
+S = np.sort(training_data['spot_price'].unique())
+K = np.sort(training_data['strike_price'].unique())
+T = np.sort(training_data['days_to_maturity'].unique())
+W = np.sort(training_data['w'].unique())
+n_calls = training_data[training_data['w']=='call'].shape[0]
+n_puts = training_data[training_data['w']=='put'].shape[0]
+
+train_end_tag = str(datetime.fromtimestamp(
+    train_end).strftime("%Y_%m_%d %H%M%S"))
+file_tag = str(model_name + train_end_tag)
+
+os.chdir(current_dir)
+os.mkdir(file_tag)
+file_dir = os.path.join(current_dir,file_tag,file_tag)
+
+joblib.dump(model_fit,str(f"{file_dir}.pkl"))
+pd.set_option("display.max_columns",None)
+with open(f'{file_dir}.txt', 'w') as file:
+    file.write(f"\n{training_data}")
+    file.write(f"\n{training_data.describe()}\n")
+    file.write(f"\nspot(s):\n{S}")
+    file.write(f"\n\nstrikes:\n{K}\n")
+    file.write(f"\nmaturities:\n{T}\n")
+    file.write(f"\ntypes:\n{W}\n")
+    file.write(f"\n{training_data['moneyness_tag'].unique()}")
+    try:
+        file.write(f"\n{training_data['barrier_type_name'].unique()}")
+    except Exception:
+        pass
+    file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}")
+    file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
+    file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
+pd.reset_option("display.max_columns")

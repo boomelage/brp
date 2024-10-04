@@ -25,31 +25,16 @@ def test_heston_calibration(
             test_dataset.at[i,'w'] = 'put'
         else:
             test_dataset.at[i,'w'] = 'call'
-            
-    s = test_dataset['spot_price']
-    k = test_dataset['strike_price']
-    t = test_dataset['days_to_maturity']
-    volatility = test_dataset['volatility']
-    w = test_dataset['w']
-    v0 = heston_parameters['v0']
-    kappa = heston_parameters['kappa']
-    theta = heston_parameters['theta']
-    eta = heston_parameters['eta']
-    rho = heston_parameters['rho']
     
+    test_dataset['kappa'] = heston_parameters['kappa']
+    test_dataset['theta'] = heston_parameters['theta']
+    test_dataset['rho'] = heston_parameters['rho']
+    test_dataset['eta'] = heston_parameters['eta']
+    test_dataset['v0'] = heston_parameters['v0']
+    test_dataset['calculation_date'] = calculation_date
+    test_dataset['black_scholes'] = ms.vector_black_scholes(test_dataset)
     
-    expiration_dates = []
-    for mat in t:
-        expiration_dates.append(calculation_date + ql.Period(int(mat),ql.Days))
-
-    test_dataset['black_scholes'] = ms.vector_black_scholes(
-        s, k, t, r, volatility, w)
-    
-    test_dataset['ql_heston_price'] = ms.vector_heston_price(
-            s, k, t, r, g, w,
-            kappa,theta,rho,eta,v0,
-            calculation_date
-            )
+    test_dataset['ql_heston_price'] = ms.vector_heston_price(test_dataset)
     
     print_test = test_dataset[
         ['w', 'spot_price','strike_price', 'days_to_maturity', 

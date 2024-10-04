@@ -102,20 +102,7 @@ for rowi, row in historical_calibrated.iterrows():
     features['risk_free_rate'] = 0.04
     
     
-    features.loc[:,'heston_price'] = ms.vector_heston_price(
-                features['spot_price'],
-                features['strike_price'],
-                features['days_to_maturity'],
-                features['risk_free_rate'],
-                features['dividend_rate'],
-                features['w'],
-                features['kappa'],
-                features['theta'],
-                features['rho'],
-                features['eta'],
-                features['v0'],
-                features['calculation_date']
-        )
+    features['heston_price'] = ms.vector_heston_price(features)
     
     features = features[
         ['spot_price', 'strike_price', 'w', 'heston_price', 'days_to_maturity',
@@ -140,7 +127,7 @@ for rowi, row in historical_calibrated.iterrows():
 
     calls = features[features['w'] == 'call'].reset_index(drop=True)
     puts = features[features['w'] == 'put'].reset_index(drop=True)
-    
+    print(calls)
     with pd.HDFStore('SPX vanillas.h5') as store:
         try:
             store.append(

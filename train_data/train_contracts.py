@@ -50,6 +50,7 @@ except Exception:
         training_data.loc[:,'heston_price'])
 
 training_data = training_data[training_data['observed_price']>0]
+
 """
 # =============================================================================
 
@@ -92,11 +93,11 @@ type filter
 moneyness filter
 """
 
-# otm_lower = -0.2
-# otm_upper = -0.00
+otm_lower = -0.1
+otm_upper = -0.00
 
-# itm_lower =  0.00
-# itm_upper =  0.00
+itm_lower =  0.00
+itm_upper =  0.1
 
 
 # training_data = training_data[

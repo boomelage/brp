@@ -346,31 +346,37 @@ class model_settings():
     vectorized pricing functions
     """
     
-    def vector_black_scholes(self,
-            s,k,t,r,volatility,w
-            ):
+    def vector_black_scholes(self,df):
         vblack_scholes_price = np.vectorize(self.black_scholes_price)
-        
         black_scholes_prices = vblack_scholes_price(
-            s,k,t,r,volatility,w
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['volatility'],
+            df['w']
             )
         return black_scholes_prices
         
-    def vector_heston_price(self,
-            s,k,t,r,g,w,
-            kappa,theta,rho,eta,v0,
-            calculation_date
-            ):
+    def vector_heston_price(self,df):
         vql_heston_price = np.vectorize(self.ql_heston_price)
         heston_prices = vql_heston_price(
-            s,k,t,r,g,w,
-            kappa, theta, rho, eta, v0,
-            calculation_date
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['w'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0'],
+            df['calculation_date'],
             )
         return heston_prices
     
-    def vector_barrier_price(self,df
-            ):
+    def vector_barrier_price(self,df):
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
         barrier_prices = vql_barrier_price(
             df['spot_price'],
@@ -391,17 +397,24 @@ class model_settings():
             )
         return barrier_prices
     
-    def vector_bates_vanillas(self,
-            s,k,t,r,g,
-            kappa,theta,rho,eta,v0,
-            lambda_, nu, delta, calculation_date
-            ):
+    def vector_bates_vanillas(self,df):
         v_bates = np.vectorize(self.ql_bates_vanilla_price)
         
         bates_vanillas = v_bates(
-            s,k,t,r,g,
-            kappa,theta,rho,eta,v0,
-            lambda_, nu, delta, calculation_date
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0'],
+            df['lambda_'], 
+            df['nu'], 
+            df['delta'], 
+            df['calculation_date']
             )
         
         return bates_vanillas
