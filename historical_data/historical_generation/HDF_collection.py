@@ -13,8 +13,8 @@ os.chdir(current_dir)
 print("\nimporting data...\n")
 
 
-start_date = datetime.strptime("2000-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2031-01-10", "%Y-%m-%d")
+start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
+end_date = datetime.strptime("2007-01-10", "%Y-%m-%d")
 
 h5_file_path = 'SPX vanillas.h5'
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:

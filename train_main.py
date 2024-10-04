@@ -122,18 +122,21 @@ file_dir = os.path.join(current_dir,file_tag,file_tag)
 joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
+    
     file.write(f"\n{training_data}")
     file.write(f"\n{training_data.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
     file.write(f"\n\nstrikes:\n{K}\n")
     file.write(f"\nmaturities:\n{T}\n")
     file.write(f"\ntypes:\n{W}\n")
-    file.write(f"\n{training_data['moneyness_tag'].unique()}")
     try:
         file.write(f"\n{training_data['barrier_type_name'].unique()}")
     except Exception:
         pass
-    file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}")
-    file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
+    file.write("")
+    file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
+    file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
     file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
+    for spec in specs:
+        file.write(f"{spec}\n")
 pd.reset_option("display.max_columns")

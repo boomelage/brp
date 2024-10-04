@@ -132,7 +132,6 @@ pd.set_option("display.max_columns",None)
 print(f"\n{training_data}")
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
-print(f"\n{training_data['moneyness_tag'].unique()}")
 try:
     print(f"\n{training_data['barrier_type_name'].unique()}")
 except Exception:
