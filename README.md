@@ -72,7 +72,7 @@ Derman, E. (2008). Lecture 9: Patterns of Volatility Change.
 Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. 
 <br> https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
 
-Gavin, H., The Levenberg-Marquardt algorithm for nonlinear least squares curve-fitting problems. 
+Gavin, H. (2024) The Levenberg-Marquardt algorithm for nonlinear least squares curve-fitting problems. 
 <br> https://people.duke.edu/~hpgavin/lm.pdf
 
 Heston, S. (1993). A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options.
