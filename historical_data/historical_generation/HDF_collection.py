@@ -35,8 +35,8 @@ def collect_dataframes_from_h5(h5_file_path, start_date, end_date):
 
 
 h5_file_path = 'SPX barriers.h5'
-start_date = datetime.strptime("2006-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2013-02-01", "%Y-%m-%d")
+start_date = datetime.strptime("2006-02-01", "%Y-%m-%d")
+end_date = datetime.strptime("2020-02-10", "%Y-%m-%d")
 date_pattern = re.compile(r'date_(\d{4}_\d{2}_\d{2})')
 
 
@@ -50,7 +50,7 @@ contracts = collect_dataframes_from_h5(
 
 check = contracts[
     [
-     'spot_price','strike_price', 'w','days_to_maturity',
+      'spot_price','strike_price', 'w','days_to_maturity',
      
       'barrier','barrier_type_name','barrier_price',
 

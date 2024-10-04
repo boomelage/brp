@@ -68,10 +68,12 @@ bar = tqdm(
 for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
-    calc_dtdate = row['date']
+    calculation_datetime = row['date']
     
     calculation_date = ql.Date(
-        calc_dtdate.day,calc_dtdate.month,calc_dtdate.year)
+        calculation_datetime.day,
+        calculation_datetime.month,
+        calculation_datetime.year)
     
     r = 0.04 
     rebate = 0.
@@ -123,40 +125,16 @@ for rowi, row in historical_calibrated.iterrows():
         pd.to_numeric, errors='coerce')
     features = features.dropna()
     
-    features['calculation_date'] = datetime(
-        calculation_date.year(),
-        calculation_date.month(),
-        calculation_date.dayOfMonth()
-        )
-    features['calculation_date'] = features['calculation_date'].astype('datetime64[ns]')
-    
     features['calculation_date'] = calculation_date
     
-    features['barrier_price'] = ms.vector_barrier_price(
-            features['spot_price'],
-            features['strike_price'],
-            features['days_to_maturity'],
-            features['risk_free_rate'],
-            features['dividend_rate'],
-            features['calculation_date'],
-            features['w'],
-            features['barrier_type_name'],
-            features['barrier'],
-            features['rebate'],
-            features['kappa'],
-            features['theta'],
-            features['rho'],
-            features['eta'],
-            features['v0']
-        )
+    features['barrier_price'] = ms.vector_barrier_price(features)
     
+    features['calculation_date'] = calculation_datetime
 
-    features['expiration_date'] =  features[
-        'calculation_date'] + pd.to_timedelta(
+    features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
             
-    
-    h5_key = str('date_'+ calc_dtdate.strftime("%Y_%m_%d"))
+    h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
     calls = features[features['w'] == 'call']
     puts = features[features['w'] == 'put']
     with pd.HDFStore('SPX barriers.h5') as store:
@@ -166,8 +144,9 @@ for rowi, row in historical_calibrated.iterrows():
             store.append(
                 f'/put/{h5_key}', puts, format='table', append=True)
         except Exception as e:
-            print(store.get(f'/call/{h5_key}').dtypes)
-            print(calls.dtypes)  
+            print(f"\n{store.get(f'/call/{h5_key}').dtypes}")
+            print(f"\n{calls.dtypes}") 
+            
             raise KeyError(f"Error with key '{h5_key}': {e}")
                     
     bar.update(1)

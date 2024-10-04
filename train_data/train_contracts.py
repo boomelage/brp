@@ -48,6 +48,8 @@ try:
 except Exception:
     training_data.loc[:,'observed_price'] = ms.noisy_prices(
         training_data.loc[:,'heston_price'])
+
+training_data = training_data[training_data['observed_price']>0]
 """
 # =============================================================================
 
@@ -81,7 +83,7 @@ maturities filter
 type filter
 """
 
-training_data = training_data[training_data.loc[:,'w'] == 'put']
+# training_data = training_data[training_data.loc[:,'w'] == 'put']
 
 # training_data = training_data[training_data['barrier_type_name']=='DownOut']
 
@@ -114,7 +116,7 @@ moneyness filter
 # ]
 
 
-training_data = training_data[training_data['moneyness_tag'] != str('atm')]
+# training_data = training_data[training_data['moneyness_tag'] != str('atm')]
 
 
 """

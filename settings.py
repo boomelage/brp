@@ -369,19 +369,26 @@ class model_settings():
             )
         return heston_prices
     
-    def vector_barrier_price(self,
-            s,k,t,r,g,calculation_date, w,
-            barrier_type_name,barrier,rebate,
-            kappa,theta,rho,eta,v0
+    def vector_barrier_price(self,df
             ):
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
-        
         barrier_prices = vql_barrier_price(
-            s,k,t,r,g,calculation_date, w,
-            barrier_type_name,barrier,rebate,
-            kappa,theta,rho,eta,v0
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['calculation_date'], 
+            df['w'],
+            df['barrier_type_name'],
+            df['barrier'],
+            df['rebate'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0']
             )
-        
         return barrier_prices
     
     def vector_bates_vanillas(self,

@@ -31,8 +31,8 @@ class mlop:
         self.hidden_layer_sizes = (10,10,10)
         self.single_layer_size = 10
         self.solver = [
-                    "lbfgs",
-                    # "sgd", 
+                    # "lbfgs",
+                    "sgd", 
                     # "adam"
                     ]
         
@@ -71,15 +71,16 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            # 'barrier',
-            # 'risk_free_rate', 
-            # 'dividend_rate',
+            'barrier',
+            'risk_free_rate',
+            'dividend_rate',
             # 'moneyness', 
+            # 'kappa', 'theta', 'rho', 'eta', 'v0',
             ]
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -89,7 +90,7 @@ class mlop:
             
             # 'calculation_date', 'expiration_date',
             
-            # 'w'
+            'w'
             
             ]
         
@@ -104,8 +105,9 @@ class mlop:
             # ("Normalizer",Normalizer(),self.numerical_features),
             
             # ("OrdinalEncoder", OrdinalEncoder(),self.categorical_features),
-            # ("OneHotEncoder", OneHotEncoder(),self.categorical_features)
-
+            ("OneHotEncoder", OneHotEncoder(
+                sparse_output=False),self.categorical_features)
+            
             ]
         
         self.target_transformer_pipeline = Pipeline([
@@ -236,7 +238,6 @@ class mlop:
         return model_fit, dnn_runtime, specs
     
     def run_rf(self, preprocessor, train_X, train_y):
-        model_name = "Random Forest"
         specs = ["\n{model_name}",
         f"number of estimators: {self.rf_n_estimators}",
         f"minimum samples per leaf: {self.rf_min_samples_leaf}"]
@@ -264,9 +265,6 @@ class mlop:
         
         rf_end = time.time()
         rf_runtime = rf_end - rf_start
-        estimation_end_tag = str(datetime.fromtimestamp(
-            rf_end).strftime("%Y-%m-%d %H%M%S"))
-        joblib.dump(model_fit, str(f"{model_name} {estimation_end_tag}.pkl"))
         return model_fit, rf_runtime, specs
     
     def run_lm(self, train_X, train_y):

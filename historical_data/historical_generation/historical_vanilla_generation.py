@@ -135,6 +135,7 @@ for rowi, row in historical_calibrated.iterrows():
         ['calculation_date', 'expiration_date']
         ] = features[['calculation_date', 'expiration_date']].astype(str)
     
+    
     features['days_to_maturity'] = features['days_to_maturity'].astype('int64')
     
     hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
