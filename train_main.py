@@ -83,8 +83,8 @@ lasso regression
 
 
 """"""
-estimation_end_time = time.time()
-
+train_end = time.time()
+train_runtime = train_end-train_start
 """
 # =============================================================================
                                 model testing
@@ -93,54 +93,14 @@ estimation_end_time = time.time()
 stats = mlop.test_model(
     test_data, test_X, test_y, model_fit)
 
-# predictive_performance_plot = mlop.plot_model_performance(
-#     stats,runtime,title)
-
 
 """
 # =============================================================================
 """
 
-estimation_end_tag = str(datetime.fromtimestamp(
-    estimation_end_time).strftime(
-        "%Y-%m-%d %H%M%S")
-        )
-file_name = str(
-    model_name + " " + estimation_end_tag + f" ser{np.random.randint(1,999)}"
-    )
-
 sqdifference = (stats['prediciton']-stats['target'])**2
 absdifference = np.abs(stats['prediciton']-stats['target'])
-
 RSME = np.sqrt(np.average(sqdifference))
-
 MAE = np.average(absdifference)
-
-# def save_model():
-#     joblib.dump(model_fit,str(f"{file_name}.pkl"))
-#     pd.set_option("display.max_columns",None)
-#     with open(f"{file_name}.txt", "w") as f:
-#         f.write(f"\n{dataset}\n")
-#         f.write(f"\n{dataset.describe()}\n")
-#         f.write(
-#             f"\nspot(s):\n{train_contracts.S}\n\nstrikes:\n{train_contracts.K}\n\n")
-#         f.write(f"maturities:\n{train_contracts.T}\n\ntypes:\n{train_contracts.W}\n")
-#         f.write(f"\n{dataset['moneyness_tag'].unique()}\n")
-#         try:
-#             f.write(f"\n{dataset['barrier_type_name'].unique()}")
-#         except Exception:
-#             pass
-#         f.write(f"\nmoneyness:\n{np.sort(dataset['moneyness'].unique())}\n")
-#         f.write("\nnumber of calls, puts:")
-#         f.write("\n{train_contracts.n_calls},{train_contracts.n_puts}\n")
-#         f.write(f"\ninitial count:\n{train_contracts.initial_count}\n")
-#         f.write(f"\ntotal prices:\n{dataset.shape[0]}\n")
-#         f.write(f"\n{stats.describe()}\n")
-#         f.write(f"\nRSME: {RSME}\n MAE: {MAE}")
-#         for spec in specs:
-#             f.write(f"\n{spec}")
-#     pd.reset_option("display.max_columns")
-
-
-
-
+print(f"\nRSME: {RSME}\nMAE: {MAE}")
+print(f"\ntrain runtime: {round(train_runtime,3)} seconds")

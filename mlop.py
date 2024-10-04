@@ -311,10 +311,10 @@ class mlop:
         test_count = int(descriptive_stats['count'])
         descriptive_stats = descriptive_stats[1:]
         pd.set_option('display.float_format', '{:.10f}'.format)
-        print(
-            f"\nresults:\n--------\ntest data count: {test_count}"
-            f"\n{descriptive_stats}\n"
-            )
+        # print(
+        #     f"\nresults:\n--------\ntest data count: {test_count}"
+        #     f"\n{descriptive_stats}\n"
+        #     )
         pd.reset_option('display.float_format')
         
         return training_results
