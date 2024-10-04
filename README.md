@@ -53,7 +53,7 @@ $$
 <br>
 
 ## 2.3 Assumptions
-While the specification in $$(1)$$ and $$(1.1)$$ is flexible enough to permit stochastic volatility with correlation between the asset process and its variance process, we make a limiting assumption around the topological nature of the volatility surface being constant with $$(2)$$. To mediate this, a potential solution is to collect historical volatility term strucutre data where available and recalibrate the volatility gradient coefficients $$b$$ periodically throughout the historical simulation procedure.
+While the specification in $$(1)$$ and $$(1.1)$$ is flexible enough to permit stochastic volatility with correlation between the asset process and its variance process, we make a limiting assumption around the topological nature of the volatility surface being constant with $$(2)$$.
 
 # 3. Neural Network Specification
 ## 3.1 Scope
