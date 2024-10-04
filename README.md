@@ -6,6 +6,7 @@ An empirical approach based on market data
 2. [Pricing Model Specification](#pricing-model-specification)
    - 2.1 [Pricing Model](#pricing-model)
    - 2.2 [Volatility Estimation](#volatility-estimation)
+   - 2.3 [Assumptions](#Assumptions)
 3. [Machine Learning Model Specification](#machine-leanring-model-specification)
    - 3.1 [Scope](#scope)
 5. [References](#references)
@@ -51,10 +52,12 @@ $$
 
 <br>
 
+## 2.3 Assumptions
+While the specification in $$(1)$$ and $$(1.1)$$ is flexible enough to permit stochastic volatility with correlation between the asset process and its variance process, we make a limiting assumption around the topological nature of the volatility surface being constant with $$(2)$$. To mediate this, a potential solution is to collect historical volatility term strucutre data where available and recalibrate the volatility gradient coefficients $$b$$ periodically throughout the historical simulation procedure.
 
 # 3. Neural Network Specification
 ## 3.1 Scope
-The scope of our proposed historical simulation method is to test whether machine learning estimations of pricing functions can reliably price large volumes of exotic options in as close of a realistic trading scenario as our methods permit. The main considerations will be around frequency of retraining and choice of model features. In all cases, the model will have the minimum of four features: underlying spot price, strike price, days to maturity, and a categorical 'put'/'call' flag classified with one hot encoding. Further, the model will include the additionals features of barrier level and barrier type and potentially Heston pricing parameters. Following this, the model will be extended to Asian arithmetic and geometric options with similar considerations.
+The scope of our proposed historical simulation method is to test whether machine learning estimations of pricing functions can reliably price large volumes of exotic options in as close of a realistic trading scenario as our methods permit. The main considerations will be around frequency of retraining and choice of model features. In all cases, the model will have the minimum of four features: underlying spot price, strike price, days to maturity, and a categorical 'put'/'call' flag classified via one-hot-encoding. Further, the model will include the additional features of barrier level and barrier type and potentially Heston pricing parameters. Later, the model will be extended to Asian arithmetic and geometric options with similar considerations.
  <br>
  <br>
 Another major consideration will be that of data management and training data selection. With vast amounts of data available by virtue of the generation method, it is possible that finding the correct selection criteria may depend on multiple factors, lowering the model's flexibility. For pricing performance, the Root Square Mean Error and Mean Absolute Error metrics will be used.
