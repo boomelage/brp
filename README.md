@@ -3,12 +3,12 @@ An empirical approach based on market data
 
 # Table of Contents
 1. [Introduction](#introduction)
-2. [Model Specification](#model-specification)
+2. [Pricing Model Specification](#pricing-model-specification)
    - 2.1 [Pricing Model](#pricing-model)
    - 2.2 [Volatility Estimation](#volatility-estimation)
    - 2.3 [Calibration Procedure](#calibration-procedure)
-3. [Machine Learning Model Specification]
-   * 3.1 [Scope](#scope)
+3. [Machine Learning Model Specification](#machine-leanring-model-specification)
+   - 3.1 [Scope](#scope)
 5. [References](#references)
 
 
