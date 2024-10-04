@@ -13,8 +13,6 @@ os.chdir(current_dir)
 date_pattern = re.compile(r'date_(\d{4}_\d{2}_\d{2})')
 
 
-
-
 def collect_dataframes_from_h5(h5_file_path, start_date, end_date):
     contracts = pd.DataFrame()
     with pd.HDFStore(h5_file_path, 'r') as hdf_store:
