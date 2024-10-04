@@ -98,8 +98,8 @@ stats = mlop.test_model(
 # =============================================================================
 """
 
-sqdifference = (stats['prediciton']-np.mean(stats['target']))**2
-absdifference = np.abs(stats['prediciton']-np.mean(stats['target']))
+sqdifference = (stats['prediciton']-stats['target'])**2
+absdifference = np.abs(stats['prediciton']-stats['target'])
 RSME = np.sqrt(np.average(sqdifference))
 MAE = np.average(absdifference)
 print(f"\nRSME: {RSME}\nMAE: {MAE}")

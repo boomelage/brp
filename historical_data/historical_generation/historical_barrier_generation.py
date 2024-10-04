@@ -83,7 +83,7 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*0.9,
         s*1.1,
-        10
+        50
         )
     T = [
         60,
