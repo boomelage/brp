@@ -4,10 +4,12 @@ An empirical approach based on market data
 # Table of Contents
 1. [Introduction](#introduction)
 2. [Model Specification](#model-specification)
-   * 2.1 [Pricing Model](#pricing-model)
-   * 2.2 [Volatility Estimation](#volatility-estimation)
-   * 2.3 [Calibration Procedure](#calibration-procedure)
-3. [References](#references)
+   - 2.1 [Pricing Model](#pricing-model)
+   - 2.2 [Volatility Estimation](#volatility-estimation)
+   - 2.3 [Calibration Procedure](#calibration-procedure)
+3. [Machine Learning Model Specification]
+   * 3.1 [Scope](#scope)
+5. [References](#references)
 
 
 # 1. Introduction
@@ -19,7 +21,7 @@ The data generation method proposed is an extension of that in Frey et al. (2022
 Following this eniqury into the felixbility of this method, it was considered whether ScikitLearn Neural Network models could be used to price path-dependent exotic options. Thus, we aim to generalize a data generation routine utilising generic at-the-money volatilites which will allow us to train the model on data strictly adhering to desired market conditions while allowing for accurately calibrated stochastic volatility for each trading day simulated in part.
 
 
-# 2. Model Specification
+# 2. Pricing Model Specification
 ## 2.1 Pricing Model
 
 To model the logarithmic price of our underlying security, we use the Heston (1993) model, described by the pair of stochastic differential equations:
@@ -42,7 +44,7 @@ where
 - $B_t$ , $W_t$ are continuous random walks. 
 
 ## 2.2 Volatility Estimation
-The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as proposed by Derman (2008):
+The model becomes suitable for fitting to our proposed method via approximation of implied volatilities as devised by Derman (2008):
 
 $$
 \hspace{1cm} \sigma(K, t_0) = \sigma_{\text{atm}}(S_0, t_0) - b(t_0)(K - S_0) \hspace{1cm} \quad (2)
@@ -50,7 +52,14 @@ $$
 
 <br>
 
-# 3. References
+
+# 3. Neural Network Specification
+## 3.1 Scope
+The scope of our proposed historical simulation method is to test whether machine learning estimations of pricing functions can reliably price large volumes of exotic options in as close of a realistic trading scenario as our methods permit. The main considerations will be around frequency of retraining and choice of model features. In all cases, the model will have the minimum of four features: underlying spot price, strike price, days to maturity, and a categorical 'put'/'call' flag classified with one hot encoding. Further, the model will include features such as barrier level and barrier type. Following this the model will be extended to Asian arithmetic and geometric options.
+ <br>
+
+
+# 4. References
 Blanda, V. (2023). FX Barrier Option Pricing. Available at: https://www.imperial.ac.uk/media/imperial-college/faculty-of-natural-sciences/department-of-mathematics/math-finance/212252650---VALENTIN-BLANDA---BLANDA_VALENTIN_02293988.pdf
 
 Derman, E. (2008). Lecture 9: Patterns of Volatility Change. Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
