@@ -156,16 +156,12 @@ class model_settings():
         elif w == 'put':
             w = -1
         else:
-            raise KeyError('simple black scholes put/call flag error')
+            raise ValueError("call/put flag w sould be either 'call' or 'put'")            
         d1 = (
             np.log(s/k)+(r+volatility**2/2)*t/365
-            )/(
-                volatility*np.sqrt(t/365)
-                )
+            )/(volatility*np.sqrt(t/365))
         d2 = d1-volatility*np.sqrt(t/365)
-        
         price = w*(s*norm.cdf(w*d1)-k*np.exp(-r*t/365)*norm.cdf(w*d2))
-        
         return price
     
     def ql_black_scholes(self,
@@ -179,8 +175,8 @@ class model_settings():
         elif w == 'put':
             option_type = ql.Option.Put
         else:
-            raise KeyError("quantlib black scholes flag error")
-        
+            raise ValueError("call/put flag w sould be either 'call' or 'put'")
+            
         ql.Settings.instance().evaluationDate = calculation_date
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
@@ -190,7 +186,6 @@ class model_settings():
                 self.day_count, self.compounding, self.frequency
                 )
             )
-        
         initialValue = ql.QuoteHandle(ql.SimpleQuote(s))
         
         volTS = ql.BlackVolTermStructureHandle(
@@ -201,7 +196,6 @@ class model_settings():
                 self.day_count
                 )
             )
-
         process = ql.BlackScholesProcess(
             initialValue, ts_r, volTS)
         
@@ -229,8 +223,8 @@ class model_settings():
         elif w == 'put':
             option_type = ql.Option.Put
         else:
-            raise KeyError('quantlib heston put/call error')
-
+            raise ValueError("call/put flag w sould be either 'call' or 'put'")
+            
         payoff = ql.PlainVanillaPayoff(option_type, k)
         exercise = ql.EuropeanExercise(expiration_date)
         european_option = ql.VanillaOption(payoff, exercise)
@@ -279,8 +273,8 @@ class model_settings():
         elif w == 'put':
             option_type = ql.Option.Put
         else:
-            raise KeyError("quantlib black scholes flag error")
-        
+            raise ValueError("call/put flag w sould be either 'call' or 'put'")
+            
         if barrier_type_name == 'UpOut':
             barrierType = ql.Barrier.UpOut
         elif barrier_type_name == 'DownOut':
@@ -347,6 +341,25 @@ class model_settings():
     """
     
     def vector_black_scholes(self,df):
+        """
+        
+
+        Parameters
+        ----------
+        df : pandas dataframe
+                
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['volatility'],
+            df['w']
+
+        Returns
+        -------
+        black_scholes_prices : TYPE
+        
+        """
         vblack_scholes_price = np.vectorize(self.black_scholes_price)
         black_scholes_prices = vblack_scholes_price(
             df['spot_price'],
@@ -359,6 +372,31 @@ class model_settings():
         return black_scholes_prices
         
     def vector_heston_price(self,df):
+        """
+
+        Parameters
+        ----------
+        df : pandas dataframe
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['w'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0'],
+            df['calculation_date'].
+
+        Returns
+        -------
+        heston_prices : pandas dataframe
+
+
+
+        """
         vql_heston_price = np.vectorize(self.ql_heston_price)
         heston_prices = vql_heston_price(
             df['spot_price'],
@@ -372,11 +410,39 @@ class model_settings():
             df['rho'],
             df['eta'],
             df['v0'],
-            df['calculation_date'],
+            df['calculation_date']
             )
         return heston_prices
     
     def vector_barrier_price(self,df):
+        """
+        
+
+        Parameters
+        ----------
+        df : pandas dataframe
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['calculation_date'], 
+            df['w'],
+            df['barrier_type_name'],
+            df['barrier'],
+            df['rebate'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0']
+            
+        Returns
+        -------
+        barrier_prices : pandas dataframe
+
+
+        """
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
         barrier_prices = vql_barrier_price(
             df['spot_price'],
@@ -398,8 +464,34 @@ class model_settings():
         return barrier_prices
     
     def vector_bates_vanillas(self,df):
-        v_bates = np.vectorize(self.ql_bates_vanilla_price)
+        """
         
+
+        Parameters
+        ----------
+        df : pandas dataframe
+            df['spot_price'],
+            df['strike_price'],
+            df['days_to_maturity'],
+            df['risk_free_rate'],
+            df['dividend_rate'],
+            df['kappa'],
+            df['theta'],
+            df['rho'],
+            df['eta'],
+            df['v0'],
+            df['lambda_'], 
+            df['nu'], 
+            df['delta'], 
+            df['calculation_date']
+
+        Returns
+        -------
+        bates_vanillas : pandas dataframe
+            
+
+        """
+        v_bates = np.vectorize(self.ql_bates_vanilla_price)
         bates_vanillas = v_bates(
             df['spot_price'],
             df['strike_price'],
@@ -416,7 +508,6 @@ class model_settings():
             df['delta'], 
             df['calculation_date']
             )
-        
         return bates_vanillas
         
     """

@@ -148,6 +148,7 @@ for rowi, row in historical_calibrated.iterrows():
             print(f"\n{calls.dtypes}") 
             
             raise KeyError(f"Error with key '{h5_key}': {e}")
-                    
+
     bar.update(1)
 bar.close()
+

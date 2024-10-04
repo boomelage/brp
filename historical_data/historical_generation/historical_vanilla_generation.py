@@ -64,7 +64,7 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*(1-spread),
         s*(1+spread),
-        3#int((s-s*(1-spread*2))*3)
+        int((s-s*(1-spread*2))*3)
         )
     
     T = np.arange(30,360,30)
