@@ -63,14 +63,17 @@ The scope of our proposed historical simulation method is to test whether machin
 Another major consideration will be that of data management and training data selection. With vast amounts of data available by virtue of the generation method, it is possible that finding the correct selection criteria may depend on multiple factors, lowering the model's flexibility. For pricing performance, the Root Square Mean Error and Mean Absolute Error metrics will be used.
 
 # 4. References
-Blanda, V. (2023). FX Barrier Option Pricing. Available at: https://www.imperial.ac.uk/media/imperial-college/faculty-of-natural-sciences/department-of-mathematics/math-finance/212252650---VALENTIN-BLANDA---BLANDA_VALENTIN_02293988.pdf
+Blanda, V. (2023). FX Barrier Option Pricing. 
+<br> https://www.imperial.ac.uk/media/imperial-college/faculty-of-natural-sciences/department-of-mathematics/math-finance/212252650---VALENTIN-BLANDA---BLANDA_VALENTIN_02293988.pdf
 
-Derman, E. (2008). Lecture 9: Patterns of Volatility Change. Available at: https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
+Derman, E. (2008). Lecture 9: Patterns of Volatility Change.
+<br> https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
 
 Frey, C., Scheuch, C., Voigt, S. and Weiss, P. (2022). Option Pricing via Machine Learning with Python. Tidy Finance. 
-Available at: https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
+<br> https://www.tidy-finance.org/python/option-pricing-via-machine-learning.html
 
-Gavin, H., The Levenberg-Marquardt algorithm for nonlinear least squares curve-fitting problems. Available at: https://people.duke.edu/~hpgavin/lm.pdf
+Gavin, H., The Levenberg-Marquardt algorithm for nonlinear least squares curve-fitting problems. 
+<br> https://people.duke.edu/~hpgavin/lm.pdf
 
 Heston, S. (1993). A Closed-Form Solution for Options with Stochastic Volatility with Applications to Bond and Currency Options.
-Available at: https://www.ma.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/Heston.pdf
+<br> https://www.ma.imperial.ac.uk/~ajacquie/IC_Num_Methods/IC_Num_Methods_Docs/Literature/Heston.pdf
