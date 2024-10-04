@@ -55,9 +55,10 @@ $$
 
 # 3. Neural Network Specification
 ## 3.1 Scope
-The scope of our proposed historical simulation method is to test whether machine learning estimations of pricing functions can reliably price large volumes of exotic options in as close of a realistic trading scenario as our methods permit. The main considerations will be around frequency of retraining and choice of model features. In all cases, the model will have the minimum of four features: underlying spot price, strike price, days to maturity, and a categorical 'put'/'call' flag classified with one hot encoding. Further, the model will include features such as barrier level and barrier type. Following this the model will be extended to Asian arithmetic and geometric options.
+The scope of our proposed historical simulation method is to test whether machine learning estimations of pricing functions can reliably price large volumes of exotic options in as close of a realistic trading scenario as our methods permit. The main considerations will be around frequency of retraining and choice of model features. In all cases, the model will have the minimum of four features: underlying spot price, strike price, days to maturity, and a categorical 'put'/'call' flag classified with one hot encoding. Further, the model will include the additionals features of barrier level and barrier type and potentially Heston pricing parameters. Following this the model will be extended to Asian arithmetic and geometric options with similar considerations.
  <br>
-
+ <br>
+Another major consideration will be that of data management and training data selection. With vast amounts of data available by virtue of the generation method, it is possible that finding the correct selection criteria may depend on multiple factors, lowering the model's flexibility. For pricing performance, the Root Square Mean Error and Mean Absolute Error metrics will be used.
 
 # 4. References
 Blanda, V. (2023). FX Barrier Option Pricing. Available at: https://www.imperial.ac.uk/media/imperial-college/faculty-of-natural-sciences/department-of-mathematics/math-finance/212252650---VALENTIN-BLANDA---BLANDA_VALENTIN_02293988.pdf
