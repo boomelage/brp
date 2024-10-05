@@ -14,6 +14,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 from mlop import mlop
 sys.path.append(os.path.join(current_dir,'train_data'))
+sys.path.append(os.path.join(
+    current_dir,
+    'historical_data',
+    'historical_generation'))
 pd.set_option("display.max_columns",None)
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
@@ -27,44 +31,35 @@ print("\n"+"#"*18+"\n# training start #\n"+
                                 importing data
 """
 
-from train_contracts import training_data
+from HDF_collection import contracts
 
-dataset = training_data.copy()
+dataset = contracts.copy()
 mlop = mlop(user_dataset = dataset)
 
 """
 # =============================================================================
                             preprocessing data
 """
-# train_start_date = datetime(2009,4,2)
-# train_end_date = datetime(2020,3,31)
-# test_start_date= datetime(2007,10,1)
-# test_end_date = datetime(2009,4,1)
+train_data = dataset[
+    (
+      (dataset['calculation_date']>=datetime(2007,10,1))&
+      (dataset['calculation_date']<=datetime(2009,4,1))
+      )]
+test_data = dataset[
+    (
+      (dataset['calculation_date']>=datetime(2009,4,2))&
+      (dataset['calculation_date']<=datetime(2012,12,31))
+      )]
 
-# train_data = dataset[
-#     (
-#      (dataset['calculation_date']>=train_start_date)&
-#      (dataset['calculation_date']<=train_end_date)
-#      )]
-# test_data = dataset[
-#     (
-#      (dataset['calculation_date']>=test_start_date)&
-#      (dataset['calculation_date']<=test_end_date)
-#      )]
+train_X, train_y, test_X, test_y = mlop.split_data_manually(
+    train_data, test_data)
 
-# print(
-#     f"\ntrain data:\n{train_data.describe()}\ntest data: \n"
-#     f"{test_data.describe()}")
-
-# train_X, train_y, test_X, test_y = mlop.split_data_manually(
-#     train_data, test_data)
-
-train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data()
+# train_data, train_X, train_y, \
+#     test_data, test_X, test_y = mlop.split_user_data()
 
 preprocessor = mlop.preprocess()
 
-print(f"\ntrain data count:\n{int(train_data.shape[0])}")
+print(f"\ntrain data:\n{int(train_data.describe())}\n")
 
 """
 # =============================================================================
@@ -120,12 +115,12 @@ insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(
 # =============================================================================
 """
 
-S = np.sort(training_data['spot_price'].unique())
-K = np.sort(training_data['strike_price'].unique())
-T = np.sort(training_data['days_to_maturity'].unique())
-W = np.sort(training_data['w'].unique())
-n_calls = training_data[training_data['w']=='call'].shape[0]
-n_puts = training_data[training_data['w']=='put'].shape[0]
+S = np.sort(contracts['spot_price'].unique())
+K = np.sort(contracts['strike_price'].unique())
+T = np.sort(contracts['days_to_maturity'].unique())
+W = np.sort(contracts['w'].unique())
+n_calls = contracts[contracts['w']=='call'].shape[0]
+n_puts = contracts[contracts['w']=='put'].shape[0]
 
 train_end_tag = str(datetime.fromtimestamp(
     train_end).strftime("%Y_%m_%d %H%M%S"))
@@ -139,24 +134,32 @@ joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
-    file.write(f"\n{training_data}")
-    file.write(f"\n{training_data.describe()}\n")
+    file.write(f"\n{contracts}")
+    file.write(f"\n{contracts.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
     file.write(f"\n\nstrikes:\n{K}\n")
     file.write(f"\nmaturities:\n{T}\n")
     file.write(f"\ntypes:\n{W}\n")
     try:
-        file.write(f"\n{training_data['barrier_type_name'].unique()}")
+        file.write(f"\n{contracts['barrier_type_name'].unique()}")
     except Exception:
         pass
     file.write("")
     file.write(
-        f"\n\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
+        f"\n\nmoneyness:\n{np.sort(contracts['moneyness'].unique())}\n")
     file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
-    file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
+    file.write(f"\ntotal prices:\n{contracts.shape[0]}\n")
     for spec in specs:
         file.write(f"{spec}\n")
     file.write(
         f"\ntrain data:\n{train_data.describe()}\n\ntest data: \n"
         f"{test_data.describe()}")
+    file.write(
+        f"\nin sample results:"
+        f"\n     RMSE: {errors['insample_RMSE']}"
+        f"\n     MAE: {errors['insammple_MAE']}"
+        f"\nout of sample results:"
+        f"\n     RMSE: {errors['outofsample_RMSE']}"
+        f"\n     MAE: {errors['outofsample_MAE']}\n"
+        )
 pd.reset_option("display.max_columns")

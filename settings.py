@@ -25,6 +25,14 @@ class model_settings():
         self.calendar           =    ql.UnitedStates(m=1)
         self.compounding        =    ql.Continuous
         self.frequency          =    ql.Annual
+        self.settings_names_dictionary = {
+            ql.Continuous : 'continuous',
+            ql.Annual     : 'annual'
+            }
+        print(f"\npricing settings:\n{self.today}\n{self.day_count}"
+              f"\n{self.calendar}\ncompounding: "
+              f"{self.settings_names_dictionary[self.compounding]}"
+              f"\nfrequency: {self.settings_names_dictionary[self.frequency]}")
         
     """
     QuantLib time tools
