@@ -40,27 +40,38 @@ mlop = mlop(user_dataset = dataset)
 # =============================================================================
                             preprocessing data
 """
-train_data = dataset[
-    (
-      (dataset['calculation_date']>=datetime(2007,10,1))&
-      (dataset['calculation_date']<=datetime(2009,4,1))
-      )]
-test_data = dataset[
-    (
-      (dataset['calculation_date']>=datetime(2009,4,2))&
-      (dataset['calculation_date']<=datetime(2012,12,31))
-      )]
+# train_data = dataset[
+#     (
+#       (dataset['calculation_date']>=datetime(2007,10,1))&
+#       (dataset['calculation_date']<=datetime(2009,4,1))
+#       )]
 
-train_X, train_y, test_X, test_y = mlop.split_data_manually(
-    train_data, test_data)
+# test_data = dataset[
+#     (
+#       (dataset['calculation_date']>=datetime(2009,4,2))&
+#       (dataset['calculation_date']<=datetime(2009,12,31))
+#       )]
 
-# train_data, train_X, train_y, \
-#     test_data, test_X, test_y = mlop.split_user_data()
+# train_X, train_y, test_X, test_y = mlop.split_data_manually(
+#     train_data, test_data)
+
+
+
+"""
+random train/test split
+"""
+train_data, train_X, train_y, \
+    test_data, test_X, test_y = mlop.split_user_data()
+""""""
+
 
 preprocessor = mlop.preprocess()
 
-print(f"\ntrain data:\n{int(train_data.describe())}\n")
-
+pd.set_option("display.max_columns",None)
+print("#"*17+"\n# training data #\n"+"#"*17+
+      f"\n{train_data.describe()}\n")
+print("#"*13+"\n# test data #\n"+"#"*13+
+      f"\n{test_data.describe()}\n")
 """
 # =============================================================================
                               model selection                
@@ -151,26 +162,17 @@ with open(f'{file_dir}.txt', 'w') as file:
     file.write(f"\ntotal prices:\n{contracts.shape[0]}\n")
     for spec in specs:
         file.write(f"{spec}\n")
-    file.write(
-        f"\ntrain data:\n{train_data.describe()}\n\ntest data: \n"
-        f"{test_data.describe()}")
+    file.write("#"*17+"\n# training data #\n"+"#"*17+
+          f"\n{train_data.describe()}\n")
+    file.write("#"*13+"\n# test data #\n"+"#"*13+
+          f"\n{test_data.describe()}\n"))
     file.write(
         f"\nin sample results:"
         f"\n     RMSE: {errors['insample_RMSE']}"
-        f"\n     MAE: {errors['insammple_MAE']}"
+        f"\n     MAE: {errors['insample_MAE']}\n"
         f"\nout of sample results:"
         f"\n     RMSE: {errors['outofsample_RMSE']}"
         f"\n     MAE: {errors['outofsample_MAE']}\n"
         )
 pd.reset_option("display.max_columns")
 
-import matplotlib.pyplot as plt
-
-plt.hist(train_y,bins=100)
-plt.hist(insample_results['prediction'],bins=100)
-
-plt.hist(test_y,bins=100)
-plt.hist(outofsample_results['prediction'],bins=100)
-
-plt.cla()
-plt.clf()

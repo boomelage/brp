@@ -22,7 +22,7 @@ os.chdir(current_dir)
 print("\nimporting dataset(s)...\n")
 
 start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2007-01-31", "%Y-%m-%d")
+end_date = datetime.strptime("2007-01-5", "%Y-%m-%d")
 
 h5_file_path = 'SPX vanillas.h5'
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
@@ -38,7 +38,7 @@ filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
 filtered_keys.tolist()
 
 
-LOADING_KEYS = keys
+LOADING_KEYS = filtered_keys
 
 
 bar = tqdm(desc='loading',total=len(LOADING_KEYS))
@@ -69,6 +69,10 @@ contracts.loc[:,'moneyness'] = ms.vmoneyness(
     )
 
 
+contracts = contracts[
+    ((contracts['moneyness'] <= 0.1) & (contracts['moneyness'] >= -0.1))
+    ]
+
 contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
 
 contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
@@ -77,11 +81,11 @@ contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
         
 check = contracts[
     [
-      'spot_price','strike_price', 'w','days_to_maturity',
+        'spot_price','strike_price', 'w','days_to_maturity',
      
         # 'barrier','barrier_type_name','barrier_price',
 
-        'heston_price',
+        'heston_price'
       ]
     ]
 
@@ -94,6 +98,8 @@ check.columns = [
     'price'
     
     ]
+
+contracts = contracts.reset_index(drop=True)
 
 pd.reset_option("display.max_rows")
 pd.set_option("display.max_columns",None)

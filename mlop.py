@@ -348,8 +348,8 @@ class mlop:
         insample_results = train_data.copy()
         insample_results['in_sample_prediction'] = insample_prediction 
         
-        outofsample_results = train_data.copy()
-        outofsample_results['in_sample_prediction'] = insample_prediction
+        outofsample_results = test_data.copy()
+        outofsample_results['outofsample_prediction'] = outofsample_prediction
         
         errors = pd.Series(
             [

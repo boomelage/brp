@@ -550,8 +550,3 @@ class model_settings():
         
         
         
-        
-        
-        
-        
-        
