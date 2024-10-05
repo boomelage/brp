@@ -40,16 +40,23 @@ mlop = mlop(user_dataset = dataset)
 # =============================================================================
                             preprocessing data
 """
+
+unique_dates = dataset['calculation_date'].unique().tolist()
+date75 = unique_dates[int(0.75*len(unique_dates))]
+date75
+
 train_data = dataset[
     (
-      (dataset['calculation_date']>=datetime(2007,10,1))&
-      (dataset['calculation_date']<=datetime(2009,4,1))
+      # (dataset['calculation_date']>=datetime(2007,1,1))
+      #  &
+       (dataset['calculation_date']<=date75)
       )]
 
 test_data = dataset[
     (
-      (dataset['calculation_date']>=datetime(2009,4,2))&
-      (dataset['calculation_date']<=datetime(2009,12,31))
+      (dataset['calculation_date']>date75)
+      # &
+      # (dataset['calculation_date']<=datetime(2012,12,31))
       )]
 
 train_X, train_y, test_X, test_y = mlop.split_data_manually(
@@ -134,6 +141,8 @@ train_runtime = train_end-train_start
 # =============================================================================
                                 model testing
 """
+pd.set_option("display.max_columns",None)
+print()
 print("#"*13+"\n# test data #\n"+"#"*13+
       f"\n{test_data.describe()}\n")
 insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(

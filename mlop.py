@@ -341,9 +341,12 @@ class mlop:
         outofsample_sqerror = (outofsample_prediction-test_y)**2
         outofsample_RMSE = np.sqrt(np.average(outofsample_sqerror))
         outofsample_MAE = np.average(outofsample_abserror)
-        print(f"\ninsample:\nRSME: {insample_RMSE}\nMAE: {insample_MAE}")
-        print(f"\noutofsample:\nRSME: {outofsample_RMSE}"
-              f"\nMAE: {outofsample_MAE}")
+        print("\nin sample:"
+              f"\n     RSME: {insample_RMSE}"
+              f"\n     MAE: {insample_MAE}")
+        print("\nout of sample:"
+              f"\n     RSME: {outofsample_RMSE}"
+              f"\n     MAE: {outofsample_MAE}")
         
         insample_results = train_data.copy()
         insample_results['in_sample_prediction'] = insample_prediction 

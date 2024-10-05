@@ -40,8 +40,9 @@ h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
     keys = hdf_store.keys()
+    
+    
 # keys = pd.Series(keys)
-
 # date_pattern = r"(\d{4}_\d{2}_\d{2})"
 # extracted_dates = keys.str.extract(date_pattern, expand=False)
 # keys_dates = pd.to_datetime(
@@ -98,5 +99,4 @@ contracts['expiration_date'] = pd.to_datetime(
 
 pd.set_option("display.max_columns",None)
 print(f"\n{contracts.describe()}")
-
 

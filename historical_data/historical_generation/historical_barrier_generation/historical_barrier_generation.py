@@ -122,7 +122,7 @@ for rowi, row in historical_calibrated.iterrows():
     features['rebate'] = rebate
     features['dividend_rate'] = row['dividend_rate']
     features['risk_free_rate'] = r
-    
+
     
     features.describe()
     param_names = ['theta', 'kappa', 'rho', 'eta', 'v0']
