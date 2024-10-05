@@ -39,8 +39,16 @@ mlop = mlop(user_dataset = dataset)
 """
 # =============================================================================
                             preprocessing data
-"""
 
+random train/test split
+"""
+# train_data, train_X, train_y, \
+#     test_data, test_X, test_y = mlop.split_user_data()
+""""""
+
+"""
+manual train/test split
+"""
 unique_dates = dataset['calculation_date'].unique().tolist()
 date75 = unique_dates[int(0.75*len(unique_dates))]
 date75
@@ -62,13 +70,6 @@ test_data = dataset[
 train_X, train_y, test_X, test_y = mlop.split_data_manually(
     train_data, test_data)
 
-
-"""
-random train/test split
-"""
-# train_data, train_X, train_y, \
-#     test_data, test_X, test_y = mlop.split_user_data()
-""""""
 
 
 preprocessor = mlop.preprocess()
