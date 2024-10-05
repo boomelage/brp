@@ -364,7 +364,7 @@ class model_settings():
 
         Returns
         -------
-        black_scholes_prices : TYPE
+        black_scholes_prices : numpy array
         
         """
         vblack_scholes_price = np.vectorize(self.black_scholes_price)
@@ -399,7 +399,7 @@ class model_settings():
 
         Returns
         -------
-        heston_prices : pandas dataframe
+        heston_prices: numpy array
 
 
 
@@ -446,7 +446,7 @@ class model_settings():
             
         Returns
         -------
-        barrier_prices : pandas dataframe
+        barrier_prices : numpy array
 
 
         """
@@ -494,7 +494,7 @@ class model_settings():
 
         Returns
         -------
-        bates_vanillas : pandas dataframe
+        bates_vanillas : numpy array
             
 
         """
