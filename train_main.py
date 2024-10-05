@@ -139,7 +139,6 @@ joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
-    
     file.write(f"\n{training_data}")
     file.write(f"\n{training_data.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
