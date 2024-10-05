@@ -36,10 +36,10 @@ mlop = mlop(user_dataset = dataset)
 # =============================================================================
                             preprocessing data
 """
-train_start_date = datetime(2007,1,1)
-train_end_date = datetime(2007,3,31)
-test_start_date= datetime(2007,3,1)
-test_end_date = datetime(2020,1,1)
+train_start_date = datetime(2009,4,2)
+train_end_date = datetime(2020,3,31)
+test_start_date= datetime(2007,10,1)
+test_end_date = datetime(2009,4,1)
 
 train_data = dataset[
     (
@@ -52,10 +52,12 @@ test_data = dataset[
      (dataset['calculation_date']<=test_end_date)
      )]
 
-train_X, train_y, test_X, test_y = mlop.split_data_temporally(
+print(
+    f"\ntrain data:\n{train_data.describe()}\ntest data: "
+    f"{test_data.describe()}")
+
+train_X, train_y, test_X, test_y = mlop.split_data_manually(
     train_data, test_data)
-
-
 
 preprocessor = mlop.preprocess()
 
@@ -150,4 +152,7 @@ with open(f'{file_dir}.txt', 'w') as file:
     file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
     for spec in specs:
         file.write(f"{spec}\n")
+    file.write(
+        f"\ntrain data:\n{train_data.describe()}\ntest data: "
+        f"{test_data.describe()}")
 pd.reset_option("display.max_columns")

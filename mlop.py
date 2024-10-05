@@ -151,7 +151,7 @@ class mlop:
         return train_data, train_X, train_y, \
             test_data, test_X, test_y
             
-    def split_data_temporally(self,
+    def split_data_manually(self,
             train_data, test_data,
             feature_set=None, target_name=None
             ):
