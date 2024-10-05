@@ -163,3 +163,14 @@ with open(f'{file_dir}.txt', 'w') as file:
         f"\n     MAE: {errors['outofsample_MAE']}\n"
         )
 pd.reset_option("display.max_columns")
+
+import matplotlib.pyplot as plt
+
+plt.hist(train_y,bins=100)
+plt.hist(insample_results['prediction'],bins=100)
+
+plt.hist(test_y,bins=100)
+plt.hist(outofsample_results['prediction'],bins=100)
+
+plt.cla()
+plt.clf()

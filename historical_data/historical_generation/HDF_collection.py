@@ -32,7 +32,8 @@ with pd.HDFStore(h5_file_path, 'r') as hdf_store:
 keys = pd.Series(keys)
 date_pattern = r"(\d{4}_\d{2}_\d{2})"
 extracted_dates = keys.str.extract(date_pattern, expand=False)
-keys_dates = pd.to_datetime(extracted_dates, format="%Y_%m_%d", errors='coerce')
+keys_dates = pd.to_datetime(
+    extracted_dates, format="%Y_%m_%d", errors='coerce')
 filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
 filtered_keys.tolist()
 
@@ -69,9 +70,11 @@ contracts.loc[:,'moneyness'] = ms.vmoneyness(
 
 
 contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
+
 contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
 
 
+        
 check = contracts[
     [
       'spot_price','strike_price', 'w','days_to_maturity',
