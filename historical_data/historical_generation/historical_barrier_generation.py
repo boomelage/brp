@@ -33,7 +33,8 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
             'updown',
             'outin',
             'w'
-                  ])
+                  ]
+        )
     
     barrier_features['barrier_type_name'] = \
         barrier_features['updown'] + barrier_features['outin']
@@ -108,7 +109,7 @@ for rowi, row in historical_calibrated.iterrows():
         ).astype(float).tolist()
     up_features = generate_barrier_features(
         s, K, T, barriers, 'Up', OUTIN, W)
-    
+
     
     features = pd.concat(
         [down_features,up_features],

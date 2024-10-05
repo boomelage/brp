@@ -72,7 +72,7 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            'barrier',
+            # 'barrier',
             'risk_free_rate',
             'dividend_rate',
             # 'moneyness', 
@@ -81,7 +81,7 @@ class mlop:
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
@@ -152,24 +152,15 @@ class mlop:
             test_data, test_X, test_y
             
     def split_data_temporally(self,
-            train_start_date,train_end_date,
-            test_start_date,test_end_date,
-            feature_set=None, target_name=None):
+            train_data, test_data,
+            feature_set=None, target_name=None
+            ):
         
         if feature_set == None:
             feature_set = self.feature_set
         if target_name == None:
             target_name = self.target_name
-        train_data = self.user_dataset[
-            (
-             (self.user_dataset['calculation_date']>=train_start_date)&
-             (self.user_dataset['calculation_date']<=train_end_date)
-             )]
-        test_data = self.user_dataset[
-            (
-             (self.user_dataset['calculation_date']>=test_start_date)&
-             (self.user_dataset['calculation_date']<=test_end_date)
-             )]
+
         
         test_X = test_data[feature_set]
         test_y = test_data[target_name]
