@@ -22,11 +22,12 @@ os.chdir(current_dir)
 print("\nimporting dataset(s)...\n")
 
 start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2012-12-31", "%Y-%m-%d")
+end_date = datetime.strptime("2007-01-31", "%Y-%m-%d")
 
 h5_file_path = 'SPX vanillas.h5'
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
     keys = hdf_store.keys()
+
 
 keys = pd.Series(keys)
 date_pattern = r"(\d{4}_\d{2}_\d{2})"
@@ -65,6 +66,10 @@ contracts.loc[:,'moneyness'] = ms.vmoneyness(
     contracts['strike_price'],
     contracts['w']
     )
+
+
+contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
+contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
 
 
 check = contracts[
@@ -112,5 +117,6 @@ except Exception:
 print(f"\nmoneyness:\n{np.sort(contracts['moneyness'].unique())}")
 print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
 print(f"\ntotal prices:\n{contracts.shape[0]}\n")
+print(f"\n{contracts.dtypes}\n")
 pd.reset_option("display.max_columns")
 

@@ -20,7 +20,6 @@ class model_settings():
         sys.path.append('train_data')
         sys.path.append('historical_data')
         sys.path.append('misc')
-        self.today              =    ql.Date.todaysDate()
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.compounding        =    ql.Continuous
@@ -29,7 +28,7 @@ class model_settings():
             ql.Continuous : 'continuous',
             ql.Annual     : 'annual'
             }
-        print(f"\npricing settings:\n{self.today}\n{self.day_count}"
+        print(f"\npricing settings:\n{self.day_count}"
               f"\n{self.calendar}\ncompounding: "
               f"{self.settings_names_dictionary[self.compounding]}"
               f"\nfrequency: {self.settings_names_dictionary[self.frequency]}")
