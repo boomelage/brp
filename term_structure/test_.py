@@ -19,7 +19,9 @@ from matplotlib import cm
 ms = model_settings()
 
 
-ts = raw_puts
+ts = raw_calls
+# ts = raw_puts
+
 ts = ts.loc[
     ts.iloc[:,0].dropna().index,
     :
@@ -39,8 +41,8 @@ for i, k in enumerate(K):
 bicubic_vol = ql.BicubicSpline(T, K, SIG)
 
 
-T = np.linspace(min(T),max(T),500)
-K = np.linspace(min(K),max(K),500)
+T = np.linspace(min(T),max(T),50)
+K = np.linspace(min(K),max(K),50)
 
 plt.rcParams['figure.figsize']=(16,7)
 plot_maturities = np.sort(np.array(T,dtype=float)/365)
@@ -50,18 +52,19 @@ Z = np.array([[
     bicubic_vol(y, x, True) for x in plot_strikes] 
     for y in plot_maturities])
 
-azims = np.arange(0,361,15)
+azims = np.arange(45,361+45,15)
 for azim in azims:
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
     ax.view_init(elev=20, azim=azim)  
     surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
                     linewidth=0.1)
-    fig.colorbar(surf, shrink=0.5, aspect=10)
+    fig.colorbar(surf, shrink=0.3, aspect=5)
     
     ax.set_xlabel("Strikes", size=9)
     ax.set_ylabel("Maturities (Years)", size=9)
     ax.set_zlabel("Volatility", size=9)
+    
     plt.tight_layout() 
     plt.show()
     plt.cla()

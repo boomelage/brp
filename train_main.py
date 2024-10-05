@@ -47,31 +47,29 @@ random train/test split
 #     test_data, test_X, test_y = mlop.split_user_data()
 """"""
 
+
 """
 manual train/test split
 """
 unique_dates = dataset['calculation_date'].unique().tolist()
 date75 = unique_dates[int(0.75*len(unique_dates))]
-date75
 
 train_data = dataset[
     (
       # (dataset['calculation_date']>=datetime(2007,1,1))
       #  &
-       (dataset['calculation_date']<=date75)
-      )]
+        (dataset['calculation_date']<=date75)
+      )].copy()
 
 test_data = dataset[
     (
       (dataset['calculation_date']>date75)
       # &
       # (dataset['calculation_date']<=datetime(2012,12,31))
-      )]
+      )].copy()
 
 train_X, train_y, test_X, test_y = mlop.split_data_manually(
     train_data, test_data)
-
-
 
 preprocessor = mlop.preprocess()
 
@@ -108,7 +106,9 @@ single layer network
 """
 
 
+
 # model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+
 
 
 """
@@ -116,20 +116,27 @@ deep neural network
 """
 
 
+
 model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
 model_name = r'deep_neural_network'
+
 
 
 """
 random forest
 """
 
+
+
 # model_fit, runtime, specs = mlop.run_rf(preprocessor,train_X,train_y)
 # model_name = r'random_forest'
+
+
 
 """
 lasso regression
 """
+
 
 
 # model_fit, runtime = mlop.run_lm(train_X,train_y)
@@ -143,6 +150,7 @@ train_runtime = train_end-train_start
 # =============================================================================
                                 model testing
 """
+
 pd.set_option("display.max_columns",None)
 print()
 print("#"*13+"\n# test data #\n"+"#"*13+
@@ -166,7 +174,7 @@ n_puts = train_data[train_data['w']=='put'].shape[0]
 
 train_end_tag = str(datetime.fromtimestamp(
     train_end).strftime("%Y_%m_%d %H%M%S"))
-file_tag = str(model_name + f" ntrain{train_data.shape[0]} " + train_end_tag)
+file_tag = str(train_end_tag + " " + model_name + f" ntrain{train_data.shape[0]}")
 
 os.chdir(current_dir)
 os.mkdir(file_tag)
@@ -205,5 +213,11 @@ with open(f'{file_dir}.txt', 'w') as file:
         f"\n     RMSE: {errors['outofsample_RMSE']}"
         f"\n     MAE: {errors['outofsample_MAE']}\n"
         )
+    file.write("features:\n")
+    for feature in mlop.feature_set:
+        file.write(feature)
+        file.write(f"\ntarget: {mlop.target_name}")
 pd.reset_option("display.max_columns")
+
+
 
