@@ -20,6 +20,7 @@ from datetime import datetime
 import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 import time
 class mlop:
     
@@ -71,16 +72,16 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            # 'barrier',
+            'barrier',
             'risk_free_rate',
             'dividend_rate',
             # 'moneyness', 
-            # 'kappa', 'theta', 'rho', 'eta', 'v0',
+            'kappa', 'theta', 'rho', 'eta', 'v0',
             ]
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -150,6 +151,33 @@ class mlop:
         return train_data, train_X, train_y, \
             test_data, test_X, test_y
             
+    def split_data_temporally(self,
+            train_start_date,train_end_date,
+            test_start_date,test_end_date,
+            feature_set=None, target_name=None):
+        
+        if feature_set == None:
+            feature_set = self.feature_set
+        if target_name == None:
+            target_name = self.target_name
+        train_data = self.user_dataset[
+            (
+             (self.user_dataset['calculation_date']>=train_start_date)&
+             (self.user_dataset['calculation_date']<=train_end_date)
+             )]
+        test_data = self.user_dataset[
+            (
+             (self.user_dataset['calculation_date']>=test_start_date)&
+             (self.user_dataset['calculation_date']<=test_end_date)
+             )]
+        
+        test_X = test_data[feature_set]
+        test_y = test_data[target_name]
+        
+        train_X = train_data[feature_set]
+        train_y = train_data[target_name]
+        return train_data, train_X, train_y, test_data, test_X, test_y
+
     def preprocess(self):
         preprocessor = ColumnTransformer(
             transformers=self.transformers)
@@ -299,25 +327,59 @@ class mlop:
     standard model testing
     """
     
-    def test_model(self,test_data,test_X,test_y,model_fit):
-        training_results = test_X.copy()
-        training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
-        training_results['target'] = test_y
-        training_results['prediciton'] = model_fit.predict(test_X)
-        training_results['abs_relative_error'] = abs(
-            training_results['prediciton']/training_results['target']-1)
+    def test_prediction_accuracy(
+            self,
+            model_fit,
+            test_data,
+            train_data
+            ):
+        train_X = train_data[self.feature_set]
+        train_y = train_data[self.target_name]
+        test_X = test_data[self.feature_set]
+        test_y = test_data[self.target_name]
         
-        descriptive_stats = training_results['abs_relative_error'].describe()
-        test_count = int(descriptive_stats['count'])
-        descriptive_stats = descriptive_stats[1:]
-        pd.set_option('display.float_format', '{:.10f}'.format)
-        # print(
-        #     f"\nresults:\n--------\ntest data count: {test_count}"
-        #     f"\n{descriptive_stats}\n"
-        #     )
-        pd.reset_option('display.float_format')
+        insample_prediction = model_fit.predict(train_X)
+        insample_abserror = np.abs(insample_prediction - train_y)
+        insample_sqerror = (insample_prediction - train_y)**2
+        insample_RMSE = np.sqrt(np.average(insample_sqerror))
+        insample_MAE = np.average(insample_abserror)
+
+        outofsample_prediction = model_fit.predict(test_X)
+        outofsample_abserror = np.abs(outofsample_prediction - test_y)
+        outofsample_sqerror = (outofsample_prediction-test_y)**2
+        outofsample_RMSE = np.sqrt(np.average(outofsample_sqerror))
+        outofsample_MAE = np.average(outofsample_abserror)
+        print(f"\ninsample:\nRSME: {insample_RMSE}\nMAE: {insample_MAE}")
+        print(f"\noutofsample:\nRSME: {outofsample_RMSE}"
+              f"\nMAE: {outofsample_MAE}")
         
-        return training_results
+        insample_results = train_data.copy()
+        insample_results['in_sample_prediction'] = insample_prediction 
+        
+        outofsample_results = train_data.copy()
+        outofsample_results['in_sample_prediction'] = insample_prediction
+        
+        return insample_results, outofsample_results
+        
+    # def test_model(self,test_data,test_X,test_y,model_fit):
+    #     training_results = test_X.copy()
+    #     training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
+    #     training_results['target'] = test_y
+    #     training_results['prediciton'] = model_fit.predict(test_X)
+    #     training_results['abs_relative_error'] = abs(
+    #         training_results['prediciton']/training_results['target']-1)
+        
+    #     descriptive_stats = training_results['abs_relative_error'].describe()
+    #     test_count = int(descriptive_stats['count'])
+    #     descriptive_stats = descriptive_stats[1:]
+    #     pd.set_option('display.float_format', '{:.10f}'.format)
+    #     # print(
+    #     #     f"\nresults:\n--------\ntest data count: {test_count}"
+    #     #     f"\n{descriptive_stats}\n"
+    #     #     )
+    #     pd.reset_option('display.float_format')
+        
+    #     return training_results
 
     def plot_model_performance(self, predictive_performance, runtime, title):
         predictive_performance_plot = (

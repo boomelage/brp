@@ -38,7 +38,13 @@ mlop = mlop(user_dataset = dataset)
 """
 
 train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data()
+    test_data, test_X, test_y = mlop.split_data_temporally(
+            train_start_date = datetime(2007,1,1),
+            train_end_date = datetime(2007,3,31),
+            test_start_date= datetime(2007,3,1), 
+            test_end_date = datetime(2020,1,1)
+        )
+
 
 preprocessor = mlop.preprocess()
 
@@ -88,21 +94,15 @@ train_runtime = train_end-train_start
                                 model testing
 """
 
-stats = mlop.test_model(
-    test_data, test_X, test_y, model_fit)
-
+insample_results, outofsample_results =  mlop.test_prediction_accuracy(
+        model_fit,
+        test_data,
+        train_data
+        )
 
 """
 # =============================================================================
 """
-
-sqdifference = (stats['prediciton']-stats['target'])**2
-absdifference = np.abs(stats['prediciton']-stats['target'])
-RSME = np.sqrt(np.average(sqdifference))
-MAE = np.average(absdifference)
-print(f"\nRSME: {RSME}\nMAE: {MAE}")
-print(f"\ntrain runtime: {round(train_runtime,3)} seconds")
-
 
 S = np.sort(training_data['spot_price'].unique())
 K = np.sort(training_data['strike_price'].unique())
@@ -119,24 +119,24 @@ os.chdir(current_dir)
 os.mkdir(file_tag)
 file_dir = os.path.join(current_dir,file_tag,file_tag)
 
-joblib.dump(model_fit,str(f"{file_dir}.pkl"))
-pd.set_option("display.max_columns",None)
-with open(f'{file_dir}.txt', 'w') as file:
+# joblib.dump(model_fit,str(f"{file_dir}.pkl"))
+# pd.set_option("display.max_columns",None)
+# with open(f'{file_dir}.txt', 'w') as file:
     
-    file.write(f"\n{training_data}")
-    file.write(f"\n{training_data.describe()}\n")
-    file.write(f"\nspot(s):\n{S}")
-    file.write(f"\n\nstrikes:\n{K}\n")
-    file.write(f"\nmaturities:\n{T}\n")
-    file.write(f"\ntypes:\n{W}\n")
-    try:
-        file.write(f"\n{training_data['barrier_type_name'].unique()}")
-    except Exception:
-        pass
-    file.write("")
-    file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
-    file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
-    file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
-    for spec in specs:
-        file.write(f"{spec}\n")
-pd.reset_option("display.max_columns")
+#     file.write(f"\n{training_data}")
+#     file.write(f"\n{training_data.describe()}\n")
+#     file.write(f"\nspot(s):\n{S}")
+#     file.write(f"\n\nstrikes:\n{K}\n")
+#     file.write(f"\nmaturities:\n{T}\n")
+#     file.write(f"\ntypes:\n{W}\n")
+#     try:
+#         file.write(f"\n{training_data['barrier_type_name'].unique()}")
+#     except Exception:
+#         pass
+#     file.write("")
+#     file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
+#     file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
+#     file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
+#     for spec in specs:
+#         file.write(f"{spec}\n")
+# pd.reset_option("display.max_columns")
