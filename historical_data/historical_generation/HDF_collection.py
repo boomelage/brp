@@ -62,41 +62,32 @@ with pd.HDFStore(h5_file_path, 'r') as hdf_store:
         bar.update(1)
 contracts = pd.concat(contracts_list, ignore_index=True)
 bar.close()
-
-print('\npreparing data...\n')
-
-try:
-    contracts.loc[:,'observed_price'] = ms.noisy_prices(
-        contracts.loc[:,'barrier_price'])
-except Exception:
-    contracts.loc[:,'observed_price'] = ms.noisy_prices(
-        contracts.loc[:,'heston_price'])
-
-contracts = contracts[contracts['observed_price']>0]
+contracts.dtypes
 
 
-contracts.loc[:,'moneyness'] = ms.vmoneyness(
-    contracts['spot_price'],
-    contracts['strike_price'],
-    contracts['w']
-    )
+# print('\npreparing data...\n')
+
+# try:
+#     contracts.loc[:,'observed_price'] = ms.noisy_prices(
+#         contracts.loc[:,'barrier_price'])
+# except Exception:
+#     contracts.loc[:,'observed_price'] = ms.noisy_prices(
+#         contracts.loc[:,'heston_price'])
+
+# contracts = contracts[contracts['observed_price']>0]
 
 
-contracts = contracts[
-    ((contracts['moneyness'] <= 0.1) & (contracts['moneyness'] >= -0.1))
-    ]
-
-contracts['calculation_date'] = pd.to_datetime(
-    contracts['calculation_date'],
-    format="%Y_%m_%d"
-    )
-
-contracts['expiration_date'] = pd.to_datetime(
-    contracts['expiration_date'],
-    "%Y_%m_%d"
-    )
+# contracts.loc[:,'moneyness'] = ms.vmoneyness(
+#     contracts['spot_price'],
+#     contracts['strike_price'],
+#     contracts['w']
+#     )
 
 
-pd.set_option("display.max_columns",None)
-print(f"\n{contracts.describe()}")
+# contracts = contracts[
+#     ((contracts['moneyness'] <= 0.1) & (contracts['moneyness'] >= -0.1))
+#     ]
+
+# pd.set_option("display.max_columns",None)
+# print(f"\n{contracts.describe()}")
 

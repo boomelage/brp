@@ -4,11 +4,10 @@
 general settings
 
 """
-import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import sys
 import QuantLib as ql
 import numpy as np
+from datetime import datetime
 from scipy.stats import norm
 
 class model_settings():
@@ -34,7 +33,7 @@ class model_settings():
               f"\nfrequency: {self.settings_names_dictionary[self.frequency]}")
         
     """
-    QuantLib time tools
+    time tools
     """    
     def expiration_datef(self,t,calculation_date=None):
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
@@ -45,6 +44,21 @@ class model_settings():
         expiration_dates = vdates(T,calculation_date)
         return expiration_dates
     
+    def ql_to_datetime(self,ql_date):
+        datetime_date = datetime(
+            ql_date.year(),
+            ql_date.month(),
+            ql_date.dayOfMonth()
+            )
+        return datetime_date
+    
+    def vector_ql_to_datetime(self, ql_dates):
+        vql_to_datetime = np.vectorize(self.ql_to_datetime)
+        datetime_dates = vql_to_datetime(ql_dates)
+        return datetime_dates
+    
+        
+        
     """
     QuanLib object makers
     """

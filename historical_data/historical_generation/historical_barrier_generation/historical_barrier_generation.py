@@ -11,7 +11,6 @@ import numpy as np
 import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
-from datetime import datetime
 
 def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
     
@@ -137,11 +136,11 @@ for rowi, row in historical_calibrated.iterrows():
     features['barrier_price'] = ms.vector_barrier_price(features)
     
     features['calculation_date'] = calculation_datetime
-
     features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
     
     h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
+    
     calls = features[features['w'] == 'call']
     puts = features[features['w'] == 'put']
     with pd.HDFStore('SPX barriers.h5') as store:

@@ -6,13 +6,11 @@ Created on Sat Sep 21 13:54:06 2024
 """
 import os
 import sys
-import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
-from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -55,9 +53,11 @@ bar = tqdm(
     )
 for rowi, row in historical_calibrated.iterrows():
     
-    calculation_date = row['date']
-    ql_calc = ql.Date(
-        calculation_date.day,calculation_date.month,calculation_date.year)
+    calculation_datetime = row['date']
+    calculation_date = ql.Date(
+        calculation_datetime.day,
+        calculation_datetime.month,
+        calculation_datetime.year)
     
     s = row['spot_price']
     
@@ -76,7 +76,7 @@ for rowi, row in historical_calibrated.iterrows():
             K,
             T,
             ['call'],
-            [ql_calc],
+            [calculation_date],
             ),
         columns=[
             'spot_price', 
@@ -107,25 +107,16 @@ for rowi, row in historical_calibrated.iterrows():
     
     features = features[
         ['spot_price', 'strike_price', 'w', 'heston_price', 'days_to_maturity',
-         'risk_free_rate', 'dividend_rate', 
-         'kappa', 'theta', 'rho', 'eta', 'v0',
-         'calculation_date', 'expiration_date']
+          'risk_free_rate', 'dividend_rate', 
+          'kappa', 'theta', 'rho', 'eta', 'v0',
+          'calculation_date', 'expiration_date']
         ]
     
-    features['calculation_date'] = calculation_date
-    features['expiration_date'] =  features[
-        'calculation_date'] + pd.to_timedelta(
+    features['calculation_date'] = calculation_datetime
+    features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
-
-    features[
-        ['calculation_date', 'expiration_date']
-        ] = features[['calculation_date', 'expiration_date']].astype(str)
-    
-    
-    features['days_to_maturity'] = features['days_to_maturity'].astype('int64')
     
     hist_file_date = str('date_'+calculation_date.strftime("%Y_%m_%d"))
-
     calls = features[features['w'] == 'call'].reset_index(drop=True)
     puts = features[features['w'] == 'put'].reset_index(drop=True)
     with pd.HDFStore('SPX vanillas.h5') as store:
