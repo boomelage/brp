@@ -21,11 +21,13 @@ sys.path.append(
 from settings import model_settings
 ms = model_settings()
 from HDF_collection import contracts
-
+pd.set_option("display.max_columns",None)
 print('\npreparing data...')
 
 training_data = contracts.copy().drop_duplicates()
 initial_count = training_data.shape[0]
+
+
 
 try:
     training_data.loc[:,'observed_price'] = ms.noisy_prices(
@@ -36,77 +38,53 @@ except Exception:
 
 training_data = training_data[training_data['observed_price']>0]
 
-"""
-# =============================================================================
-
-date filter
-
-"""
-# training_data['calculation_date'] = pd.to_datetime(
-#     training_data['calculation_date'])
-# training_data['expiration_date'] = pd.to_datetime(
-#     training_data['expiration_date'])
-# training_data = training_data[
-    
-#     (training_data['calculation_date']>=datetime(2010,2,1))
-#     &
-#     (training_data['calculation_date']<=datetime(2030,2,11))
-    
-#     ].reset_index(drop=True)
-
-
-"""
-maturities filter
-"""
-
-# training_data = training_data[
-    
-#     (training_data['days_to_maturity']>=0)
-#     &
-#     (training_data['days_to_maturity']<=60)
-    
-#     ].reset_index(drop=True)
-
-
-"""
-type filter
-"""
-
-# training_data = training_data[training_data.loc[:,'w'] == 'put']
-
-# training_data = training_data[training_data['barrier_type_name']=='DownOut']
-
-
-"""
-moneyness filter
-"""
-
-otm_lower = -0.1
-otm_upper = -0.00
-
-itm_lower =  0.00
-itm_upper =  0.1
 
 training_data.loc[:,'moneyness'] = ms.vmoneyness(
     training_data['spot_price'],
     training_data['strike_price'],
     training_data['w']
     )
-training_data = training_data[
-    
-    (
-      (training_data['moneyness'] >= otm_lower) & 
-      (training_data['moneyness'] <= otm_upper)
-      )
-   
-    |
-    
-    (
-      (training_data['moneyness'] >= itm_lower) & 
-      (training_data['moneyness'] <= itm_upper)
-      )
 
-]
+
+"""
+# =============================================================================
+
+date filter
+
+"""
+training_data['calculation_date'] = pd.to_datetime(
+    training_data['calculation_date'])
+training_data['expiration_date'] = pd.to_datetime(
+    training_data['expiration_date'])
+
+
+
+"""
+moneyness filter
+"""
+
+# otm_lower = -0.1
+# otm_upper = -0.00
+
+# itm_lower =  0.00
+# itm_upper =  0.1
+
+
+# training_data = training_data[
+    
+#     (
+#       (training_data['moneyness'] >= otm_lower) & 
+#       (training_data['moneyness'] <= otm_upper)
+#       )
+   
+#     |
+    
+#     (
+#       (training_data['moneyness'] >= itm_lower) & 
+#       (training_data['moneyness'] <= itm_upper)
+#       )
+
+# ]
 
 
 
@@ -127,8 +105,6 @@ n_calls = training_data[training_data['w']=='call'].shape[0]
 n_puts = training_data[training_data['w']=='put'].shape[0]
 
 
-
-pd.set_option("display.max_columns",None)
 print(f"\n{training_data}")
 print(f"\n{training_data.describe()}\n")
 print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")

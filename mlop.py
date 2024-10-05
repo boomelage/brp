@@ -55,7 +55,6 @@ class mlop:
             
             ]
         
-        
         self.rf_n_estimators = 50
         self.rf_min_samples_leaf = 2000
         
@@ -72,11 +71,14 @@ class mlop:
         
         self.numerical_features = [
             'spot_price', 'strike_price', 'days_to_maturity', 
-            # 'barrier',
             'risk_free_rate',
             'dividend_rate',
-            # 'moneyness', 
             'kappa', 'theta', 'rho', 'eta', 'v0',
+            
+            # 'barrier',
+            
+            # 'moneyness', 
+            
             ]
         
         self.categorical_features = [
@@ -88,8 +90,6 @@ class mlop:
             # 'updown',
             
             # 'moneyness_tag',
-            
-            # 'calculation_date', 'expiration_date',
             
             'w'
             
@@ -130,7 +130,8 @@ class mlop:
             print(f"{i}\n")
         print("target transformer(s):")
         for i in self.target_transformer_pipeline:
-            print(f"{i}")
+            print(i)
+        print()
     """            
     ===========================================================================
     preprocessing
@@ -167,7 +168,7 @@ class mlop:
         
         train_X = train_data[feature_set]
         train_y = train_data[target_name]
-        return train_data, train_X, train_y, test_data, test_X, test_y
+        return train_X, train_y, test_X, test_y
 
     def preprocess(self):
         preprocessor = ColumnTransformer(
@@ -350,27 +351,38 @@ class mlop:
         outofsample_results = train_data.copy()
         outofsample_results['in_sample_prediction'] = insample_prediction
         
-        return insample_results, outofsample_results
+        errors = pd.Series(
+            [
+                insample_RMSE,insample_MAE,
+                outofsample_RMSE,outofsample_MAE
+                ],
+            index=[
+                'insample_RMSE','insample_MAE',
+                'outofsample_RMSE','outofsample_MAE'],
+            dtype=float
+            )
         
-    # def test_model(self,test_data,test_X,test_y,model_fit):
-    #     training_results = test_X.copy()
-    #     training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
-    #     training_results['target'] = test_y
-    #     training_results['prediciton'] = model_fit.predict(test_X)
-    #     training_results['abs_relative_error'] = abs(
-    #         training_results['prediciton']/training_results['target']-1)
+        return insample_results, outofsample_results, errors
         
-    #     descriptive_stats = training_results['abs_relative_error'].describe()
-    #     test_count = int(descriptive_stats['count'])
-    #     descriptive_stats = descriptive_stats[1:]
-    #     pd.set_option('display.float_format', '{:.10f}'.format)
-    #     # print(
-    #     #     f"\nresults:\n--------\ntest data count: {test_count}"
-    #     #     f"\n{descriptive_stats}\n"
-    #     #     )
-    #     pd.reset_option('display.float_format')
+    def test_model(self,test_data,test_X,test_y,model_fit):
+        training_results = test_X.copy()
+        training_results['moneyness'] = test_data.loc[test_X.index,'moneyness']
+        training_results['target'] = test_y
+        training_results['prediciton'] = model_fit.predict(test_X)
+        training_results['abs_relative_error'] = abs(
+            training_results['prediciton']/training_results['target']-1)
         
-    #     return training_results
+        descriptive_stats = training_results['abs_relative_error'].describe()
+        test_count = int(descriptive_stats['count'])
+        descriptive_stats = descriptive_stats[1:]
+        pd.set_option('display.float_format', '{:.10f}'.format)
+        print(
+            f"\nresults:\n--------\ntest data count: {test_count}"
+            f"\n{descriptive_stats}\n"
+            )
+        pd.reset_option('display.float_format')
+        
+        return training_results
 
     def plot_model_performance(self, predictive_performance, runtime, title):
         predictive_performance_plot = (

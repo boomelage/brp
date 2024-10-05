@@ -14,7 +14,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
 from mlop import mlop
 sys.path.append(os.path.join(current_dir,'train_data'))
-
+pd.set_option("display.max_columns",None)
 train_start = time.time()
 train_start_datetime = datetime.fromtimestamp(train_start)
 train_start_tag = train_start_datetime.strftime('%c')
@@ -36,28 +36,31 @@ mlop = mlop(user_dataset = dataset)
 # =============================================================================
                             preprocessing data
 """
-train_start_date = datetime(2009,4,2)
-train_end_date = datetime(2020,3,31)
-test_start_date= datetime(2007,10,1)
-test_end_date = datetime(2009,4,1)
+# train_start_date = datetime(2009,4,2)
+# train_end_date = datetime(2020,3,31)
+# test_start_date= datetime(2007,10,1)
+# test_end_date = datetime(2009,4,1)
 
-train_data = dataset[
-    (
-     (dataset['calculation_date']>=train_start_date)&
-     (dataset['calculation_date']<=train_end_date)
-     )]
-test_data = dataset[
-    (
-     (dataset['calculation_date']>=test_start_date)&
-     (dataset['calculation_date']<=test_end_date)
-     )]
+# train_data = dataset[
+#     (
+#      (dataset['calculation_date']>=train_start_date)&
+#      (dataset['calculation_date']<=train_end_date)
+#      )]
+# test_data = dataset[
+#     (
+#      (dataset['calculation_date']>=test_start_date)&
+#      (dataset['calculation_date']<=test_end_date)
+#      )]
 
-print(
-    f"\ntrain data:\n{train_data.describe()}\ntest data: "
-    f"{test_data.describe()}")
+# print(
+#     f"\ntrain data:\n{train_data.describe()}\ntest data: \n"
+#     f"{test_data.describe()}")
 
-train_X, train_y, test_X, test_y = mlop.split_data_manually(
-    train_data, test_data)
+# train_X, train_y, test_X, test_y = mlop.split_data_manually(
+#     train_data, test_data)
+
+train_data, train_X, train_y, \
+    test_data, test_X, test_y = mlop.split_user_data()
 
 preprocessor = mlop.preprocess()
 
@@ -107,7 +110,7 @@ train_runtime = train_end-train_start
                                 model testing
 """
 
-insample_results, outofsample_results =  mlop.test_prediction_accuracy(
+insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(
         model_fit,
         test_data,
         train_data
@@ -133,6 +136,7 @@ os.mkdir(file_tag)
 file_dir = os.path.join(current_dir,file_tag,file_tag)
 
 joblib.dump(model_fit,str(f"{file_dir}.pkl"))
+
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
     
@@ -147,12 +151,13 @@ with open(f'{file_dir}.txt', 'w') as file:
     except Exception:
         pass
     file.write("")
-    file.write(f"\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
+    file.write(
+        f"\n\nmoneyness:\n{np.sort(training_data['moneyness'].unique())}\n")
     file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
     file.write(f"\ntotal prices:\n{training_data.shape[0]}\n")
     for spec in specs:
         file.write(f"{spec}\n")
     file.write(
-        f"\ntrain data:\n{train_data.describe()}\ntest data: "
+        f"\ntrain data:\n{train_data.describe()}\n\ntest data: \n"
         f"{test_data.describe()}")
 pd.reset_option("display.max_columns")
