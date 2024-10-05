@@ -65,11 +65,11 @@ for rowi, row in historical_calibrated.iterrows():
     K = np.linspace(
         s*(1-spread),
         s*(1+spread),
-        int((s-s*(1-spread*2))*3)
+        int((s-s*(1-spread*2)))
         )
     
     T = np.arange(30,360+1,1)
-    
+
     features = pd.DataFrame(
         product(
             [s],
@@ -128,26 +128,12 @@ for rowi, row in historical_calibrated.iterrows():
 
     calls = features[features['w'] == 'call'].reset_index(drop=True)
     puts = features[features['w'] == 'put'].reset_index(drop=True)
-    print(calls)
     with pd.HDFStore('SPX vanillas.h5') as store:
-        try:
-            store.append(
-                f'/call/{hist_file_date}', calls, format='table', append=True)
-            store.append(
-                f'/put/{hist_file_date}', puts, format='table', append=True)
-        except Exception:
-            print()
-            print(store.select(f'/call/{hist_file_date}').columns)
-            print()
-            print(store.select(f'/call/{hist_file_date}').columns)
-            print()
-            print(features.columns)
-            print()
-            print(calls.dtypes)
-            print()
-            print(puts.dtypes)
-            print()
-            print(store.select(f'/call/{hist_file_date}').dtypes)
+        store.append(
+            f'/call/{hist_file_date}', calls, format='table', append=True)
+        store.append(
+            f'/put/{hist_file_date}', puts, format='table', append=True)
+    
     bar.update(1)
 bar.close()
     

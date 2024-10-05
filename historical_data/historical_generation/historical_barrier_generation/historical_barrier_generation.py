@@ -44,8 +44,10 @@ def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
+grandgrandparent_dir = os.path.dirname(grandparent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
+sys.path.append(grandgrandparent_dir)
 from settings import model_settings
 from data_query import dirdatacsv
 ms = model_settings()
@@ -70,7 +72,6 @@ for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
     calculation_datetime = row['date']
-    
     calculation_date = ql.Date(
         calculation_datetime.day,
         calculation_datetime.month,
@@ -122,6 +123,8 @@ for rowi, row in historical_calibrated.iterrows():
     features['dividend_rate'] = row['dividend_rate']
     features['risk_free_rate'] = r
     
+    
+    features.describe()
     param_names = ['theta', 'kappa', 'rho', 'eta', 'v0']
     features[param_names] = historical_calibrated.loc[
         rowi, param_names].values
@@ -137,7 +140,7 @@ for rowi, row in historical_calibrated.iterrows():
 
     features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
-            
+    
     h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
     calls = features[features['w'] == 'call']
     puts = features[features['w'] == 'put']

@@ -22,8 +22,8 @@ os.chdir(current_dir)
 
 print("\nimporting dataset(s)...\n")
 
-start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2007-01-5", "%Y-%m-%d")
+# start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
+# end_date = datetime.strptime("2007-01-5", "%Y-%m-%d")
 
 
 
@@ -40,15 +40,14 @@ h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
     keys = hdf_store.keys()
+# keys = pd.Series(keys)
 
-
-keys = pd.Series(keys)
-date_pattern = r"(\d{4}_\d{2}_\d{2})"
-extracted_dates = keys.str.extract(date_pattern, expand=False)
-keys_dates = pd.to_datetime(
-    extracted_dates, format="%Y_%m_%d", errors='coerce')
-filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
-filtered_keys.tolist()
+# date_pattern = r"(\d{4}_\d{2}_\d{2})"
+# extracted_dates = keys.str.extract(date_pattern, expand=False)
+# keys_dates = pd.to_datetime(
+#     extracted_dates, format="%Y_%m_%d", errors='coerce')
+# filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
+# filtered_keys.tolist()
 
 
 LOADING_KEYS = keys
@@ -86,12 +85,18 @@ contracts = contracts[
     ((contracts['moneyness'] <= 0.1) & (contracts['moneyness'] >= -0.1))
     ]
 
-contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
+contracts['calculation_date'] = pd.to_datetime(
+    contracts['calculation_date'],
+    format="%Y_%m_%d"
+    )
 
-contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
+contracts['expiration_date'] = pd.to_datetime(
+    contracts['expiration_date'],
+    "%Y_%m_%d"
+    )
 
-print(f"from: {min(contracts['expiration_date']).strftime('%Y-%m-%d')}")
-print(f"to:   {max(contracts['expiration_date']).strftime('%Y-%m-%d')}")
 
+pd.set_option("display.max_columns",None)
+print(f"\n{contracts.describe()}")
 
 
