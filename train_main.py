@@ -56,7 +56,6 @@ train_X, train_y, test_X, test_y = mlop.split_data_manually(
     train_data, test_data)
 
 
-
 """
 random train/test split
 """
@@ -70,8 +69,28 @@ preprocessor = mlop.preprocess()
 pd.set_option("display.max_columns",None)
 print("#"*17+"\n# training data #\n"+"#"*17+
       f"\n{train_data.describe()}\n")
-print("#"*13+"\n# test data #\n"+"#"*13+
-      f"\n{test_data.describe()}\n")
+
+
+S = np.sort(train_data['spot_price'].unique())
+K = np.sort(train_data['strike_price'].unique())
+T = np.sort(train_data['days_to_maturity'].unique())
+W = np.sort(train_data['w'].unique())
+n_calls = train_data[train_data['w']=='call'].shape[0]
+n_puts = train_data[train_data['w']=='put'].shape[0]
+
+print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
+try:
+    print(f"\n{train_data['barrier_type_name'].unique()}")
+except Exception:
+    pass
+print(f"\nmoneyness:\n{np.sort(train_data['moneyness'].unique())}")
+print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
+print(f"\ntotal prices:\n{train_data.shape[0]}\n")
+print(f"\n{train_data.dtypes}\n")
+pd.reset_option("display.max_columns")
+
+
+
 """
 # =============================================================================
                               model selection                
@@ -115,7 +134,8 @@ train_runtime = train_end-train_start
 # =============================================================================
                                 model testing
 """
-
+print("#"*13+"\n# test data #\n"+"#"*13+
+      f"\n{test_data.describe()}\n")
 insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(
         model_fit,
         test_data,
@@ -126,12 +146,12 @@ insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(
 # =============================================================================
 """
 
-S = np.sort(contracts['spot_price'].unique())
-K = np.sort(contracts['strike_price'].unique())
-T = np.sort(contracts['days_to_maturity'].unique())
-W = np.sort(contracts['w'].unique())
-n_calls = contracts[contracts['w']=='call'].shape[0]
-n_puts = contracts[contracts['w']=='put'].shape[0]
+S = np.sort(train_data['spot_price'].unique())
+K = np.sort(train_data['strike_price'].unique())
+T = np.sort(train_data['days_to_maturity'].unique())
+W = np.sort(train_data['w'].unique())
+n_calls = train_data[train_data['w']=='call'].shape[0]
+n_puts = train_data[train_data['w']=='put'].shape[0]
 
 train_end_tag = str(datetime.fromtimestamp(
     train_end).strftime("%Y_%m_%d %H%M%S"))
@@ -145,21 +165,21 @@ joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
-    file.write(f"\n{contracts}")
-    file.write(f"\n{contracts.describe()}\n")
+    file.write(f"\n{train_data}")
+    file.write(f"\n{train_data.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
     file.write(f"\n\nstrikes:\n{K}\n")
     file.write(f"\nmaturities:\n{T}\n")
     file.write(f"\ntypes:\n{W}\n")
     try:
-        file.write(f"\n{contracts['barrier_type_name'].unique()}")
+        file.write(f"\n{train_data['barrier_type_name'].unique()}")
     except Exception:
         pass
     file.write("")
     file.write(
-        f"\n\nmoneyness:\n{np.sort(contracts['moneyness'].unique())}\n")
+        f"\n\nmoneyness:\n{np.sort(train_data['moneyness'].unique())}\n")
     file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
-    file.write(f"\ntotal prices:\n{contracts.shape[0]}\n")
+    file.write(f"\ntotal prices:\n{train_data.shape[0]}\n")
     for spec in specs:
         file.write(f"{spec}\n")
     file.write("#"*17+"\n# training data #\n"+"#"*17+

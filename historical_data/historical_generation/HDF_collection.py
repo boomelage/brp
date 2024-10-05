@@ -15,6 +15,7 @@ parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
+
 from settings import model_settings
 ms = model_settings()
 os.chdir(current_dir)
@@ -24,7 +25,19 @@ print("\nimporting dataset(s)...\n")
 start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
 end_date = datetime.strptime("2007-01-5", "%Y-%m-%d")
 
-h5_file_path = 'SPX vanillas.h5'
+
+
+barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
+sys.path.append(barriers_dir)
+h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
+
+# vanillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
+# sys.path.append(vanillas_dir)
+# h5_file_path = os.path.join(vanillas_dir,'SPX vanillas.h5')
+
+
+
+
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
     keys = hdf_store.keys()
 
@@ -77,25 +90,8 @@ contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
 
 contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
 
+print(f"from: {min(contracts['expiration_date']).strftime('%Y-%m-%d')}")
+print(f"to:   {max(contracts['expiration_date']).strftime('%Y-%m-%d')}")
 
 
-S = np.sort(contracts['spot_price'].unique())
-K = np.sort(contracts['strike_price'].unique())
-T = np.sort(contracts['days_to_maturity'].unique())
-W = np.sort(contracts['w'].unique())
-n_calls = contracts[contracts['w']=='call'].shape[0]
-n_puts = contracts[contracts['w']=='put'].shape[0]
-
-print(f"\n{contracts}")
-print(f"\n{contracts.describe()}\n")
-print(f"\nspot(s):\n{S}\n\nstrikes:\n{K}\n\nmaturities:\n{T}\n\ntypes:\n{W}")
-try:
-    print(f"\n{contracts['barrier_type_name'].unique()}")
-except Exception:
-    pass
-print(f"\nmoneyness:\n{np.sort(contracts['moneyness'].unique())}")
-print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
-print(f"\ntotal prices:\n{contracts.shape[0]}\n")
-print(f"\n{contracts.dtypes}\n")
-pd.reset_option("display.max_columns")
 

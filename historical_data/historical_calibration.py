@@ -42,13 +42,13 @@ hist_dtdates = np.array(
     dtype=object
     )
 
-r = 0.04
 
 historical_calibration_errors = pd.Series()
 test_vols = pd.Series(np.zeros(len(hist_dtdates),dtype=float),index=hist_dtdates)
 for row_i, row in historical_data.iterrows():
     s = row['spot_price']
     g = row['dividend_rate']
+    r = 0.04
     dtdate = row['date']
     print_date = dtdate.strftime('%A %d %B %Y')
     calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
@@ -132,6 +132,9 @@ for row_i, row in historical_data.iterrows():
         calibration_dataset['days_to_maturity'].map(derman.derman_coefs), 
         calibration_dataset['days_to_maturity'].map(atm_volvec)
         )
+    
+    calibration_dataset['risk_free_rate'] = r
+    calibration_dataset['dividend_rate'] = g
     
     heston_parameters = calibrate_heston(
         calibration_dataset, s, r, g, calculation_date)

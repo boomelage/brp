@@ -17,9 +17,10 @@ from datetime import datetime
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
+grandgrandparent_dir = os.path.dirname(grandparent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
-sys.path.append(os.path.join(grandparent_dir,'term_structure'))
+sys.path.append(grandgrandparent_dir)
 from settings import model_settings
 ms = model_settings()
 
@@ -67,7 +68,7 @@ for rowi, row in historical_calibrated.iterrows():
         int((s-s*(1-spread*2))*3)
         )
     
-    T = np.arange(30,360,30)
+    T = np.arange(30,360+1,1)
     
     features = pd.DataFrame(
         product(

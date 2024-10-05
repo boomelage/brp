@@ -89,7 +89,10 @@ for rowi, row in historical_calibrated.iterrows():
     T = [
         60,
         90,
-        180,360,540,720
+        180,
+        360,
+        540,
+        720
         ]
     OUTIN = ['Out','In']
     W = ['call','put']
