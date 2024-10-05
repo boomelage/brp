@@ -155,6 +155,12 @@ for row_i, row in historical_data.iterrows():
 print(f"\nhistorical average absolute relative calibration error: "
       f"{round(np.average(np.abs(calibration_error*100)),4)}%")       
 
+historical_data.to_csv(
+    os.path.join(
+        'historical_generation',
+        '2007-2012 SPX calibrated.csv'
+        )
+    )
 
 
 
