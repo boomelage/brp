@@ -38,7 +38,7 @@ filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
 filtered_keys.tolist()
 
 
-LOADING_KEYS = filtered_keys
+LOADING_KEYS = keys
 
 
 bar = tqdm(desc='loading',total=len(LOADING_KEYS))
@@ -78,36 +78,6 @@ contracts['calculation_date'] = pd.to_datetime(contracts['calculation_date'])
 contracts['expiration_date'] = pd.to_datetime(contracts['expiration_date'])
 
 
-        
-check = contracts[
-    [
-        'spot_price','strike_price', 'w','days_to_maturity',
-     
-        # 'barrier','barrier_type_name','barrier_price',
-
-        'heston_price'
-      ]
-    ]
-
-check.columns = [
-    
-    's','k','w','t',
-    
-    # 'B','type',
-    
-    'price'
-    
-    ]
-
-contracts = contracts.reset_index(drop=True)
-
-pd.reset_option("display.max_rows")
-pd.set_option("display.max_columns",None)
-pd.set_option('display.float_format', '{:.6f}'.format)
-print(f"\npreview:\n{check}")
-print(f"\n{contracts.dtypes}")
-print(f"\n{check.describe().iloc[1:]}")
-print(f"\ntotal prices collected: {contracts.shape[0]}")
 
 S = np.sort(contracts['spot_price'].unique())
 K = np.sort(contracts['strike_price'].unique())

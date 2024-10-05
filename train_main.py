@@ -40,28 +40,28 @@ mlop = mlop(user_dataset = dataset)
 # =============================================================================
                             preprocessing data
 """
-# train_data = dataset[
-#     (
-#       (dataset['calculation_date']>=datetime(2007,10,1))&
-#       (dataset['calculation_date']<=datetime(2009,4,1))
-#       )]
+train_data = dataset[
+    (
+      (dataset['calculation_date']>=datetime(2007,10,1))&
+      (dataset['calculation_date']<=datetime(2009,4,1))
+      )]
 
-# test_data = dataset[
-#     (
-#       (dataset['calculation_date']>=datetime(2009,4,2))&
-#       (dataset['calculation_date']<=datetime(2009,12,31))
-#       )]
+test_data = dataset[
+    (
+      (dataset['calculation_date']>=datetime(2009,4,2))&
+      (dataset['calculation_date']<=datetime(2009,12,31))
+      )]
 
-# train_X, train_y, test_X, test_y = mlop.split_data_manually(
-#     train_data, test_data)
+train_X, train_y, test_X, test_y = mlop.split_data_manually(
+    train_data, test_data)
 
 
 
 """
 random train/test split
 """
-train_data, train_X, train_y, \
-    test_data, test_X, test_y = mlop.split_user_data()
+# train_data, train_X, train_y, \
+#     test_data, test_X, test_y = mlop.split_user_data()
 """"""
 
 
@@ -165,7 +165,7 @@ with open(f'{file_dir}.txt', 'w') as file:
     file.write("#"*17+"\n# training data #\n"+"#"*17+
           f"\n{train_data.describe()}\n")
     file.write("#"*13+"\n# test data #\n"+"#"*13+
-          f"\n{test_data.describe()}\n"))
+          f"\n{test_data.describe()}\n")
     file.write(
         f"\nin sample results:"
         f"\n     RMSE: {errors['insample_RMSE']}"
