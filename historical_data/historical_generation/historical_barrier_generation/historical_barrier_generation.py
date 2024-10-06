@@ -6,6 +6,7 @@ Created on Sat Sep 21 13:54:06 2024
 """
 import os
 import sys
+import time
 import pandas as pd
 import numpy as np
 import QuantLib as ql
@@ -143,17 +144,18 @@ for rowi, row in historical_calibrated.iterrows():
     
     calls = features[features['w'] == 'call']
     puts = features[features['w'] == 'put']
-    with pd.HDFStore('SPX barriers.h5') as store:
-        try:
-            store.append(
-                f'/call/{h5_key}', calls, format='table', append=True)
-            store.append(
-                f'/put/{h5_key}', puts, format='table', append=True)
-        except Exception as e:
-            print(f"\n{store.get(f'/call/{h5_key}').dtypes}")
-            print(f"\n{calls.dtypes}") 
-            
-            raise KeyError(f"Error with key '{h5_key}': {e}")
+    while True:
+        with pd.HDFStore('SPX barriers.h5') as store:
+            try:
+                store.append(
+                    f'/call/{h5_key}', calls, format='table', append=True)
+                store.append(
+                    f'/put/{h5_key}', puts, format='table', append=True)
+                break
+            except Exception as e:
+                raise KeyError(f"error in '{h5_key}': {e}"
+                               f"\nretrying in 5 seconds...")
+                time.sleep(5)
 
     bar.update(1)
 bar.close()

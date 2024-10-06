@@ -26,18 +26,18 @@ data selection
 """
 
 
-# barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
-# sys.path.append(barriers_dir)
-# h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
+barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
+sys.path.append(barriers_dir)
+h5_file_path = os.path.join(barriers_dir,'SPX barriers review.h5')
 
 # vanillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
 # sys.path.append(vanillas_dir)
 # h5_file_path = os.path.join(vanillas_dir,'SPX vanillas.h5')
 
-sparse_vanillas_dir = os.path.join(
-    current_dir,'historical_vanilla_generation_sparse')
-sys.path.append(sparse_vanillas_dir)
-h5_file_path = os.path.join(sparse_vanillas_dir,'SPX vanillas sparse.h5')
+# sparse_vanillas_dir = os.path.join(
+#     current_dir,'historical_vanilla_generation_sparse')
+# sys.path.append(sparse_vanillas_dir)
+# h5_file_path = os.path.join(sparse_vanillas_dir,'SPX vanillas sparse.h5')
 
 
 """"""
@@ -80,14 +80,14 @@ contracts.dtypes
 
 print('\npreparing data...\n')
 
-# contracts = contracts[contracts['barrier_price']>0].copy()
-# contracts.loc[:,'observed_price'] = ms.noisy_prices(
-#     contracts.loc[:,'barrier_price'])
-
-
-contracts = contracts[contracts['heston_price']>0].copy()
+contracts = contracts[contracts['barrier_price']>0].copy()
 contracts.loc[:,'observed_price'] = ms.noisy_prices(
-    contracts.loc[:,'heston_price'])
+    contracts.loc[:,'barrier_price'])
+
+
+# contracts = contracts[contracts['heston_price']>0].copy()
+# contracts.loc[:,'observed_price'] = ms.noisy_prices(
+#     contracts.loc[:,'heston_price'])
 
 
 contracts.loc[:,'moneyness'] = ms.vmoneyness(

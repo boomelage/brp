@@ -75,7 +75,7 @@ class mlop:
             'dividend_rate',
             'kappa', 'theta', 'rho', 'eta', 'v0',
             
-            # 'barrier',
+            'barrier',
             
             # 'moneyness', 
             
@@ -83,7 +83,7 @@ class mlop:
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
