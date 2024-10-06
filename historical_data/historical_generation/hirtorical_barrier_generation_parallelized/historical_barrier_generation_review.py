@@ -176,12 +176,16 @@ bar = tqdm(
     total = historical_calibrated.shape[0],
     desc = 'generating',
     )
-for rowi, row in historical_calibrated.iterrows():
+
+
+
+def generate_historical_barriers(df):   
+    calculation_dates =
     
-    s = row['spot_price']
-    g = row['dividend_rate']
     
-    calculation_datetime = row['date']
+    
+    
+    
     calculation_date = ql.Date(
         calculation_datetime.day,
         calculation_datetime.month,
@@ -193,36 +197,36 @@ for rowi, row in historical_calibrated.iterrows():
         index = param_names)
     h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
     
-    def generate_up_barriers(T, W, rebate, r, g, heston_parameters):
-        return generate_barrier_type(
-            T, 'Up', W, rebate, r, g, heston_parameters)
+    # def generate_up_barriers(T, W, rebate, r, g, heston_parameters):
+    #     return generate_barrier_type(
+    #         T, 'Up', W, rebate, r, g, heston_parameters)
 
-    def generate_down_barriers(T, W, rebate, r, g, heston_parameters):
-        return generate_barrier_type(
-            T, 'Down', W, rebate, r, g, heston_parameters)
+    # def generate_down_barriers(T, W, rebate, r, g, heston_parameters):
+    #     return generate_barrier_type(
+    #         T, 'Down', W, rebate, r, g, heston_parameters)
 
-    with ThreadPoolExecutor() as executor:
-        future_up = executor.submit(
-            generate_up_barriers, T, W, rebate, r, g, heston_parameters)
-        future_down = executor.submit(
-            generate_down_barriers, T, W, rebate, r, g, heston_parameters)
-        up_barriers = future_up.result()
-        down_barriers = future_down.result()
+    # with ThreadPoolExecutor() as executor:
+    #     future_up = executor.submit(
+    #         generate_up_barriers, T, W, rebate, r, g, heston_parameters)
+    #     future_down = executor.submit(
+    #         generate_down_barriers, T, W, rebate, r, g, heston_parameters)
+    #     up_barriers = future_up.result()
+    #     down_barriers = future_down.result()
     
-    barriers = pd.concat([down_barriers,up_barriers],ignore_index=True)
-    calls = barriers[barriers['w'] == 'call']
-    puts = barriers[barriers['w'] == 'put']
-    while True:
-        with pd.HDFStore('SPX barriers review.h5') as store:
-            try:
-                store.append(
-                    f'/call/{h5_key}', calls, format='table', append=True)
-                store.append(
-                    f'/put/{h5_key}', puts, format='table', append=True)
-                break
-            except Exception as e:
-                raise KeyError(f"error in '{h5_key}': {e}"
-                                f"\nretrying in 5 seconds...")
-                time.sleep(5)
+    # barriers = pd.concat([down_barriers,up_barriers],ignore_index=True)
+    # calls = barriers[barriers['w'] == 'call']
+    # puts = barriers[barriers['w'] == 'put']
+    # while True:
+    #     with pd.HDFStore('SPX barriers review.h5') as store:
+    #         try:
+    #             store.append(
+    #                 f'/call/{h5_key}', calls, format='table', append=True)
+    #             store.append(
+    #                 f'/put/{h5_key}', puts, format='table', append=True)
+    #             break
+    #         except Exception as e:
+    #             raise KeyError(f"error in '{h5_key}': {e}"
+    #                             f"\nretrying in 5 seconds...")
+    #             time.sleep(5)
     bar.update(1)
 bar.close()
