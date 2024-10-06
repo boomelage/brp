@@ -16,8 +16,6 @@ from sklearn.preprocessing import StandardScaler, MaxAbsScaler,\
             QuantileTransformer, OrdinalEncoder,OneHotEncoder
 from sklearn.linear_model import Lasso
 from plotnine import ggplot, aes, geom_point, labs, theme
-from datetime import datetime
-import joblib
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -75,21 +73,18 @@ class mlop:
             'dividend_rate',
             'kappa', 'theta', 'rho', 'eta', 'v0',
             
-            'barrier',
-            
-            # 'moneyness', 
+            # 'barrier',
             
             ]
         
         self.categorical_features = [
             
-            'barrier_type_name',
+            # 'barrier_type_name',
             
             # 'outin',
             
             # 'updown',
             
-            # 'moneyness_tag',
             
             'w'
             
@@ -181,7 +176,7 @@ class mlop:
     """
     def run_nnet(self, preprocessor, train_X, train_y):
         specs = [
-            "\nSingle Layer Network",
+            "Single Layer Network",
             f"hidden layer size: {self.single_layer_size}",
             f"learning rate: {self.learning_rate}",
             f"activation: {self.activation_function}",
@@ -218,9 +213,8 @@ class mlop:
         return model_fit, nnet_runtime, specs
     
     def run_dnn(self, preprocessor,train_X,train_y):
-        model_name = "Deep Neural Network"
         specs= [
-            f"\n{model_name}",
+            "Deep Neural Network",
             f"hidden layers sizes: {self.hidden_layer_sizes}",
             f"learning rate: {self.learning_rate}",
             f"activation: {self.activation_function}",
@@ -258,7 +252,7 @@ class mlop:
         return model_fit, dnn_runtime, specs
     
     def run_rf(self, preprocessor, train_X, train_y):
-        specs = ["\n{model_name}",
+        specs = ["Random Forest",
         f"number of estimators: {self.rf_n_estimators}",
         f"minimum samples per leaf: {self.rf_min_samples_leaf}"]
         print('\ntraining...')
@@ -288,9 +282,7 @@ class mlop:
         return model_fit, rf_runtime, specs
     
     def run_lm(self, train_X, train_y):
-        model_name = "Lasso Regression"
-        specs = [f"\n{model_name}",
-        f"alpha: {self.alpha}"]
+        specs = ["Lasso Regression",f"alpha: {self.alpha}"]
         print('\ntraining...')
         for spec in specs:
             print(spec)
@@ -331,16 +323,15 @@ class mlop:
         test_y = test_data[self.target_name]
         
         insample_prediction = model_fit.predict(train_X)
-        insample_abserror = np.abs(insample_prediction - train_y)
-        insample_sqerror = (insample_prediction - train_y)**2
-        insample_RMSE = np.sqrt(np.average(insample_sqerror))
-        insample_MAE = np.average(insample_abserror)
-
+        insample_diff = insample_prediction - train_y
+        insample_RMSE = np.sqrt(np.average(insample_diff**2))
+        insample_MAE = np.average(np.abs(insample_diff))
+        
         outofsample_prediction = model_fit.predict(test_X)
-        outofsample_abserror = np.abs(outofsample_prediction - test_y)
-        outofsample_sqerror = (outofsample_prediction-test_y)**2
-        outofsample_RMSE = np.sqrt(np.average(outofsample_sqerror))
-        outofsample_MAE = np.average(outofsample_abserror)
+        outofsample_diff = outofsample_prediction-test_y
+        outofsample_RMSE = np.sqrt(np.average(outofsample_diff**2))
+        outofsample_MAE = np.average(np.abs(outofsample_diff))
+        
         print("\nin sample:"
               f"\n     RSME: {insample_RMSE}"
               f"\n     MAE: {insample_MAE}")
@@ -349,10 +340,14 @@ class mlop:
               f"\n     MAE: {outofsample_MAE}")
         
         insample_results = train_data.copy()
-        insample_results['in_sample_prediction'] = insample_prediction 
+        insample_results['insample_target'] = train_y
+        insample_results['insample_prediction'] = insample_prediction 
+        insample_results['insample_error'] = insample_diff 
         
         outofsample_results = test_data.copy()
+        outofsample_results['outofsample_target'] = test_y
         outofsample_results['outofsample_prediction'] = outofsample_prediction
+        outofsample_results['outofsample_error'] = outofsample_diff
         
         errors = pd.Series(
             [

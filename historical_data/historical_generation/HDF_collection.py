@@ -6,9 +6,11 @@ Created on Thu Oct  3 09:38:02 2024
 """
 import os
 import sys
+import time
 import pandas as pd
 from datetime import datetime
 from tqdm import tqdm
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
@@ -26,24 +28,21 @@ data selection
 """
 
 
-barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
-sys.path.append(barriers_dir)
-h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
+# barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
+# sys.path.append(barriers_dir)
+# h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 
-# vanillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
-# sys.path.append(vanillas_dir)
-# h5_file_path = os.path.join(vanillas_dir,'SPX vanillas.h5')
 
-# sparse_vanillas_dir = os.path.join(
-#     current_dir,'historical_vanilla_generation_sparse')
-# sys.path.append(sparse_vanillas_dir)
-# h5_file_path = os.path.join(sparse_vanillas_dir,'SPX vanillas sparse.h5')
+sparse_vanillas_dir = os.path.join(
+    current_dir,'historical_vanilla_generation_sparse')
+sys.path.append(sparse_vanillas_dir)
+h5_file_path = os.path.join(sparse_vanillas_dir,'SPX vanillas sparse.h5')
 
 
 """"""
+collection_start_time = time.time()
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:
     keys = hdf_store.keys()
-
 """"""
   
 """
@@ -79,34 +78,37 @@ contracts.dtypes
 
 
 print('\npreparing data...\n')
-
-try:
+if 'barrier_price' in contracts.columns:
     contracts = contracts[contracts['barrier_price']>0].copy()
-    contracts.loc[:,'observed_price'] = ms.noisy_prices(
-        contracts.loc[:,'barrier_price'])
-except Exception:
+    contracts['observed_price'] = ms.noisyfier(contracts['barrier_price'])
+elif 'heston_price' in contracts.columns:
     contracts = contracts[contracts['heston_price']>0].copy()
-    contracts.loc[:,'observed_price'] = ms.noisy_prices(
-        contracts.loc[:,'heston_price'])
-
-
-contracts.loc[:,'moneyness'] = ms.vmoneyness(
-    contracts['spot_price'],
-    contracts['strike_price'],
-    contracts['w']
-    )
+    contracts['observed_price'] = ms.noisyfier(contracts['heston_price'])
+else:
+    raise ValueError('no price found in contracts dataset')
 
 contracts = contracts.reset_index(drop=True)
 
 pd.set_option("display.max_columns",None)
 print(f"\n{contracts.describe()}")
 print(f"\n{contracts.dtypes}\n")
+collection_end_time = time.time()
+collection_runtime = collection_end_time - collection_start_time
+print(f"\nruntime: {round(collection_runtime,4)} seconds\n")
 
 import matplotlib.pyplot as plt
-spots = contracts.set_index('calculation_date')['spot_price'].copy().drop_duplicates()
+spots = contracts.set_index('calculation_date')['spot_price'].drop_duplicates()
 plt.figure()
 plt.plot(spots,color='black')
 plt.xticks(rotation=45)
+plt.title('time series considered')
 plt.show()
 plt.clf()
-
+plt.figure()
+plt.hist(
+    contracts['observed_price'].values,
+    bins=int(round(len(contracts['observed_price'].values)**0.5,0))
+    )
+plt.title('distribution of observed option prices')
+plt.show()
+plt.clf()

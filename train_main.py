@@ -51,19 +51,19 @@ random train/test split
 """
 manual train/test split
 """
-unique_dates = dataset['calculation_date'].unique().tolist()
-date75 = unique_dates[int(0.75*len(unique_dates))]
+unique_dates = dataset['calculation_date'].sort_values(ascending=True).unique().tolist()
+filter_date = unique_dates[int(0.9*len(unique_dates))]
 
 train_data = dataset[
     (
       # (dataset['calculation_date']>=datetime(2007,1,1))
       #  &
-        (dataset['calculation_date']<=date75)
+        (dataset['calculation_date']<=filter_date)
       )].copy()
 
 test_data = dataset[
     (
-      (dataset['calculation_date']>date75)
+      (dataset['calculation_date']>filter_date)
       # &
       # (dataset['calculation_date']<=datetime(2012,12,31))
       )].copy()
@@ -95,6 +95,10 @@ print(f"\ntotal prices:\n{train_data.shape[0]}\n")
 print(f"\n{train_data.dtypes}\n")
 pd.reset_option("display.max_columns")
 
+test_train_ratio = test_data.describe(
+    ).iloc[0,0]/train_data.describe().iloc[0,0]
+print(f"\ntrain/test: {int(round((1-test_train_ratio)*100,0))}/"
+      +str(int(round(test_train_ratio*100,0))))
 
 
 """
@@ -106,7 +110,7 @@ single layer network
 
 
 
-# model_fit, runtime = mlop.run_nnet(preprocessor, train_X, train_y)
+# model_fit, runtime, specs = mlop.run_nnet(preprocessor, train_X, train_y)
 
 
 
@@ -117,7 +121,6 @@ deep neural network
 
 
 model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
-model_name = r'deep_neural_network'
 
 
 
@@ -128,7 +131,6 @@ random forest
 
 
 # model_fit, runtime, specs = mlop.run_rf(preprocessor,train_X,train_y)
-# model_name = r'random_forest'
 
 
 
@@ -154,7 +156,7 @@ pd.set_option("display.max_columns",None)
 print()
 print("#"*13+"\n# test data #\n"+"#"*13+
       f"\n{test_data.describe()}\n")
-insample_results, outofsample_results, errors =  mlop.test_prediction_accuracy(
+insample_results, outofsample_results, errors = mlop.test_prediction_accuracy(
         model_fit,
         test_data,
         train_data
@@ -172,17 +174,24 @@ n_calls = train_data[train_data['w']=='call'].shape[0]
 n_puts = train_data[train_data['w']=='put'].shape[0]
 
 train_end_tag = str(datetime.fromtimestamp(
-    train_end).strftime("%Y_%m_%d %H%M%S"))
-file_tag = str(train_end_tag + " " + model_name + f" ntrain{train_data.shape[0]}")
+    train_end).strftime("%Y_%m_%d %H-%M-%S"))
+file_tag = str(
+    train_end_tag + " " + specs[0] + 
+    f" {int(round(errors['outofsample_RMSE'],0))}oosRMSE"
+    )
 
 os.chdir(current_dir)
 os.mkdir(file_tag)
 file_dir = os.path.join(current_dir,file_tag,file_tag)
 
+insample_results.to_csv(f"{file_dir} insample_results.csv")
+outofsample_results.to_csv(f"{file_dir} outofsample_results.csv")
+
 joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
+    file.write(train_start_tag)
     file.write(f"\n{train_data}")
     file.write(f"\n{train_data.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
@@ -210,11 +219,41 @@ with open(f'{file_dir}.txt', 'w') as file:
         f"\n     RMSE: {errors['outofsample_RMSE']}"
         f"\n     MAE: {errors['outofsample_MAE']}\n"
         )
-    file.write("features:\n")
+    file.write("\nfeatures:\n")
     for feature in mlop.feature_set:
-        file.write(feature)
-        file.write(f"\ntarget: {mlop.target_name}")
+        file.write(f"     {feature}\n")
+    file.write(f"\ntarget: {mlop.target_name}\n")
+    file.write(f"\ncpu: {train_runtime}\n")
+    file.write(datetime.fromtimestamp(train_end).strftime('%c'))
 pd.reset_option("display.max_columns")
 
+import matplotlib.pyplot as plt
 
+plt.figure()
+plt.hist(
+    outofsample_results['outofsample_error'].values,
+    bins = int(
+        round(len(outofsample_results['outofsample_error'].values)**0.5)
+        )
+    )
+plt.title('distribution of out-of-sample errors')
+plt.show()
+plt.clf()
 
+plt.figure()
+plt.scatter(
+    outofsample_results['outofsample_error'],
+    outofsample_results['outofsample_prediction']
+    )
+plt.title('out-of-sample error against target')
+plt.show()
+plt.clf()
+
+plt.figure()
+plt.scatter(
+    outofsample_results['outofsample_target'],
+    outofsample_results['outofsample_prediction']
+    )
+plt.title('out-of-sample target against prediction')
+plt.show()
+plt.clf()

@@ -174,13 +174,14 @@ class model_settings():
     pricing functions 
     """
     
-    def noisy_prices(self, prices):
-        def noisify_price(price):
-            noisy_price = max(price + np.random.normal(scale=0.15),0)
+    def noisyfier(self, prices):
+        def noisy_price(price):
+            noisy_price = np.max(price + np.random.normal(scale=0.15),0)
             return noisy_price
-        prices_noisyfier = np.vectorize(noisify_price)
-        noisy_prices = prices_noisyfier(prices)
+        vnp = np.vectorize(noisy_price)
+        noisy_prices = vnp(prices)
         return noisy_prices
+        
     
     def black_scholes_price(self,
             s,k,t,r,volatility,w
@@ -480,8 +481,6 @@ class model_settings():
 
 
         """
-        calculation_dates = pd.to_datetime(
-            df['calculation_date']).dt.to_pydatetime()
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
         barrier_prices = vql_barrier_price(
             df['spot_price'],
@@ -489,7 +488,7 @@ class model_settings():
             df['days_to_maturity'],
             df['risk_free_rate'],
             df['dividend_rate'],
-            calculation_dates, 
+            np.array(df['calculation_date'],dtype=object), 
             df['w'],
             df['barrier_type_name'],
             df['barrier'],

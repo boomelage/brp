@@ -72,10 +72,6 @@ for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
     calculation_datetime = row['date']
-    calculation_date = ql.Date(
-        calculation_datetime.day,
-        calculation_datetime.month,
-        calculation_datetime.year)
     
     r = 0.04 
     rebate = 0.
@@ -131,12 +127,8 @@ for rowi, row in historical_calibrated.iterrows():
     features[param_names] = features[param_names].apply(
         pd.to_numeric, errors='coerce')
     features = features.dropna()
-    
-    features['calculation_date'] = calculation_date
-    
-    features['barrier_price'] = ms.vector_barrier_price(features)
-    
     features['calculation_date'] = calculation_datetime
+    features['barrier_price'] = ms.vector_barrier_price(features)
     features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
             features['days_to_maturity'], unit='D')
     

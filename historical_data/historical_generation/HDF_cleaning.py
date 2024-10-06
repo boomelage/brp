@@ -5,21 +5,24 @@ Created on Thu Oct  3 09:38:02 2024
 
 """
 import os
+import sys
 import pandas as pd
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(current_dir)
+vanillas_dir = os.path.join(current_dir,'historical_vanilla_generation_sparse')
+sys.path.append(vanillas_dir)
 
-h5_file_path = 'SPX vanillas.h5'
+vanillas_file_path = os.path.join(vanillas_dir,'SPX vanillas sparse.h5')
 
 """
 get key series
 """
 
-# with pd.HDFStore(h5_file_path, 'r') as hdf_store:
-#     keys = hdf_store.keys()
-# keys = pd.Series(keys)
+with pd.HDFStore(vanillas_file_path, 'r') as hdf_store:
+    keys = hdf_store.keys()
+keys = pd.Series(keys)
 
 
 """
@@ -65,8 +68,10 @@ apply specific cleaning procedures
 
 """
 
-# from tqdm import tqdm
-# bar = tqdm(desc='cleaning',total=len(keys))
+from tqdm import tqdm
+bar = tqdm(desc='cleaning',total=len(keys))
+
+
 # with pd.HDFStore(h5_file_path, 'a') as hdf_store: 
 #     for key in keys:
 #         data = hdf_store.get(key)
@@ -88,4 +93,15 @@ apply specific cleaning procedures
 #     hdf_store.put(hdf_store.keys()[756], data, format='table', data_columns=True)
 
 
+
+with pd.HDFStore(vanillas_file_path, 'a') as store:
+    for key in keys:
+        data = store[key]
+        data['days_to_maturity'] = data['days_to_maturity'].astype('int64')
+        store.put(key, data, format='table', data_columns=True)
+        bar.update(1)
+       
+        
+       
+bar.close()
 print('\ncleaning complete!')

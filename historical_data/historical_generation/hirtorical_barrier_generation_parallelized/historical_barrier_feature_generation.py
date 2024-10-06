@@ -6,10 +6,11 @@ Created on Sat Sep 21 13:54:06 2024
 """
 import os
 import sys
+import time
 import modin.pandas as pd
 import numpy as np
 from itertools import product
-
+start_time = time.time()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
@@ -120,7 +121,6 @@ def process_row(row):
 
 
 
-
 """
 ###########
 # routine #
@@ -128,7 +128,7 @@ def process_row(row):
 """
 
 historical_calibrated = pd.read_csv(dirdatacsv()[0])
-historical_calibrated = historical_calibrated.iloc[:,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:1,1:].copy(
     ).reset_index(drop=True)
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 historical_calibrated['risk_free_rate'] = 0.04
@@ -141,3 +141,7 @@ barrier_features = pd.concat(historical_calibrated.apply(
 barrier_features['barrier_price'] = ms.vector_barrier_price(barrier_features)
 
 barrier_features.to_csv('SPX historical barriers.csv')
+
+end_time = time.time()
+runtime = end_time - start_time
+print(f"\ntime elapsed: {round(runtime,2)} seconds\n")
