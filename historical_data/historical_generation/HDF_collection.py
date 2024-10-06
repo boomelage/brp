@@ -26,7 +26,7 @@ data selection
 """
 
 
-barriers_dir = os.path.join(current_dir,'hirtorical_barrier_generation')
+barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
 sys.path.append(barriers_dir)
 h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 

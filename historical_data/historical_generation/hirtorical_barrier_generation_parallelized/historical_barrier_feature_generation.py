@@ -6,14 +6,9 @@ Created on Sat Sep 21 13:54:06 2024
 """
 import os
 import sys
-import time
-import pandas as pd
+import modin.pandas as pd
 import numpy as np
-import QuantLib as ql
-from tqdm import tqdm
 from itertools import product
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -27,12 +22,8 @@ from data_query import dirdatacsv
 ms = model_settings()
 os.chdir(current_dir)
 
-
-
-    
-
 def generate_barrier_type(
-        s,T,updown,r,g,rebate,
+        s,updown,r,g,rebate,
         theta,kappa,rho,eta,v0,
         calculation_date):
     
@@ -60,7 +51,14 @@ def generate_barrier_type(
             [s],
             K,
             barriers,
-            T,
+            [
+                60,
+                90,
+                180,
+                360,
+                540,
+                720
+                ],
             [updown],
             ['Out','In'],
             ['call','put'],
@@ -79,7 +77,7 @@ def generate_barrier_type(
             'calculation_date'
                   ]
         )
-    
+
     barrier_features['barrier_type_name'] = \
         barrier_features['updown'] + barrier_features['outin']
     
@@ -94,7 +92,7 @@ def generate_barrier_type(
 
 
 
-def process_row(row,T):
+def process_row(row):
     s = row['spot_price']
     r = row['risk_free_rate']
     g = row['dividend_rate']
@@ -105,27 +103,20 @@ def process_row(row,T):
     eta = row['eta']
     v0 = row['v0']
     calculation_datetime = row['date']
-    calculation_date = ql.Date(
-        calculation_datetime.day,
-        calculation_datetime.month,
-        calculation_datetime.year
-        )
     up_features = generate_barrier_type(
-        s, T, 'Up', r, g, rebate, 
+        s, 'Up', r, g, rebate, 
         theta, kappa, rho, eta, v0,
-        calculation_date
+        calculation_datetime
         )
     down_features = generate_barrier_type(
-        s, T, 'Down', r, g, rebate, 
+        s, 'Down', r, g, rebate, 
         theta, kappa, rho, eta, v0,
-        calculation_date
+        calculation_datetime
         )
     barrier_features = pd.concat(
         [up_features, down_features], ignore_index=True)
     
     return barrier_features
-
-
 
 
 
@@ -137,27 +128,16 @@ def process_row(row,T):
 """
 
 historical_calibrated = pd.read_csv(dirdatacsv()[0])
-historical_calibrated = historical_calibrated.iloc[:1,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:,1:].copy(
     ).reset_index(drop=True)
 historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 historical_calibrated['risk_free_rate'] = 0.04
 historical_calibrated['rebate'] = 0.0
 
-T = [
-    60,
-    # 90,
-    # 180,
-    # 360,
-    # 540,
-    # 720
-    ]
 
-
-barrier_feature_list = historical_calibrated.apply(
-    process_row, axis=1).tolist()
-
-barrier_features = pd.concat(barrier_feature_list,ignore_index=True)
+barrier_features = pd.concat(historical_calibrated.apply(
+    process_row, axis=1).values, ignore_index=True)
 
 barrier_features['barrier_price'] = ms.vector_barrier_price(barrier_features)
 
-barrier_features.groupby('calculation_date')
+barrier_features.to_csv('SPX historical barriers.csv')

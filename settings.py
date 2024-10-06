@@ -9,6 +9,7 @@ import QuantLib as ql
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
+import modin.pandas as pd
 
 class model_settings():
     
@@ -57,6 +58,18 @@ class model_settings():
         datetime_dates = vql_to_datetime(ql_dates)
         return datetime_dates
     
+    def datetime_to_ql(self, datetime_date):
+        ql_date = ql.Date(
+            datetime_date.day,
+            datetime_date.month,
+            datetime_date.year
+            )
+        return ql_date
+    
+    def vector_datetime_to_ql(self, datetime_dates):
+        vdatetime_to_ql = np.vectorize(self.datetime_to_ql)
+        ql_dates = vdatetime_to_ql(datetime_dates)
+        return ql_dates
         
         
     """
@@ -270,20 +283,23 @@ class model_settings():
         return h_price
     
     def ql_barrier_price(self,
-            s,k,t,r,g,calculation_date, w,
+            s,k,t,r,g,calculation_datetime, w,
             barrier_type_name,barrier,rebate,
             kappa,theta,rho,eta,v0
             ):
+        
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )
+        
         ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         ql.Settings.instance().evaluationDate = calculation_date
         heston_process = ql.HestonProcess(
-            
             ts_r,ts_g, 
-            
             ql.QuoteHandle(ql.SimpleQuote(s)), 
-            
             v0, kappa, theta, eta, rho
-            
             )
         
         heston_model = ql.HestonModel(heston_process)
@@ -464,6 +480,8 @@ class model_settings():
 
 
         """
+        calculation_dates = pd.to_datetime(
+            df['calculation_date']).dt.to_pydatetime()
         vql_barrier_price = np.vectorize(self.ql_barrier_price)
         barrier_prices = vql_barrier_price(
             df['spot_price'],
@@ -471,7 +489,7 @@ class model_settings():
             df['days_to_maturity'],
             df['risk_free_rate'],
             df['dividend_rate'],
-            df['calculation_date'], 
+            calculation_dates, 
             df['w'],
             df['barrier_type_name'],
             df['barrier'],
