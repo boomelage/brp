@@ -90,7 +90,6 @@ try:
     print(f"\n{train_data['barrier_type_name'].unique()}")
 except Exception:
     pass
-print(f"\nmoneyness:\n{np.sort(train_data['moneyness'].unique())}")
 print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
 print(f"\ntotal prices:\n{train_data.shape[0]}\n")
 print(f"\n{train_data.dtypes}\n")
@@ -195,8 +194,6 @@ with open(f'{file_dir}.txt', 'w') as file:
     except Exception:
         pass
     file.write("")
-    file.write(
-        f"\n\nmoneyness:\n{np.sort(train_data['moneyness'].unique())}\n")
     file.write(f"\nnumber of calls, puts:\n{n_calls},{n_puts}\n")
     file.write(f"\ntotal prices:\n{train_data.shape[0]}\n")
     for spec in specs:

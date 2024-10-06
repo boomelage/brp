@@ -7,7 +7,6 @@ Created on Thu Oct  3 09:38:02 2024
 import os
 import sys
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from tqdm import tqdm
 current_dir = os.path.dirname(os.path.abspath(__file__))
