@@ -94,12 +94,13 @@ bar = tqdm(desc='cleaning',total=len(keys))
 
 
 
-with pd.HDFStore(vanillas_file_path, 'a') as store:
-    for key in keys:
-        data = store[key]
-        data['days_to_maturity'] = data['days_to_maturity'].astype('int64')
-        store.put(key, data, format='table', data_columns=True)
-        bar.update(1)
+
+# with pd.HDFStore(vanillas_file_path, 'a') as store:
+#     for key in keys:
+#         data = store[key]
+#         data['days_to_maturity'] = data['days_to_maturity'].astype('int64')
+#         store.put(key, data, format='table', data_columns=True)
+#         bar.update(1)
        
         
        

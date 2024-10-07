@@ -91,8 +91,8 @@ try:
 except Exception:
     pass
 print(f"\nnumber of calls, puts:\n{n_calls},{n_puts}")
-print(f"\ntotal prices:\n{train_data.shape[0]}\n")
-print(f"\n{train_data.dtypes}\n")
+print(f"\ntotal prices:\n{train_data.shape[0]}")
+print(f"\n{train_data.dtypes}")
 pd.reset_option("display.max_columns")
 
 test_train_ratio = test_data.describe(
@@ -192,8 +192,6 @@ joblib.dump(model_fit,str(f"{file_dir}.pkl"))
 pd.set_option("display.max_columns",None)
 with open(f'{file_dir}.txt', 'w') as file:
     file.write(train_start_tag)
-    file.write(f"\n{train_data}")
-    file.write(f"\n{train_data.describe()}\n")
     file.write(f"\nspot(s):\n{S}")
     file.write(f"\n\nstrikes:\n{K}\n")
     file.write(f"\nmaturities:\n{T}\n")
@@ -211,6 +209,7 @@ with open(f'{file_dir}.txt', 'w') as file:
           f"\n{train_data.describe()}\n")
     file.write("#"*13+"\n# test data #\n"+"#"*13+
           f"\n{test_data.describe()}\n")
+    file.write(f"\n{dataset.dtypes}")
     file.write(
         f"\nin sample results:"
         f"\n     RMSE: {errors['insample_RMSE']}"
@@ -240,20 +239,12 @@ plt.title('distribution of out-of-sample errors')
 plt.show()
 plt.clf()
 
-plt.figure()
-plt.scatter(
-    outofsample_results['outofsample_error'],
-    outofsample_results['outofsample_prediction']
-    )
-plt.title('out-of-sample error against target')
-plt.show()
-plt.clf()
+predictive_performance_plot = mlop.plot_model_performance(
+        outofsample_results, 'observed_price', 'outofsample_prediction', 
+        'target', 'predicted', runtime, 'fit'
+        )
 
-plt.figure()
-plt.scatter(
-    outofsample_results['outofsample_target'],
-    outofsample_results['outofsample_prediction']
-    )
-plt.title('out-of-sample target against prediction')
-plt.show()
-plt.clf()
+predictive_performance_plot = mlop.plot_model_performance(
+        outofsample_results, 'outofsample_error', 'observed_price', 
+        'outofsample_error', 'observed_price', runtime, 'error against target'
+        )

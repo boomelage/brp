@@ -33,7 +33,7 @@ historical_calibrated = historical_calibrated.iloc[:,1:].copy(
 
 historical_calibrated['date'] = pd.to_datetime(
     historical_calibrated['date'],
-    format='%d/%m/%Y')
+    format='%Y-%m-%d')
 
 os.chdir(current_dir)
 
@@ -124,7 +124,7 @@ for rowi, row in historical_calibrated.iterrows():
     puts = features[features['w'] == 'put'].reset_index(drop=True)
     while True:
         try:
-            with pd.HDFStore('SPX vanillas sublime test.h5') as store:
+            with pd.HDFStore('SPX vanillas.h5') as store:
                 store.append(
                     f'/call/{hist_file_date}', calls, format='table', append=True)
                 store.append(

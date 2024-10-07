@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from tqdm import tqdm
 
@@ -28,15 +29,14 @@ data selection
 """
 
 
-# barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
-# sys.path.append(barriers_dir)
-# h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
+barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
+sys.path.append(barriers_dir)
+h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 
 
-sparse_vanillas_dir = os.path.join(
-    current_dir,'historical_vanilla_generation_sparse')
-sys.path.append(sparse_vanillas_dir)
-h5_file_path = os.path.join(sparse_vanillas_dir,'SPX vanillas sparse.h5')
+# vaillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
+# sys.path.append(vaillas_dir)
+# h5_file_path = os.path.join(vaillas_dir,'SPX vanillas.h5')
 
 
 """"""
@@ -79,10 +79,11 @@ contracts.dtypes
 
 print('\npreparing data...\n')
 if 'barrier_price' in contracts.columns:
-    contracts = contracts[contracts['barrier_price']>0].copy()
+    contracts = contracts[contracts['barrier_price']>0]
     contracts['observed_price'] = ms.noisyfier(contracts['barrier_price'])
+    
 elif 'heston_price' in contracts.columns:
-    contracts = contracts[contracts['heston_price']>0].copy()
+    contracts = contracts[contracts['heston_price']>0]
     contracts['observed_price'] = ms.noisyfier(contracts['heston_price'])
 else:
     raise ValueError('no price found in contracts dataset')
@@ -106,9 +107,9 @@ plt.show()
 plt.clf()
 plt.figure()
 plt.hist(
-    contracts['observed_price'].values,
+    contracts['observed_price'][contracts['observed_price']>1].values,
     bins=int(round(len(contracts['observed_price'].values)**0.5,0))
     )
-plt.title('distribution of observed option prices')
+plt.title('distribution of observed option prices above 1')
 plt.show()
 plt.clf()

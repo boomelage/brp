@@ -73,13 +73,13 @@ class mlop:
             'dividend_rate',
             'kappa', 'theta', 'rho', 'eta', 'v0',
             
-            # 'barrier',
+            'barrier',
             
             ]
         
         self.categorical_features = [
             
-            # 'barrier_type_name',
+            'barrier_type_name',
             
             # 'outin',
             
@@ -382,13 +382,14 @@ class mlop:
         
         return training_results
 
-    def plot_model_performance(self, predictive_performance, runtime, title):
+    def plot_model_performance(
+            self, df, X_name, Y_name, xlabel, ylabel, runtime, title):
         predictive_performance_plot = (
-            ggplot(predictive_performance, 
-                   aes(x="moneyness", y="abs_relative_error")) + 
+            ggplot(df, 
+                   aes(x=X_name, y=Y_name)) + 
             geom_point(alpha=0.05) + 
-            labs(x="relative moneyness", 
-                 y=f"absolute relative error ({int(runtime)} second runtime)",
+            labs(x=xlabel, 
+                 y=ylabel,
                  title=title) + 
             theme(legend_position="")
             )

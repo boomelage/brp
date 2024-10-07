@@ -175,13 +175,12 @@ class model_settings():
     """
     
     def noisyfier(self, prices):
-        def noisy_price(price):
-            noisy_price = max(price + np.random.normal(scale=0.15),0)
-            return noisy_price
-        vnp = np.vectorize(noisy_price)
-        noisy_prices = vnp(prices)
-        return noisy_prices
-        
+        prices = np.asarray(prices)
+        noise = np.random.normal(scale=0.15, size=prices.shape)
+        noisy_prices = np.clip(prices + noise, 0, None)
+        return noisy_prices.astype(prices.dtype)
+    
+            
     
     def black_scholes_price(self,
             s,k,t,r,volatility,w
