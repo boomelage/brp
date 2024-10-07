@@ -8,18 +8,16 @@ import os
 import sys
 import time
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from tqdm import tqdm
-
+import matplotlib.pyplot as plt
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 grandparent_dir = os.path.dirname(parent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
 
-from settings import model_settings
-ms = model_settings()
+from model_settings import ms
 os.chdir(current_dir)
 
 print("\nimporting dataset(s)...\n")
@@ -29,14 +27,14 @@ data selection
 """
 
 
-barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
-sys.path.append(barriers_dir)
-h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
+# barriers_dir = os.path.join(current_dir,'historical_barrier_generation')
+# sys.path.append(barriers_dir)
+# h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 
 
-# vaillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
-# sys.path.append(vaillas_dir)
-# h5_file_path = os.path.join(vaillas_dir,'SPX vanillas.h5')
+vaillas_dir = os.path.join(current_dir,'historical_vanilla_generation')
+sys.path.append(vaillas_dir)
+h5_file_path = os.path.join(vaillas_dir,'SPX vanillas.h5')
 
 
 """"""
@@ -97,18 +95,30 @@ collection_end_time = time.time()
 collection_runtime = collection_end_time - collection_start_time
 print(f"\nruntime: {round(collection_runtime,4)} seconds\n")
 
-import matplotlib.pyplot as plt
+
+
+histogram_tolerance = 1
+hist_contracts = contracts[
+    'observed_price'][contracts['observed_price']>histogram_tolerance].copy()
+percent_exclusion = 1-len(hist_contracts)/contracts['observed_price'].shape[0]
+
 spots = contracts.set_index('calculation_date')['spot_price'].drop_duplicates()
 plt.figure()
 plt.plot(spots,color='black')
 plt.xticks(rotation=45)
-plt.title('time series considered')
+plt.title('SPX index time series considered')
+plt.ylabel('spot price')
+plt.yticks(rotation=45)
 plt.show()
 plt.clf()
 plt.hist(
-    contracts['observed_price'][contracts['observed_price']>1].values,
+    hist_contracts,
     bins=int(round(len(contracts['observed_price'].values)**0.5,0))
     )
-plt.title('distribution of observed option prices greater than one')
+plt.title('distribution of observed option '
+          f'prices greater than {histogram_tolerance}')
+plt.xlabel('option price')
+plt.ylabel(f'frequency ({round(percent_exclusion,2)}% of data excluded)')
+plt.yticks(rotation = 45)
 plt.show()
 plt.clf()
