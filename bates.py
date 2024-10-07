@@ -11,7 +11,7 @@ os.chdir(current_dir)
 from settings import model_settings
 ms = model_settings()
 
-
+from datetime import datetime
 s = 100
 k = 110
 r = 0.04
@@ -27,7 +27,7 @@ nu = 0.05  # Mean jump size
 delta = 0.02  # Jump size standard deviation
 
 
-calculation_date = ms.today
+calculation_date = ms.todatime
 t = 1
 
 w = 'put'
@@ -66,8 +66,8 @@ barrier = ms.ql_barrier_price(
     kappa, theta, rho, eta, v0)
 
 print(f"\nBates: {bates}\nHeston: {heston}"
-      # f"\nnumpy/scipy Black Scholes: {black_scholes}"
-      # f"\nQuantLib BlackScholesProcess AnalyticEuropean: {qlbs}"
+      f"\nnumpy/scipy Black Scholes: {black_scholes}"
+      f"\nQuantLib BlackScholesProcess AnalyticEuropean: {qlbs}"
       f"\nFD Barrier (B = S): {barrier}\n")
 
 

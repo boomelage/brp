@@ -20,6 +20,8 @@ class model_settings():
         sys.path.append('train_data')
         sys.path.append('historical_data')
         sys.path.append('misc')
+        self.todatime           =    datetime.today()
+        self.today              =    ql.Date.todaysDate()
         self.day_count          =    ql.Actual365Fixed()
         self.calendar           =    ql.UnitedStates(m=1)
         self.compounding        =    ql.Continuous
@@ -201,16 +203,19 @@ class model_settings():
     def ql_black_scholes(self,
             s, k, t, r,
             volatility,w,
-            calculation_date, 
+            calculation_datetime, 
             ):
-
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )  
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
             option_type = ql.Option.Put
         else:
             raise ValueError("call/put flag w sould be either 'call' or 'put'")
-            
         ql.Settings.instance().evaluationDate = calculation_date
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
@@ -246,8 +251,13 @@ class model_settings():
     def ql_heston_price(self,
             s,k,t,r,g,w,
             kappa,theta,rho,eta,v0,
-            calculation_date
+            calculation_datetime
             ):
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )
         ql.Settings.instance().evaluationDate = calculation_date
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
@@ -287,15 +297,13 @@ class model_settings():
             barrier_type_name,barrier,rebate,
             kappa,theta,rho,eta,v0
             ):
-        
         calculation_date = ql.Date(
             calculation_datetime.day,
             calculation_datetime.month,
             calculation_datetime.year
             )
-        
-        ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         ql.Settings.instance().evaluationDate = calculation_date
+        ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         heston_process = ql.HestonProcess(
             ts_r,ts_g, 
             ql.QuoteHandle(ql.SimpleQuote(s)), 
@@ -341,16 +349,19 @@ class model_settings():
             s,k,t,r,g,
             kappa,theta,rho,eta,v0,
             lambda_, nu, delta, 
-            w, calculation_date
+            w, calculation_datetime
             ):
-        
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
             option_type = ql.Option.Put
         else:
             raise ValueError("call/put flag w sould be either 'call' or 'put'")
-        
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )
         ql.Settings.instance().evaluationDate = calculation_date   
         expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         

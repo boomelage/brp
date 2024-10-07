@@ -19,8 +19,8 @@ from matplotlib import cm
 ms = model_settings()
 
 
-# ts = raw_calls
-ts = raw_puts
+ts = raw_calls
+# ts = raw_puts
 
 ts = ts.loc[
     ts.iloc[:,0].dropna().index,
@@ -52,21 +52,24 @@ Z = np.array([[
     bicubic_vol(y, x, True) for x in plot_strikes] 
     for y in plot_maturities])
 
-azims = np.arange(45,361+45,15)
-for azim in azims:
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
-    ax.view_init(elev=20, azim=azim)  
-    surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                    linewidth=0.1)
-    fig.colorbar(surf, shrink=0.3, aspect=5)
-    
-    ax.set_xlabel("Strikes", size=9)
-    ax.set_ylabel("Maturities (Years)", size=9)
-    ax.set_zlabel("Volatility", size=9)
-    
-    plt.tight_layout() 
-    plt.show()
-    
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.view_init(elev=20, azim=30)  
+surf = ax.plot_surface(X,Y,Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+                linewidth=0.1)
+fig.colorbar(surf, shrink=0.3, aspect=5)
+
+ax.set_xlabel("Strikes", size=9)
+ax.set_ylabel("Maturities (Years)", size=9)
+ax.set_zlabel("Volatility", size=9)
+
+plt.tight_layout() 
+plt.show()
 plt.cla()
 plt.clf()
+
+
+
+
+
