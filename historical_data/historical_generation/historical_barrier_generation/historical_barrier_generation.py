@@ -11,9 +11,6 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from itertools import product
-import warnings
-warnings.filterwarnings("ignore", message=".*defaulting to pandas implementation.*")
-
 
 def generate_barrier_features(s, K, T, barriers, updown, OUTIN, W):
     barrier_features = pd.DataFrame(

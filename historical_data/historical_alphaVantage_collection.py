@@ -125,7 +125,6 @@ V = np.array(
     [[bicubic_vol(float(t),float(k),False) for k in K] for t in T]
     )
 
-
 plt.rcParams['figure.figsize']=(7,5)
 
 fig = plt.figure()
@@ -139,7 +138,7 @@ ax.set_xlabel("Strikes", size=9)
 ax.set_ylabel("Maturities (Years)", size=9)
 ax.set_zlabel("Volatility", size=9)
 
-plt.tight_layout() 
+plt.tight_layout()
 plt.show()
 plt.cla()
 plt.clf()
