@@ -74,7 +74,7 @@ df['moneyness'] = ms.vmoneyness(df['spot_price'], df['strike_price'], df['w'])
 puts = df[df['w']=='put'].copy().reset_index(drop=True)
 
 puts = puts[np.abs(puts['moneyness'])<0.3].copy()
-
+puts = puts[np.abs(puts['moneyness'])>0.15].copy()
 
 s = float(puts['spot_price'].unique()[0])
 T = np.sort(puts['days_to_maturity'].unique().astype(float)).tolist()
@@ -114,11 +114,8 @@ for i,k in enumerate(K):
 bicubic_vol = ql.BicubicSpline(T, K, ql_ivols)
 
 
-print(bicubic_vol(t,k,False))
-print(ivol_df.loc[k,t])
-
 K = np.linspace(min(K),max(K),100)
-T = np.linspace(min(T),180,100)
+T = np.linspace(min(T),360,100)
 KK,TT = np.meshgrid(K,T)
 
 V = np.array(
