@@ -22,8 +22,7 @@ sys.path.append(os.path.join(parent_dir,'term_structure'))
 import Derman as derman
 from routine_calibration_global import calibrate_heston
 from routine_calibration_testing import test_heston_calibration
-from settings import model_settings
-ms = model_settings()
+from model_settings import ms
 os.chdir(current_dir)
 
 from historical_collection import historical_data
@@ -37,21 +36,27 @@ historical_data = historical_data.copy()
 param_names = ['theta','kappa','rho','eta','v0','relative_error']
 historical_data.loc[:,param_names] = np.nan
 historical_data
-hist_dtdates = np.array(
+hist_calculation_datetimes = np.array(
     historical_data['date'],
     dtype=object
     )
 
 
 historical_calibration_errors = pd.Series()
-test_vols = pd.Series(np.zeros(len(hist_dtdates),dtype=float),index=hist_dtdates)
+test_vols = pd.Series(
+    np.zeros(len(hist_calculation_datetimes),dtype=float),
+    index=hist_calculation_datetimes
+    )
 for row_i, row in historical_data.iterrows():
     s = row['spot_price']
     g = row['dividend_rate']
     r = 0.04
-    dtdate = row['date']
-    print_date = dtdate.strftime('%A %d %B %Y')
-    calculation_date = ql.Date(dtdate.day,dtdate.month,dtdate.year)
+    calculation_datetime = row['date']
+    print_date = calculation_datetime.strftime('%A %d %B %Y')
+    calculation_date = ql.Date(
+        calculation_datetime.day,
+        calculation_datetime.month,
+        calculation_datetime.year)
     
     """
     ###############
@@ -87,7 +92,7 @@ for row_i, row in historical_data.iterrows():
     atm_volvec = pd.Series(atm_volvec)
     atm_volvec.index = T
 
-    if dtdate == datetime(2008,11,20):
+    if calculation_datetime == datetime(2008,11,20):
         spread = 0.30
     elif s < 900:
         spread = 0.25
@@ -142,15 +147,15 @@ for row_i, row in historical_data.iterrows():
     time.sleep(0.01)
     
     heston_parameters = test_heston_calibration(
-        calibration_dataset, heston_parameters, calculation_date, r, g)
+        calibration_dataset, heston_parameters, calculation_datetime, r, g)
     
     historical_data.loc[row_i,param_names] = heston_parameters[param_names]
     
     print(f"^ {print_date}")
     
     calibration_error = heston_parameters['relative_error']
-    test_vols[dtdate] = atm_volvec.iloc[0]
-    historical_calibration_errors[dtdate] = calibration_error
+    test_vols[calculation_datetime] = atm_volvec.iloc[0]
+    historical_calibration_errors[calculation_datetime] = calibration_error
     
 print(f"\nhistorical average absolute relative calibration error: "
       f"{round(np.average(np.abs(calibration_error*100)),4)}%")       

@@ -7,8 +7,7 @@ Created on Wed Sep 25 19:58:27 2024
 import QuantLib as ql
 import pandas as pd
 import numpy as np
-from settings import model_settings
-ms = model_settings()
+from model_settings import ms
 
 
 

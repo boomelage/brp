@@ -11,12 +11,11 @@ parent_dir = os.path.dirname(current_dir)
 os.chdir(current_dir)
 sys.path.append(parent_dir)
 import QuantLib as ql
-from settings import model_settings
 from routine_ivol_collection import raw_puts, raw_calls
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-ms = model_settings()
+from model_settings import ms
 
 
 ts = raw_calls

@@ -48,9 +48,8 @@ grandgrandparent_dir = os.path.dirname(grandparent_dir)
 sys.path.append(parent_dir)
 sys.path.append(grandparent_dir)
 sys.path.append(grandgrandparent_dir)
-from settings import model_settings
+from model_settings import ms
 from data_query import dirdatacsv
-ms = model_settings()
 os.chdir(current_dir)
 
 """

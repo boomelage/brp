@@ -15,9 +15,9 @@ import pandas as pd
 import numpy as np
 import QuantLib as ql
 from itertools import product
-from settings import model_settings
+from model_settings import ms
 import Derman as derman
-ms = model_settings()
+
 
 
 """

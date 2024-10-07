@@ -9,8 +9,7 @@ os.chdir(current_dir)
 import QuantLib as ql
 import numpy as np
 import pandas as pd
-from settings import model_settings
-ms = model_settings()
+from model_settings import ms
 
 def calibrate_heston(
         calibration_dataset, 
