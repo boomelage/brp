@@ -7,39 +7,28 @@ Created on Sat Sep 21 13:54:06 2024
 import os
 import sys
 import time
-import pandas as pd
+import modin.pandas as pd
 import numpy as np
-import QuantLib as ql
 from tqdm import tqdm
 from itertools import product
+import warnings
+warnings.filterwarnings("ignore", message=".*defaulting to pandas implementation.*")
 
-def generate_barrier_features(s,K,T,barriers,updown,OUTIN,W):
-    
-    barrier_features =  pd.DataFrame(
-        product(
-            [s],
-            K,
-            barriers,
-            T,
-            [updown],
-            OUTIN,
-            W
-            ),
+
+def generate_barrier_features(s, K, T, barriers, updown, OUTIN, W):
+    barrier_features = pd.DataFrame(
+        product([s], K, barriers, T, [updown], OUTIN, W),
         columns=[
-            'spot_price', 
-            'strike_price',
-            'barrier',
-            'days_to_maturity',
-            'updown',
-            'outin',
-            'w'
-                  ]
-        )
+            'spot_price', 'strike_price', 'barrier', 'days_to_maturity',
+            'updown', 'outin', 'w'
+        ]
+    )
     
     barrier_features['barrier_type_name'] = \
         barrier_features['updown'] + barrier_features['outin']
     
     return barrier_features
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -71,7 +60,7 @@ for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
     calculation_datetime = row['date']
-    
+
     r = 0.04 
     rebate = 0.
     step = 1
@@ -117,15 +106,11 @@ for rowi, row in historical_calibrated.iterrows():
     features['rebate'] = rebate
     features['dividend_rate'] = row['dividend_rate']
     features['risk_free_rate'] = r
-
-    
-    features.describe()
-    param_names = ['theta', 'kappa', 'rho', 'eta', 'v0']
-    features[param_names] = historical_calibrated.loc[
-        rowi, param_names].values
-    features[param_names] = features[param_names].apply(
-        pd.to_numeric, errors='coerce')
-    features = features.dropna()
+    features.loc[:,'theta'] = historical_calibrated.loc[rowi,'theta']
+    features.loc[:,'kappa'] = historical_calibrated.loc[rowi,'kappa']
+    features.loc[:,'rho'] = historical_calibrated.loc[rowi,'rho']
+    features.loc[:,'eta'] = historical_calibrated.loc[rowi,'eta']
+    features.loc[:,'v0'] = historical_calibrated.loc[rowi,'v0']
     features['calculation_date'] = calculation_datetime
     features['barrier_price'] = ms.vector_barrier_price(features)
     features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
