@@ -225,26 +225,3 @@ with open(f'{file_dir}.txt', 'w') as file:
     file.write(f"\ncpu: {train_runtime}\n")
     file.write(datetime.fromtimestamp(train_end).strftime('%c'))
 pd.reset_option("display.max_columns")
-
-import matplotlib.pyplot as plt
-
-plt.figure()
-plt.hist(
-    outofsample_results['outofsample_error'].values,
-    bins = int(
-        round(len(outofsample_results['outofsample_error'].values)**0.5)
-        )
-    )
-plt.title('distribution of out-of-sample errors')
-plt.show()
-plt.clf()
-
-predictive_performance_plot = mlop.plot_model_performance(
-        outofsample_results, 'observed_price', 'outofsample_prediction', 
-        'target', 'predicted', runtime, 'fit'
-        )
-
-predictive_performance_plot = mlop.plot_model_performance(
-        outofsample_results, 'outofsample_error', 'observed_price', 
-        'outofsample_error', 'observed_price', runtime, 'error against target'
-        )

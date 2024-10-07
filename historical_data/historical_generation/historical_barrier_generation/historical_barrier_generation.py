@@ -7,7 +7,7 @@ Created on Sat Sep 21 13:54:06 2024
 import os
 import sys
 import time
-import modin.pandas as pd
+import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from itertools import product

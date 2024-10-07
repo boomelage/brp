@@ -71,17 +71,20 @@ df['spot_price'] = df['calculation_date'].map(spots['mid'])
 df['days_to_maturity'] = (
     df['expiration_date'] - df['calculation_date']).dt.days
 df['moneyness'] = ms.vmoneyness(df['spot_price'], df['strike_price'], df['w'])
-puts = df[df['w']=='put'].copy().reset_index(drop=True)
-
-puts = puts[np.abs(puts['moneyness'])<0.3].copy()
-puts = puts[np.abs(puts['moneyness'])>0.15].copy()
-
-s = float(puts['spot_price'].unique()[0])
-T = np.sort(puts['days_to_maturity'].unique().astype(float)).tolist()
-K = np.sort(puts['strike_price'].unique().astype(float)).tolist()
 
 
-puts = puts.set_index(['days_to_maturity','strike_price'])
+
+contracts = df[df['w']=='call'].copy().reset_index(drop=True)
+
+contracts = contracts[np.abs(contracts['moneyness'])<0.10].copy()
+contracts = contracts[np.abs(contracts['moneyness'])>0.05].copy()
+
+s = float(contracts['spot_price'].unique()[0])
+T = np.sort(contracts['days_to_maturity'].unique().astype(float)).tolist()
+K = np.sort(contracts['strike_price'].unique().astype(float)).tolist()
+
+
+contracts = contracts.set_index(['days_to_maturity','strike_price'])
 
 
 ivol_df = pd.DataFrame(
@@ -93,7 +96,7 @@ ivol_df = pd.DataFrame(
 for k in K:
     for t in T:
         try:
-            ivol_df.loc[k,t] = puts.loc[(t,k),'volatility']
+            ivol_df.loc[k,t] = contracts.loc[(t,k),'volatility']
         except Exception:
             ivol_df.loc[k,t] = np.nan
 
