@@ -53,7 +53,7 @@ asianExpiryDate = calculation_date + periods[-1]
 vanillaPayoff = ql.PlainVanillaPayoff(option_type, k)
 europeanExercise = ql.EuropeanExercise(asianExpiryDate)
 
-flat_r, flat_g = ms.ql_flat_rg(
+flat_r, flat_g = ms.ql_ts_rg(
     r,g,calculation_date
     )
 
