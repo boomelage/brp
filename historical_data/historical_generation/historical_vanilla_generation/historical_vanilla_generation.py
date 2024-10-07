@@ -28,7 +28,7 @@ os.chdir(current_dir)
 from data_query import dirdatacsv
 csvs = dirdatacsv()
 historical_calibrated = pd.read_csv(csvs[0])
-historical_calibrated = historical_calibrated.iloc[:,1:].copy(
+historical_calibrated = historical_calibrated.iloc[:100,1:].copy(
     ).reset_index(drop=True)
 
 historical_calibrated['date'] = pd.to_datetime(
@@ -38,6 +38,7 @@ historical_calibrated['date'] = pd.to_datetime(
 os.chdir(current_dir)
 
 pd.set_option("display.max_columns",None)
+
 
 """
 ###########

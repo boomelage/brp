@@ -161,6 +161,7 @@ historical_data.to_csv(
         '2007-2012 SPX calibrated.csv'
         )
     )
+print("\nhistorical parameters saved!")
 
 
 
@@ -171,4 +172,8 @@ plt.plot(
     )
 plt.title("Hisotorical calibration error")
 plt.ylabel("absolute relative error") 
-pd.set_option("display.max_columns",None)
+plt.show()
+plt.clf
+
+
+

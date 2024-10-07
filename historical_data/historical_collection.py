@@ -5,11 +5,14 @@ Created on Sat Sep 21 13:54:06 2024
 @author: boomelage
 """
 import os
+import sys
+import pandas as pd
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-import pandas as pd
 
-os.chdir(parent_dir)
+sys.path.append(parent_dir)
+
+
 from data_query import dirdatacsv
 
 
@@ -74,4 +77,4 @@ historical_data[
         ['30D', '60D', '3M', '6M', '12M', '18M', '24M', 'dividend_rate']
         ]/100
 
-
+print(f"\nhistorical data:\n{historical_data.head(10)}")

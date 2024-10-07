@@ -106,9 +106,8 @@ derman_coefs = compute_derman_coefficients(
 test_T = derman_coefs.index
 test_atm_vols = raw_atm_vols.loc[test_T]
 
-plot_derman_test(derman_s,test_T,test_atm_vols,raw_ts,derman_coefs)
-
-print(f"\navailable Derman coefficients:\n{derman_coefs}")
+# plot_derman_test(derman_s,test_T,test_atm_vols,raw_ts,derman_coefs)
+# print(f"\navailable Derman coefficients:\n{derman_coefs}")
 
 
 
