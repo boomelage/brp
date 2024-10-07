@@ -40,8 +40,8 @@ for i, k in enumerate(K):
 bicubic_vol = ql.BicubicSpline(T, K, SIG)
 
 
-T = np.linspace(min(T),max(T),50)
-K = np.linspace(min(K),max(K),50)
+T = np.linspace(min(T),max(T),100)
+K = np.linspace(min(K),max(K),100)
 
 plt.rcParams['figure.figsize']=(16,7)
 plot_maturities = np.sort(np.array(T,dtype=float)/365)
@@ -67,6 +67,7 @@ plt.tight_layout()
 plt.show()
 plt.cla()
 plt.clf()
+
 
 
 
