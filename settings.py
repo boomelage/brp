@@ -4,36 +4,30 @@
 general settings
 
 """
-import sys
 import QuantLib as ql
 import numpy as np
 from datetime import datetime
 from scipy.stats import norm
-import modin.pandas as pd
+import pandas as pd
 
 class model_settings():
-    
-
-    
     def __init__(self):
-        sys.path.append('contract_details')
-        sys.path.append('train_data')
-        sys.path.append('historical_data')
-        sys.path.append('misc')
-        self.todatime           =    datetime.today()
-        self.today              =    ql.Date.todaysDate()
-        self.day_count          =    ql.Actual365Fixed()
-        self.calendar           =    ql.UnitedStates(m=1)
-        self.compounding        =    ql.Continuous
-        self.frequency          =    ql.Annual
+        self.calculation_datetime  =    pd.Timestamp(datetime.today())
+        self.today                 =    ql.Date.todaysDate()
+        self.day_count             =    ql.Actual365Fixed()
+        self.calendar              =    ql.UnitedStates(m=1)
+        self.compounding           =    ql.Continuous
+        self.frequency             =    ql.Annual
         self.settings_names_dictionary = {
             ql.Continuous : 'continuous',
             ql.Annual     : 'annual'
             }
-        print(f"\npricing settings:\n{self.day_count}"
-              f"\n{self.calendar}\ncompounding: "
-              f"{self.settings_names_dictionary[self.compounding]}"
-              f"\nfrequency: {self.settings_names_dictionary[self.frequency]}")
+        self.settings_string = (
+            f"\npricing settings:\n{self.day_count}"
+            f"\n{self.calendar}\ncompounding: "
+            f"{self.settings_names_dictionary[self.compounding]}"
+            f"\nfrequency: {self.settings_names_dictionary[self.frequency]}"
+            )
         
     """
     time tools
@@ -205,19 +199,21 @@ class model_settings():
             volatility,w,
             calculation_datetime, 
             ):
+        calculation_datetime = pd.Timestamp(calculation_datetime)
         calculation_date = ql.Date(
             calculation_datetime.day,
             calculation_datetime.month,
             calculation_datetime.year
-            )  
+            )
+        ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
             option_type = ql.Option.Put
         else:
             raise ValueError("call/put flag w sould be either 'call' or 'put'")
-        ql.Settings.instance().evaluationDate = calculation_date
-        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
         
         ts_r = ql.YieldTermStructureHandle(
             ql.FlatForward(
@@ -253,6 +249,7 @@ class model_settings():
             kappa,theta,rho,eta,v0,
             calculation_datetime
             ):
+        calculation_datetime = pd.Timestamp(calculation_datetime)
         calculation_date = ql.Date(
             calculation_datetime.day,
             calculation_datetime.month,
@@ -297,12 +294,15 @@ class model_settings():
             barrier_type_name,barrier,rebate,
             kappa,theta,rho,eta,v0
             ):
+        calculation_datetime = pd.Timestamp(calculation_datetime)
         calculation_date = ql.Date(
             calculation_datetime.day,
             calculation_datetime.month,
             calculation_datetime.year
             )
         ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        
         ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
         heston_process = ql.HestonProcess(
             ts_r,ts_g, 
@@ -351,22 +351,24 @@ class model_settings():
             lambda_, nu, delta, 
             w, calculation_datetime
             ):
+        
+        calculation_datetime = pd.Timestamp(calculation_datetime)
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )
+        ql.Settings.instance().evaluationDate = calculation_date
+        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
+        ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
+        
+        
         if w == 'call':
             option_type = ql.Option.Call
         elif w == 'put':
             option_type = ql.Option.Put
         else:
             raise ValueError("call/put flag w sould be either 'call' or 'put'")
-        calculation_date = ql.Date(
-            calculation_datetime.day,
-            calculation_datetime.month,
-            calculation_datetime.year
-            )
-        ql.Settings.instance().evaluationDate = calculation_date   
-        expiration_date = calculation_date + ql.Period(int(t),ql.Days)
-        
-        ts_r, ts_g = self.ql_ts_rg(r, g, calculation_date)
-        
         bates_process = ql.BatesProcess(
             ts_r, 
             ts_g,
