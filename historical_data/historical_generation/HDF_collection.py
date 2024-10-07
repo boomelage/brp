@@ -109,6 +109,6 @@ plt.hist(
     contracts['observed_price'][contracts['observed_price']>1].values,
     bins=int(round(len(contracts['observed_price'].values)**0.5,0))
     )
-plt.title('distribution of observed option prices above 1')
+plt.title('distribution of observed option prices greater than one')
 plt.show()
 plt.clf()

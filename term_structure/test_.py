@@ -19,8 +19,8 @@ from matplotlib import cm
 ms = model_settings()
 
 
-ts = raw_calls
-# ts = raw_puts
+# ts = raw_calls
+ts = raw_puts
 
 ts = ts.loc[
     ts.iloc[:,0].dropna().index,
@@ -67,5 +67,6 @@ for azim in azims:
     
     plt.tight_layout() 
     plt.show()
-    plt.cla()
-    plt.clf()
+    
+plt.cla()
+plt.clf()
