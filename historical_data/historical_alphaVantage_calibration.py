@@ -64,11 +64,6 @@ date_keys = []
 for key in chain.keys():
     date_keys.append(key)
 
-
-"""
-loop start
-"""
-
 av_features = pd.DataFrame()
 errors = pd.Series()
 for key in chain.keys():
