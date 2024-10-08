@@ -7,9 +7,9 @@ Created on Mon Oct  7 19:28:49 2024
 
 import requests
 import pandas as pd
-from model_settings import ms
 import numpy as np
 from datetime import datetime
+import concurrent.futures
 pd.set_option("display.max_columns",None)
 
 def generate_daily_dates(start_date, end_date):
@@ -70,33 +70,51 @@ def collect_option_chain_link(date, symbol, key):
     df['spot_price'] = df['calculation_date'].map(spots['mid'])
     df['days_to_maturity'] = (
         df['expiration_date'] - df['calculation_date']).dt.days
-    df['moneyness'] = ms.vmoneyness(df['spot_price'], df['strike_price'], df['w'])
     
-    contracts = df[df['w']=='put'].copy().reset_index(drop=True)
-    
-    T = np.sort(contracts['days_to_maturity'].unique().astype(float)).tolist()
-    K = np.sort(contracts['strike_price'].unique().astype(float)).tolist()
-    
-    contracts = contracts.set_index(['days_to_maturity','strike_price'])
-    
-    ivol_df = pd.DataFrame(
+    calls = df[df['w']=='call'].copy().reset_index(drop=True)
+    T = np.sort(calls['days_to_maturity'].unique().astype(float)).tolist()
+    K = np.sort(calls['strike_price'].unique().astype(float)).tolist()
+    calls = calls.set_index(['days_to_maturity','strike_price'])
+    call_surf = pd.DataFrame(
         np.zeros((len(K),len(T)),dtype=float),
         index = K,
         columns = T
         )
-    
     for k in K:
         for t in T:
             try:
-                ivol_df.loc[k,t] = contracts.loc[(t,k),'volatility']
+                call_surf.loc[k,t] = calls.loc[(t,k),'volatility']
             except Exception:
-                ivol_df.loc[k,t] = np.nan
-    option_chain_link['surface'] = ivol_df
-    option_chain_link['contracts'] = contracts
+                call_surf.loc[k,t] = np.nan
+                
+    
+    puts = df[df['w']=='put'].copy().reset_index(drop=True)
+    T = np.sort(puts['days_to_maturity'].unique().astype(float)).tolist()
+    K = np.sort(puts['strike_price'].unique().astype(float)).tolist()
+    puts = puts.set_index(['days_to_maturity','strike_price'])
+    put_surf = pd.DataFrame(
+        np.zeros((len(K),len(T)),dtype=float),
+        index = K,
+        columns = T
+        )
+    for k in K:
+        for t in T:
+            try:
+                put_surf.loc[k,t] = puts.loc[(t,k),'volatility']
+            except Exception:
+                put_surf.loc[k,t] = np.nan
+    
+    option_chain_link['calls'] = {
+        'surface':call_surf,
+        'contracts': calls
+        }
+    
+    option_chain_link['puts'] = {
+        'surface':put_surf,
+        'contracts':puts
+        }
+    
     return option_chain_link
-
-
-import concurrent.futures
 
 def collect_chain(start_date, end_date, symbol, key):
     dates = generate_daily_dates(start_date, end_date)
@@ -115,7 +133,7 @@ def collect_chain(start_date, end_date, symbol, key):
     chain = {date: data for date, data in results if data is not None}
     return chain
 
-
+from model_settings import ms
 key = ms.av_key
 symbol = 'SPY'
 start_date = '2024-01-03'
