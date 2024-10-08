@@ -72,102 +72,110 @@ loop start
 av_features = pd.DataFrame()
 errors = pd.Series()
 for key in chain.keys():
-    calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
-    surface = clean_term_structure(chain,key,w)
+    try:
+        calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
+        surface = clean_term_structure(chain,key,w)
 
-    link = chain[key]
-    calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
-    calculation_date = ql.Date(
-        calculation_datetime.day,
-        calculation_datetime.month,
-        calculation_datetime.year
+        link = chain[key]
+        calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
+        calculation_date = ql.Date(
+            calculation_datetime.day,
+            calculation_datetime.month,
+            calculation_datetime.year
+            )
+        surface = clean_term_structure(chain,key,w)  
+        
+        
+        T = surface.columns.tolist()
+        K = surface.index.tolist()
+        
+        
+        vol_matrix = ql.Matrix(
+            len(K),
+            len(T),
+            0.0)
+        for i,k in enumerate(surface.index.tolist()):
+            for j,t in enumerate(surface.columns.tolist()):
+                vol_matrix[i][j] = float(surface.loc[k,t])
+        bicubic_vol = ql.BicubicSpline(
+            surface.columns.tolist(),
+            surface.index.tolist(),
+            vol_matrix
+            )
+        
+        s = float(link[w]['contracts']['spot_price'].unique()[0])
+        K = np.linspace(
+            min(K),
+            max(K),
+            5)
+        maxT = 180
+        minT = 30
+        T = np.arange(
+            minT,
+            maxT+1,
+            int((maxT-minT)/5)
         )
-    surface = clean_term_structure(chain,key,w)  
-    
-    
-    T = surface.columns.tolist()
-    K = surface.index.tolist()
-    
-    
-    vol_matrix = ql.Matrix(
-        len(K),
-        len(T),
-        0.0)
-    for i,k in enumerate(surface.index.tolist()):
-        for j,t in enumerate(surface.columns.tolist()):
-            vol_matrix[i][j] = float(surface.loc[k,t])
-    bicubic_vol = ql.BicubicSpline(
-        surface.columns.tolist(),
-        surface.index.tolist(),
-        vol_matrix
-        )
-    
-    s = float(link[w]['contracts']['spot_price'].unique()[0])
-    K = np.linspace(
-        min(K),
-        max(K),
-        5)
-    T = np.arange(14,60,7)
-    
-    features = pd.DataFrame(
-        product(
-            [s],
-            K,
-            T,
-            [calculation_datetime]
-            ),
-        columns = [
-            'spot_price','strike_price','days_to_maturity',
-            'calculation_date'
-            ]
-        )
-    
-    def apply_vol(t,k):
-        vol = bicubic_vol(float(t),float(k),False)
-        return vol
-    
-    apply_vols = np.vectorize(apply_vol)
-    features['volatility'] = apply_vols(
-        features['days_to_maturity'],
-        features['strike_price'],
-        )
+        features = pd.DataFrame(
+            product(
+                [s],
+                K,
+                T,
+                [calculation_datetime]
+                ),
+            columns = [
+                'spot_price','strike_price','days_to_maturity',
+                'calculation_date'
+                ]
+            )
+        
+        def apply_vol(t,k):
+            vol = bicubic_vol(float(t),float(k),False)
+            return vol
+        
+        apply_vols = np.vectorize(apply_vol)
+        features['volatility'] = apply_vols(
+            features['days_to_maturity'],
+            features['strike_price'],
+            )
 
-    heston_parameters = calibrate_heston(
-        features, s, r, g, calculation_date)
-    
-    av_features = pd.concat(
-        [
-            av_features, 
-            
-            pd.DataFrame(
-                np.array([[
-                    s,
-                    calculation_datetime,
-                    heston_parameters['theta'],
-                    heston_parameters['rho'],
-                    heston_parameters['kappa'],
-                    heston_parameters['eta'],
-                    heston_parameters['v0'],
-                    heston_parameters['relative_error'],
-                    w
-                    ]],dtype = object),
+        heston_parameters = calibrate_heston(
+            features, s, r, g, calculation_date)
+        
+        av_features = pd.concat(
+            [
+                av_features, 
                 
-                columns = [
-                    'spot_price',
-                    'calculation_date',
-                    'theta',
-                    'rho',
-                    'kappa',
-                    'eta',
-                    'v0',
-                    'relative_error',
-                    'w'
-                    ]
-                )
-            
-            ], ignore_index = True
-        )
-
+                pd.DataFrame(
+                    np.array([[
+                        s,
+                        calculation_datetime,
+                        heston_parameters['theta'],
+                        heston_parameters['rho'],
+                        heston_parameters['kappa'],
+                        heston_parameters['eta'],
+                        heston_parameters['v0'],
+                        heston_parameters['relative_error'],
+                        w
+                        ]],dtype = object),
+                    
+                    columns = [
+                        'spot_price',
+                        'calculation_date',
+                        'theta',
+                        'rho',
+                        'kappa',
+                        'eta',
+                        'v0',
+                        'relative_error',
+                        'w'
+                        ]
+                    )
+                
+                ], ignore_index = True
+            )
+    except Exception as e:
+        print(f"bad data for {key}\nerror: {e}")
+        pass
 
 av_features = av_features.reset_index(drop=True)
 
@@ -188,6 +196,12 @@ av_features['relative_error'] = pd.to_numeric(
 
 pd.set_option('display.max_columns',None)
 
-av_features.to_csv(f'av_calibrated {w} {start_date}_{end_date}.csv')
+av_features.to_csv(os.path.join(
+    current_dir,
+    'historical_av_calibrations',
+    f'av_calibrated {w} {start_date}_{end_date}.csv'
+    )
+)
+
 
 
