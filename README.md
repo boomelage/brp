@@ -66,6 +66,9 @@ Another major consideration will be that of data management and training data se
 Blanda, V. (2023). FX Barrier Option Pricing. 
 <br> https://www.imperial.ac.uk/media/imperial-college/faculty-of-natural-sciences/department-of-mathematics/math-finance/212252650---VALENTIN-BLANDA---BLANDA_VALENTIN_02293988.pdf
 
+Schönbucher, P. (1998) A Market Model for Stochastic Implied Volatility
+<br> https://papers.ssrn.com/sol3/papers.cfm?abstract_id=182775
+
 Derman, E. (2008). Lecture 9: Patterns of Volatility Change.
 <br> https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf 
 
