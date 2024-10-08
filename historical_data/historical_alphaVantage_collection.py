@@ -125,7 +125,7 @@ def collect_chain(start_date, end_date, symbol, key):
         except Exception:
             calculation_datetime = datetime.strptime(
                 date, "%Y-%m-%d").strftime("%A, %Y-%m-%d")
-            print(f"no data for: {calculation_datetime}")
+            print(f"no data for {calculation_datetime}")
             return date, None
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
