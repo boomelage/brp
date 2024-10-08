@@ -82,7 +82,8 @@ def calibrate_heston(
     print(performance)
     avg = np.average(np.abs(performance['relative_error']))
     print(f"average absolute relative error: {round(avg*100,4)}%")
-    param_names = ['theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price']
+    param_names = [
+        'theta', 'rho', 'kappa', 'eta', 'v0', 'spot_price', 'relative_error']
     
     heston_parameters_np = np.zeros(len(param_names),dtype=float)
     heston_parameters = pd.Series(heston_parameters_np)
@@ -94,6 +95,7 @@ def calibrate_heston(
     heston_parameters['eta'] = eta
     heston_parameters['v0'] = v0
     heston_parameters['spot_price'] = s
+    heston_parameters['relative_error'] = avg
     
     return heston_parameters
 
