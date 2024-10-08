@@ -64,7 +64,6 @@ date_keys = []
 for key in chain.keys():
     date_keys.append(key)
 
-# key = date_keys[0]
 
 """
 loop start
@@ -75,10 +74,6 @@ errors = pd.Series()
 for key in chain.keys():
     calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
     surface = clean_term_structure(chain,key,w)
-
-    """
-    loop prototype
-    """
 
     link = chain[key]
     calculation_datetime = datetime.strptime(key, "%Y-%m-%d")
@@ -173,7 +168,10 @@ for key in chain.keys():
             )
     else:
         pass
+    
+
 av_features = av_features.reset_index(drop=True)
+
 av_features['spot_price'] = pd.to_numeric(
     av_features['spot_price'], errors = 'coerce')
 av_features['theta'] = pd.to_numeric(
@@ -188,7 +186,9 @@ av_features['v0'] = pd.to_numeric(
     av_features['v0'], errors = 'coerce')
 av_features['relative_error'] = pd.to_numeric(
     av_features['relative_error'], errors = 'coerce')
+
 pd.set_option('display.max_columns',None)
+
 print(av_features.describe())
 
 
