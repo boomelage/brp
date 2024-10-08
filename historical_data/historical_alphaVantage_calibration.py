@@ -53,7 +53,7 @@ sys.path.append(parent_dir)
 os.chdir(current_dir)
 
 from routine_calibration_global import calibrate_heston
-from historical_alphaVantage_collection import chain
+from historical_alphaVantage_collection import chain, start_date, end_date
 
 w = 'puts'
 r = 0.04
@@ -135,40 +135,39 @@ for key in chain.keys():
     heston_parameters = calibrate_heston(
         features, s, r, g, calculation_date)
     
-    if heston_parameters['relative_error']<0.2:
-        av_features = pd.concat(
-            [
-                av_features, 
+    av_features = pd.concat(
+        [
+            av_features, 
+            
+            pd.DataFrame(
+                np.array([[
+                    s,
+                    calculation_datetime,
+                    heston_parameters['theta'],
+                    heston_parameters['rho'],
+                    heston_parameters['kappa'],
+                    heston_parameters['eta'],
+                    heston_parameters['v0'],
+                    heston_parameters['relative_error'],
+                    w
+                    ]],dtype = object),
                 
-                pd.DataFrame(
-                    np.array([[
-                        s,
-                        calculation_datetime,
-                        heston_parameters['theta'],
-                        heston_parameters['rho'],
-                        heston_parameters['kappa'],
-                        heston_parameters['eta'],
-                        heston_parameters['v0'],
-                        heston_parameters['relative_error'],
-                        ]],dtype = object),
-                    
-                    columns = [
-                        'spot_price',
-                        'calculation_date',
-                        'theta',
-                        'rho',
-                        'kappa',
-                        'eta',
-                        'v0',
-                        'relative_error'
-                        ]
-                    )
-                
-                ], ignore_index = True
-            )
-    else:
-        pass
-    
+                columns = [
+                    'spot_price',
+                    'calculation_date',
+                    'theta',
+                    'rho',
+                    'kappa',
+                    'eta',
+                    'v0',
+                    'relative_error',
+                    'w'
+                    ]
+                )
+            
+            ], ignore_index = True
+        )
+
 
 av_features = av_features.reset_index(drop=True)
 
@@ -189,7 +188,6 @@ av_features['relative_error'] = pd.to_numeric(
 
 pd.set_option('display.max_columns',None)
 
-print(av_features.describe())
-
+av_features.to_csv(f'av_calibrated {w} {start_date}_{end_date}.csv')
 
 
