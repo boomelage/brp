@@ -38,6 +38,7 @@ h5_file_path = os.path.join(barriers_dir,'SPX barriers.h5')
 # h5_file_path = os.path.join(vaillas_dir,'SPX vanillas.h5')
 
 
+
 """"""
 collection_start_time = time.time()
 with pd.HDFStore(h5_file_path, 'r') as hdf_store:

@@ -121,7 +121,10 @@ def collect_chain(start_date, end_date, symbol, key):
     chain = {}
     def fetch_data(date):
         try:
-            return date, collect_option_chain_link(date, symbol, key)
+            link = collect_option_chain_link(date, symbol, key)
+            with 
+            
+            
         except Exception:
             calculation_datetime = datetime.strptime(
                 date, "%Y-%m-%d").strftime("%A, %Y-%m-%d")
