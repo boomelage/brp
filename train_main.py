@@ -179,7 +179,7 @@ def save_model():
         train_end_tag + " " + specs[0] + 
         f" {int(round(errors['outofsample_RMSE'],0))}oosRMSE"
         )
-    os.chdir(current_dir)
+    os.chdir(os.path.join(current_dir,'trained_models'))
     os.mkdir(file_tag)
     file_dir = os.path.join(current_dir,'trained_models',file_tag,file_tag)
     insample_results.to_csv(f"{file_dir} insample_results.csv")
