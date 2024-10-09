@@ -51,7 +51,8 @@ random train/test split
 """
 manual train/test split
 """
-unique_dates = dataset['calculation_date'].sort_values(ascending=True).unique().tolist()
+unique_dates = dataset['calculation_date'].sort_values(
+    ascending=True).unique().tolist()
 filter_date = unique_dates[int(0.9*len(unique_dates))]
 
 train_data = dataset[
@@ -180,7 +181,7 @@ def save_model():
         )
     os.chdir(current_dir)
     os.mkdir(file_tag)
-    file_dir = os.path.join(current_dir,file_tag,file_tag)
+    file_dir = os.path.join(current_dir,'trained_models',file_tag,file_tag)
     insample_results.to_csv(f"{file_dir} insample_results.csv")
     outofsample_results.to_csv(f"{file_dir} outofsample_results.csv")
     joblib.dump(model_fit,str(f"{file_dir}.pkl"))
@@ -222,4 +223,4 @@ def save_model():
     pd.reset_option("display.max_columns")
 
 
-# save_model()
+save_model()

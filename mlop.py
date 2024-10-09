@@ -27,7 +27,7 @@ class mlop:
         self.random_state = None
         self.test_size = 0.01
         self.max_iter = int(1e3)
-        self.hidden_layer_sizes = (26,26,26)
+        self.hidden_layer_sizes = (13,13,13)
         self.single_layer_size = 26
         self.solver = [
                     # "lbfgs",
@@ -39,8 +39,8 @@ class mlop:
         self.learning_rate_init = 0.001
         self.learning_rate = [
             
-            'adaptive',
-            # 'constant'
+            # 'adaptive',
+            'constant'
             
             ]
         
@@ -84,7 +84,6 @@ class mlop:
             # 'outin',
             
             # 'updown',
-            
             
             'w'
             
