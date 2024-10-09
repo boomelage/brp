@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from itertools import product
+from datetime import datetime
 
 def generate_barrier_features(s, K, T, barriers, updown, OUTIN, W):
     barrier_features = pd.DataFrame(
@@ -52,6 +53,7 @@ historical_calibrated['date'] = pd.to_datetime(historical_calibrated['date'])
 bar = tqdm(
     total = historical_calibrated.shape[0],
     desc = 'generating',
+    leave = True
     )
 for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
@@ -109,27 +111,32 @@ for rowi, row in historical_calibrated.iterrows():
     features.loc[:,'eta'] = historical_calibrated.loc[rowi,'eta']
     features.loc[:,'v0'] = historical_calibrated.loc[rowi,'v0']
     features['calculation_date'] = calculation_datetime
-    features['barrier_price'] = ms.vector_barrier_price(features)
-    features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
-            features['days_to_maturity'], unit='D')
     
-    h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
-    
-    calls = features[features['w'] == 'call']
-    puts = features[features['w'] == 'put']
-    while True:
-        with pd.HDFStore('SPX barriers.h5') as store:
-            try:
-                store.append(
-                    f'/call/{h5_key}', calls, format='table', append=True)
-                store.append(
-                    f'/put/{h5_key}', puts, format='table', append=True)
-                break
-            except Exception as e:
-                raise KeyError(f"error in '{h5_key}': {e}"
-                               f"\nretrying in 5 seconds...")
-                time.sleep(5)
+    # print(features)
+    try:
+       features['barrier_price'] = ms.vector_barrier_price(features)
 
+       features['expiration_date'] =  calculation_datetime + pd.to_timedelta(
+                features['days_to_maturity'], unit='D')
+        
+       h5_key = str('date_'+ calculation_datetime.strftime("%Y_%m_%d"))
+        
+       calls = features[features['w'] == 'call']
+       puts = features[features['w'] == 'put']
+       while True:
+           with pd.HDFStore('SPX barriers.h5') as store:
+               try:
+                   store.append(
+                       f'/call/{h5_key}', calls, format='table', append=True)
+                   store.append(
+                       f'/put/{h5_key}', puts, format='table', append=True)
+                   break
+               except Exception as e:
+                   raise KeyError(f"error in '{h5_key}': {e}"
+                                   f"\nretrying in 5 seconds...")
+                   time.sleep(5)
+    except Exception:
+        pass
     bar.update(1)
 bar.close()
 
