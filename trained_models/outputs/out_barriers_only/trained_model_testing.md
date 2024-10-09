@@ -884,7 +884,3 @@ pd.reset_option("display.max_rows")
     cpu: 11.08118462562561
     
 
-
-```python
-
-```
