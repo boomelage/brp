@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+pd.set_option('display.float_format', '{:.2f}'.format)
 start_time = time.time()
 ```
 
@@ -306,7 +307,7 @@ model_path
 
 
 
-    'E:\\git\\machine-learning-option-pricing\\trained_models\\2024_10_09 11-11-13 Deep Neural Network 16oosRMSE'
+    'E:\\git\\machine-learning-option-pricing\\trained_models\\trained_models\\2024_10_09 11-11-13 Deep Neural Network 16oosRMSE'
 
 
 
@@ -387,122 +388,122 @@ outsample
     <tr>
       <th>0</th>
       <td>1260.39</td>
-      <td>1134.351</td>
-      <td>630.195000</td>
+      <td>1134.35</td>
+      <td>630.20</td>
       <td>180</td>
-      <td>0.292221</td>
+      <td>0.29</td>
       <td>Down</td>
       <td>In</td>
       <td>put</td>
       <td>DownIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>1.691350</td>
-      <td>-1.000000</td>
-      <td>0.151586</td>
-      <td>0.044509</td>
+      <td>1.69</td>
+      <td>-1.00</td>
+      <td>0.15</td>
+      <td>0.04</td>
       <td>2008-08-01</td>
       <td>2009-01-28</td>
-      <td>0.662829</td>
-      <td>0.662829</td>
-      <td>0.243361</td>
-      <td>-0.419469</td>
+      <td>0.66</td>
+      <td>0.66</td>
+      <td>0.24</td>
+      <td>-0.42</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1260.39</td>
-      <td>1134.351</td>
-      <td>630.195000</td>
+      <td>1134.35</td>
+      <td>630.20</td>
       <td>360</td>
-      <td>5.808921</td>
+      <td>5.81</td>
       <td>Down</td>
       <td>In</td>
       <td>put</td>
       <td>DownIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>1.691350</td>
-      <td>-1.000000</td>
-      <td>0.151586</td>
-      <td>0.044509</td>
+      <td>1.69</td>
+      <td>-1.00</td>
+      <td>0.15</td>
+      <td>0.04</td>
       <td>2008-08-01</td>
       <td>2009-07-27</td>
-      <td>5.980081</td>
-      <td>5.980081</td>
-      <td>8.430263</td>
-      <td>2.450183</td>
+      <td>5.98</td>
+      <td>5.98</td>
+      <td>8.43</td>
+      <td>2.45</td>
     </tr>
     <tr>
       <th>2</th>
       <td>1260.39</td>
-      <td>1134.351</td>
-      <td>630.195000</td>
+      <td>1134.35</td>
+      <td>630.20</td>
       <td>540</td>
-      <td>16.960692</td>
+      <td>16.96</td>
       <td>Down</td>
       <td>In</td>
       <td>put</td>
       <td>DownIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>1.691350</td>
-      <td>-1.000000</td>
-      <td>0.151586</td>
-      <td>0.044509</td>
+      <td>1.69</td>
+      <td>-1.00</td>
+      <td>0.15</td>
+      <td>0.04</td>
       <td>2008-08-01</td>
       <td>2010-01-23</td>
-      <td>16.906657</td>
-      <td>16.906657</td>
-      <td>14.304630</td>
-      <td>-2.602027</td>
+      <td>16.91</td>
+      <td>16.91</td>
+      <td>14.30</td>
+      <td>-2.60</td>
     </tr>
     <tr>
       <th>3</th>
       <td>1260.39</td>
-      <td>1134.351</td>
-      <td>630.195000</td>
+      <td>1134.35</td>
+      <td>630.20</td>
       <td>720</td>
-      <td>29.917476</td>
+      <td>29.92</td>
       <td>Down</td>
       <td>In</td>
       <td>put</td>
       <td>DownIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>1.691350</td>
-      <td>-1.000000</td>
-      <td>0.151586</td>
-      <td>0.044509</td>
+      <td>1.69</td>
+      <td>-1.00</td>
+      <td>0.15</td>
+      <td>0.04</td>
       <td>2008-08-01</td>
       <td>2010-07-22</td>
-      <td>29.995292</td>
-      <td>29.995292</td>
-      <td>32.324495</td>
-      <td>2.329203</td>
+      <td>30.00</td>
+      <td>30.00</td>
+      <td>32.32</td>
+      <td>2.33</td>
     </tr>
     <tr>
       <th>4</th>
       <td>1260.39</td>
-      <td>1134.351</td>
-      <td>784.592775</td>
+      <td>1134.35</td>
+      <td>784.59</td>
       <td>90</td>
-      <td>0.141352</td>
+      <td>0.14</td>
       <td>Down</td>
       <td>In</td>
       <td>put</td>
       <td>DownIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>1.691350</td>
-      <td>-1.000000</td>
-      <td>0.151586</td>
-      <td>0.044509</td>
+      <td>1.69</td>
+      <td>-1.00</td>
+      <td>0.15</td>
+      <td>0.04</td>
       <td>2008-08-01</td>
       <td>2008-10-30</td>
-      <td>0.326086</td>
-      <td>0.326086</td>
-      <td>-0.289778</td>
-      <td>-0.615864</td>
+      <td>0.33</td>
+      <td>0.33</td>
+      <td>-0.29</td>
+      <td>-0.62</td>
     </tr>
     <tr>
       <th>...</th>
@@ -531,122 +532,122 @@ outsample
     <tr>
       <th>315674</th>
       <td>969.87</td>
-      <td>1066.857</td>
-      <td>1454.805000</td>
+      <td>1066.86</td>
+      <td>1454.81</td>
       <td>90</td>
-      <td>21.110371</td>
+      <td>21.11</td>
       <td>Up</td>
       <td>In</td>
       <td>call</td>
       <td>UpIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>3.473282</td>
-      <td>-0.999949</td>
-      <td>0.307837</td>
-      <td>0.299631</td>
+      <td>3.47</td>
+      <td>-1.00</td>
+      <td>0.31</td>
+      <td>0.30</td>
       <td>2008-10-31</td>
       <td>2009-01-29</td>
-      <td>21.145677</td>
-      <td>21.145677</td>
-      <td>91.845294</td>
-      <td>70.699616</td>
+      <td>21.15</td>
+      <td>21.15</td>
+      <td>91.85</td>
+      <td>70.70</td>
     </tr>
     <tr>
       <th>315675</th>
       <td>969.87</td>
-      <td>1066.857</td>
-      <td>1454.805000</td>
+      <td>1066.86</td>
+      <td>1454.81</td>
       <td>180</td>
-      <td>54.061558</td>
+      <td>54.06</td>
       <td>Up</td>
       <td>In</td>
       <td>call</td>
       <td>UpIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>3.473282</td>
-      <td>-0.999949</td>
-      <td>0.307837</td>
-      <td>0.299631</td>
+      <td>3.47</td>
+      <td>-1.00</td>
+      <td>0.31</td>
+      <td>0.30</td>
       <td>2008-10-31</td>
       <td>2009-04-29</td>
-      <td>53.801681</td>
-      <td>53.801681</td>
-      <td>123.175130</td>
-      <td>69.373449</td>
+      <td>53.80</td>
+      <td>53.80</td>
+      <td>123.18</td>
+      <td>69.37</td>
     </tr>
     <tr>
       <th>315676</th>
       <td>969.87</td>
-      <td>1066.857</td>
-      <td>1454.805000</td>
+      <td>1066.86</td>
+      <td>1454.81</td>
       <td>360</td>
-      <td>98.650973</td>
+      <td>98.65</td>
       <td>Up</td>
       <td>In</td>
       <td>call</td>
       <td>UpIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>3.473282</td>
-      <td>-0.999949</td>
-      <td>0.307837</td>
-      <td>0.299631</td>
+      <td>3.47</td>
+      <td>-1.00</td>
+      <td>0.31</td>
+      <td>0.30</td>
       <td>2008-10-31</td>
       <td>2009-10-26</td>
-      <td>98.791785</td>
-      <td>98.791785</td>
-      <td>174.308207</td>
-      <td>75.516422</td>
+      <td>98.79</td>
+      <td>98.79</td>
+      <td>174.31</td>
+      <td>75.52</td>
     </tr>
     <tr>
       <th>315677</th>
       <td>969.87</td>
-      <td>1066.857</td>
-      <td>1454.805000</td>
+      <td>1066.86</td>
+      <td>1454.81</td>
       <td>540</td>
-      <td>130.375586</td>
+      <td>130.38</td>
       <td>Up</td>
       <td>In</td>
       <td>call</td>
       <td>UpIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>3.473282</td>
-      <td>-0.999949</td>
-      <td>0.307837</td>
-      <td>0.299631</td>
+      <td>3.47</td>
+      <td>-1.00</td>
+      <td>0.31</td>
+      <td>0.30</td>
       <td>2008-10-31</td>
       <td>2010-04-24</td>
-      <td>130.277221</td>
-      <td>130.277221</td>
-      <td>213.917346</td>
-      <td>83.640126</td>
+      <td>130.28</td>
+      <td>130.28</td>
+      <td>213.92</td>
+      <td>83.64</td>
     </tr>
     <tr>
       <th>315678</th>
       <td>969.87</td>
-      <td>1066.857</td>
-      <td>1454.805000</td>
+      <td>1066.86</td>
+      <td>1454.81</td>
       <td>720</td>
-      <td>155.600642</td>
+      <td>155.60</td>
       <td>Up</td>
       <td>In</td>
       <td>call</td>
       <td>UpIn</td>
-      <td>0.0</td>
+      <td>0.00</td>
       <td>...</td>
-      <td>3.473282</td>
-      <td>-0.999949</td>
-      <td>0.307837</td>
-      <td>0.299631</td>
+      <td>3.47</td>
+      <td>-1.00</td>
+      <td>0.31</td>
+      <td>0.30</td>
       <td>2008-10-31</td>
       <td>2010-10-21</td>
-      <td>155.993614</td>
-      <td>155.993614</td>
-      <td>241.913180</td>
-      <td>85.919567</td>
+      <td>155.99</td>
+      <td>155.99</td>
+      <td>241.91</td>
+      <td>85.92</td>
     </tr>
   </tbody>
 </table>
@@ -704,13 +705,13 @@ print(f"\nRMSE:\n{RMSE}")
 
     
     RMSE:
-            DownIn       UpIn
-    180  15.498149  13.405642
-    360  16.402348  15.041392
-    540  16.754327  16.329384
-    720  17.865678  18.291725
-    90   16.746409  13.827964
-    60   18.015553  15.269745
+         DownIn  UpIn
+    180   15.50 13.41
+    360   16.40 15.04
+    540   16.75 16.33
+    720   17.87 18.29
+    90    16.75 13.83
+    60    18.02 15.27
     
 
 
@@ -728,21 +729,21 @@ print(f"\nMAE:\n{MAE}")
 
     
     MAE:
-           DownIn      UpIn
-    180  6.130655  6.065725
-    360  7.443137  7.245448
-    540  7.776570  7.622567
-    720  8.510716  8.916474
-    90   6.241494  5.643496
-    60   6.782451  6.126275
+         DownIn  UpIn
+    180    6.13  6.07
+    360    7.44  7.25
+    540    7.78  7.62
+    720    8.51  8.92
+    90     6.24  5.64
+    60     6.78  6.13
     
 
 
 ```python
-plt.figure()
+plt.figure(figsize=(4, 3),dpi=80)
 for b in barrier_type_names:
     plt.plot(MAE.loc[:, b], label=b)
-plt.xlabel('maturities in days')
+plt.xlabel('maturity in days')
 plt.ylabel('RMSE')
 plt.legend()
 plt.show()
@@ -760,11 +761,6 @@ plt.close()
 errors_bypayoff = {}
 for w in ws:
     errors = {}
-    print(
-        f"\n         {'#'*(len(w)+5)}"
-        f"\n         # {w}s #"
-        f"\n         {'#'*(len(w)+5)}"
-    )
     RMSE = pd.DataFrame(
         np.zeros((len(maturities),len(barrier_type_names)),dtype=float),
         columns = barrier_type_names
@@ -774,10 +770,7 @@ for w in ws:
     for t in maturities:
         for b in barrier_type_names:
             RMSE.loc[t,b] = np.sqrt(np.average((by_wbt.loc[(w, b, t),'outofsample_error'])**2))
-    print(f"RMSE:\n{RMSE}")
     errors['RMSE'] = RMSE
-    
-
 
     MAE = pd.DataFrame(
         np.zeros((len(maturities),len(barrier_type_names)),dtype=float),
@@ -788,133 +781,100 @@ for w in ws:
     for t in maturities:
         for b in barrier_type_names:
             MAE.loc[t,b] = np.average(np.abs(by_wbt.loc[(w, b, t),'outofsample_error']))
-    print(f"MAE:\n{MAE}")
     errors['MAE'] = MAE
 
     errors_bypayoff[w] = errors
-    print("\n\n")
 ```
 
-    
-             ########
-             # puts #
-             ########
+
+```python
+for w, errors in errors_bypayoff.items():
+    print("RMSE:\n")
+    print(errors['RMSE'])
+    print()
+```
+
     RMSE:
-            DownIn       UpIn
-    put                      
-    180  19.856339   8.983589
-    360  20.254237   9.342218
-    540  19.538009   9.764561
-    720  19.581283  11.284241
-    90   21.409641   9.055934
-    60   22.817141  10.039784
-    MAE:
-            DownIn      UpIn
-    put                     
-    180   9.059292  3.077174
-    360  10.615273  3.617239
-    540  10.361011  4.076373
-    720  10.687112  4.945171
-    90    9.124171  2.968361
-    60    9.737125  3.506331
     
+         DownIn  UpIn
+    put              
+    180   19.86  8.98
+    360   20.25  9.34
+    540   19.54  9.76
+    720   19.58 11.28
+    90    21.41  9.06
+    60    22.82 10.04
     
-    
-    
-             #########
-             # calls #
-             #########
     RMSE:
-             DownIn       UpIn
-    call                      
-    180    9.025898  16.727448
-    360   11.306634  19.110466
-    540   13.404519  20.927276
-    720   15.966785  23.277463
-    90     9.057032  17.438281
-    60     9.821513  19.120868
-    MAE:
-            DownIn       UpIn
-    call                     
-    180   3.113745   9.087176
-    360   4.271002  10.873657
-    540   5.192130  11.168760
-    720   6.334321  12.887777
-    90    3.026988   8.408740
-    60    3.344988   8.747697
     
-    
+          DownIn  UpIn
+    call              
+    180     9.03 16.73
+    360    11.31 19.11
+    540    13.40 20.93
+    720    15.97 23.28
+    90      9.06 17.44
+    60      9.82 19.12
     
     
 
 
 ```python
-barrier_type_names
+plt.figure(figsize=(4, 3),dpi=80)
+for w, errors in errors_bypayoff.items():
+    for b in barrier_type_names: 
+        MAE = errors['RMSE'][b]
+        plt.plot(
+            MAE.sort_values(), label=f"{b} {w}s ",
+        )
+plt.legend(loc='best')
+plt.ylabel('RMSE')
+plt.xlabel('maturity in days')
+plt.show()
+plt.close()
 ```
 
 
-
-
-    ['DownIn', 'UpIn']
-
-
-
-
-```python
-ws
-```
-
-
-
-
-    ['put', 'call']
-
+    
+![png](output_22_0.png)
+    
 
 
 
 ```python
 for w, errors in errors_bypayoff.items():
-    for b in barrier_type_names: 
-        print(errors['MAE'])
+    print("MAE:\n")
+    print(errors['MAE'])
+    print()
 ```
 
-            DownIn      UpIn
-    put                     
-    180   9.059292  3.077174
-    360  10.615273  3.617239
-    540  10.361011  4.076373
-    720  10.687112  4.945171
-    90    9.124171  2.968361
-    60    9.737125  3.506331
-            DownIn      UpIn
-    put                     
-    180   9.059292  3.077174
-    360  10.615273  3.617239
-    540  10.361011  4.076373
-    720  10.687112  4.945171
-    90    9.124171  2.968361
-    60    9.737125  3.506331
-            DownIn       UpIn
-    call                     
-    180   3.113745   9.087176
-    360   4.271002  10.873657
-    540   5.192130  11.168760
-    720   6.334321  12.887777
-    90    3.026988   8.408740
-    60    3.344988   8.747697
-            DownIn       UpIn
-    call                     
-    180   3.113745   9.087176
-    360   4.271002  10.873657
-    540   5.192130  11.168760
-    720   6.334321  12.887777
-    90    3.026988   8.408740
-    60    3.344988   8.747697
+    MAE:
+    
+         DownIn  UpIn
+    put              
+    180    9.06  3.08
+    360   10.62  3.62
+    540   10.36  4.08
+    720   10.69  4.95
+    90     9.12  2.97
+    60     9.74  3.51
+    
+    MAE:
+    
+          DownIn  UpIn
+    call              
+    180     3.11  9.09
+    360     4.27 10.87
+    540     5.19 11.17
+    720     6.33 12.89
+    90      3.03  8.41
+    60      3.34  8.75
+    
     
 
 
 ```python
-plt.figure()
+plt.figure(figsize=(4, 3),dpi=80)
 for w, errors in errors_bypayoff.items():
     for b in barrier_type_names: 
         MAE = errors['MAE'][b]
@@ -922,6 +882,8 @@ for w, errors in errors_bypayoff.items():
             MAE.sort_values(), label=f"{b} {w}s ",
         )
 plt.legend(loc='best')
+plt.ylabel('MAE')
+plt.xlabel('maturity in days')
 plt.show()
 plt.close()
 ```
@@ -939,5 +901,5 @@ runtime = end_time - start_time
 print(f"cpu: {runtime}")
 ```
 
-    cpu: 0.8194916248321533
+    cpu: 0.8188481330871582
     
