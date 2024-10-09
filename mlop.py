@@ -148,20 +148,12 @@ class mlop:
             
     def split_data_manually(self,
             train_data, test_data,
-            feature_set=None, target_name=None
             ):
+        test_X = test_data[self.feature_set]
+        test_y = test_data[self.target_name]
         
-        if feature_set == None:
-            feature_set = self.feature_set
-        if target_name == None:
-            target_name = self.target_name
-
-        
-        test_X = test_data[feature_set]
-        test_y = test_data[target_name]
-        
-        train_X = train_data[feature_set]
-        train_y = train_data[target_name]
+        train_X = train_data[self.feature_set]
+        train_y = train_data[self.target_name]
         return train_X, train_y, test_X, test_y
 
     def preprocess(self):

@@ -97,7 +97,6 @@ collection_runtime = collection_end_time - collection_start_time
 print(f"\nruntime: {round(collection_runtime,4)} seconds\n")
 
 
-
 histogram_tolerance = 1
 hist_contracts = contracts[
     'observed_price'][contracts['observed_price']>histogram_tolerance].copy()

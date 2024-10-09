@@ -42,7 +42,10 @@ mlop = mlop(user_dataset = dataset)
                             preprocessing data
 manual filtering
 """
-dataset = dataset[dataset['outin']=='In']
+dataset = dataset[dataset['outin']=='Out']
+
+# leave a space or other separator in front
+file_tag_addon = " OnlyOuts"
 
 """
 random train/test split
@@ -72,7 +75,7 @@ test_data = dataset[
       # (dataset['calculation_date']<=datetime(2012,12,31))
       )].copy()
 
-train_X, train_y, test_X, test_y = mlop.split_data_manually(
+train_X, train_y, test_X, test_y = mlop.split_data_manually(dataset,
     train_data, test_data)
 
 preprocessor = mlop.preprocess()
@@ -124,7 +127,7 @@ deep neural network
 
 
 
-model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
+# model_fit, runtime, specs = mlop.run_dnn(preprocessor,train_X,train_y)
 
 
 
@@ -134,7 +137,7 @@ random forest
 
 
 
-# model_fit, runtime, specs = mlop.run_rf(preprocessor,train_X,train_y)
+model_fit, runtime, specs = mlop.run_rf(preprocessor,train_X,train_y)
 
 
 
@@ -169,6 +172,7 @@ insample, outsample, errors = mlop.test_prediction_accuracy(
 """
 # =============================================================================
 """
+
 def save_model():
     S = np.sort(train_data['spot_price'].unique())
     K = np.sort(train_data['strike_price'].unique())
@@ -178,13 +182,15 @@ def save_model():
     n_puts = train_data[train_data['w']=='put'].shape[0]
     train_end_tag = str(datetime.fromtimestamp(
         train_end).strftime("%Y_%m_%d %H-%M-%S"))
-    file_tag = str(
-        train_end_tag + " " + specs[0] + 
-        f" {int(round(errors['outofsample_RMSE'],0))}oosRMSE"
-        )
+    file_tag = str(train_end_tag + " " + specs[0] + file_tag_addon)
     os.chdir(os.path.join(current_dir,'trained_models'))
-    os.mkdir(file_tag)
-    file_dir = os.path.join(current_dir,'trained_models',file_tag,file_tag)
+    files_dir = os.path.join(
+        current_dir,'trained_models','trained_models',
+        file_tag)
+    os.mkdir(files_dir)
+    
+    file_dir = os.path.join(files_dir,file_tag)
+    
     insample.to_csv(f"{file_dir} insample.csv")
     outsample.to_csv(f"{file_dir} outsample.csv")
     joblib.dump(model_fit,str(f"{file_dir}.pkl"))
