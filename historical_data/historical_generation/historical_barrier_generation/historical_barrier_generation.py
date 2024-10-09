@@ -59,6 +59,11 @@ for rowi, row in historical_calibrated.iterrows():
     s = row['spot_price']
     
     calculation_datetime = row['date']
+    date_print = datetime(
+        calculation_datetime.year,
+        calculation_datetime.month,
+        calculation_datetime.day
+        ).strftime('%A, %Y-%m-%d')
 
     r = 0.04 
     rebate = 0.
@@ -135,8 +140,12 @@ for rowi, row in historical_calibrated.iterrows():
                    raise KeyError(f"error in '{h5_key}': {e}"
                                    f"\nretrying in 5 seconds...")
                    time.sleep(5)
-    except Exception:
+    except Exception as e:
+        tqdm.write(
+            f"skipping: {date_print}\nerror: {e}"
+            )
         pass
     bar.update(1)
 bar.close()
+
 
