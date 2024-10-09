@@ -48,16 +48,15 @@ with pd.HDFStore(h5_file_path, 'r') as hdf_store:
 """
 date filter
 """
-start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
-end_date = datetime.strptime("2007-01-05", "%Y-%m-%d")
-keys = pd.Series(keys)
-date_pattern = r"(\d{4}_\d{2}_\d{2})"
-extracted_dates = keys.str.extract(date_pattern, expand=False)
-keys_dates = pd.to_datetime(
-    extracted_dates, format="%Y_%m_%d", errors='coerce')
-filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
-filtered_keys.tolist()
-
+# start_date = datetime.strptime("2007-01-01", "%Y-%m-%d")
+# end_date = datetime.strptime("2007-01-05", "%Y-%m-%d")
+# keys = pd.Series(keys)
+# date_pattern = r"(\d{4}_\d{2}_\d{2})"
+# extracted_dates = keys.str.extract(date_pattern, expand=False)
+# keys_dates = pd.to_datetime(
+#     extracted_dates, format="%Y_%m_%d", errors='coerce')
+# filtered_keys = keys[(keys_dates >= start_date) & (keys_dates <= end_date)]
+# filtered_keys.tolist()
 
 
 """

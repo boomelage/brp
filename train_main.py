@@ -40,13 +40,16 @@ mlop = mlop(user_dataset = dataset)
 """
 # =============================================================================
                             preprocessing data
+manual filtering
+"""
+dataset = dataset[dataset['outin']=='In']
 
+"""
 random train/test split
 """
 # train_data, train_X, train_y, \
 #     test_data, test_X, test_y = mlop.split_user_data()
 """"""
-
 
 """
 manual train/test split
@@ -157,7 +160,7 @@ pd.set_option("display.max_columns",None)
 print()
 print("#"*13+"\n# test data #\n"+"#"*13+
       f"\n{test_data.describe()}\n")
-insample_results, outofsample_results, errors = mlop.test_prediction_accuracy(
+insample, outsample, errors = mlop.test_prediction_accuracy(
         model_fit,
         test_data,
         train_data
@@ -182,8 +185,8 @@ def save_model():
     os.chdir(os.path.join(current_dir,'trained_models'))
     os.mkdir(file_tag)
     file_dir = os.path.join(current_dir,'trained_models',file_tag,file_tag)
-    insample_results.to_csv(f"{file_dir} insample_results.csv")
-    outofsample_results.to_csv(f"{file_dir} outofsample_results.csv")
+    insample.to_csv(f"{file_dir} insample.csv")
+    outsample.to_csv(f"{file_dir} outsample.csv")
     joblib.dump(model_fit,str(f"{file_dir}.pkl"))
     pd.set_option("display.max_columns",None)
     with open(f'{file_dir}.txt', 'w') as file:

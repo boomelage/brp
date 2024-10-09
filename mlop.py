@@ -338,15 +338,15 @@ class mlop:
               f"\n     RSME: {outofsample_RMSE}"
               f"\n     MAE: {outofsample_MAE}")
         
-        insample_results = train_data.copy()
-        insample_results['insample_target'] = train_y
-        insample_results['insample_prediction'] = insample_prediction 
-        insample_results['insample_error'] = insample_diff 
+        insample = train_data.copy()
+        insample['insample_target'] = train_y
+        insample['insample_prediction'] = insample_prediction 
+        insample['insample_error'] = insample_diff 
         
-        outofsample_results = test_data.copy()
-        outofsample_results['outofsample_target'] = test_y
-        outofsample_results['outofsample_prediction'] = outofsample_prediction
-        outofsample_results['outofsample_error'] = outofsample_diff
+        outsample = test_data.copy()
+        outsample['outofsample_target'] = test_y
+        outsample['outofsample_prediction'] = outofsample_prediction
+        outsample['outofsample_error'] = outofsample_diff
         
         errors = pd.Series(
             [
@@ -359,7 +359,7 @@ class mlop:
             dtype=float
             )
         
-        return insample_results, outofsample_results, errors
+        return insample, outsample, errors
         
     def test_model(self,test_data,test_X,test_y,model_fit):
         training_results = test_X.copy()
