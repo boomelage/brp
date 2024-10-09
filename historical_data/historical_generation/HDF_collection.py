@@ -75,6 +75,11 @@ contracts = pd.concat(contracts_list, ignore_index=True)
 bar.close()
 contracts.dtypes
 
+contracts.loc[:,'moneyness'] = ms.vmoneyness(
+    contracts['strike_price'],
+    contracts['days_to_maturity'],
+    contracts['w']
+    )
 
 print('\npreparing data...\n')
 if 'barrier_price' in contracts.columns:
