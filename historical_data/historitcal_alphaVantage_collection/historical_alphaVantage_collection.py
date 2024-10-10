@@ -14,39 +14,12 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import QuantLib as ql
 from datetime import datetime
+import time
 
-
-def generate_daily_dates(start_date, end_date):
-    date_range = pd.date_range(start=start_date, end=end_date, freq='D')
-    date_strings = date_range.strftime('%Y-%m-%d').tolist()
-    return date_strings
-
-key = ms.av_key
-symbol = 'SPY'
-end_date = '2024-05-17'
-dates = generate_daily_dates('2024-05-17', end_date)
-
-underlying_url = str(
-    "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
-    f"&symbol={symbol}&date={end_date}&outputsize=full&apikey={key}"
-    )
-spotr = requests.get(underlying_url)
-spots = pd.DataFrame(spotr.json()['Time Series (Daily)']).T
-spots = spots.astype(float)
-
-dates = spots.index.tolist()[:1000]
-
-
-chain = {}
-
-"""
-loop start
-"""
-
-for date in dates:
+    
+def collect_av_link(date,symbol,spot,key):
     printdate = datetime.strptime(date, '%Y-%m-%d').strftime('%A, %Y-%m-%d')
     try:
-        spot = float(spots['4. close'][date])
         options_url = str(
             "https://www.alphavantage.co/query?function=HISTORICAL_OPTIONS&"
             f"symbol={symbol}"
@@ -56,7 +29,6 @@ for date in dates:
         r = requests.get(options_url)
         
         data = r.json()
-        
         raw_data = pd.DataFrame(data['data'])
         
         df = raw_data.copy()
@@ -80,10 +52,10 @@ for date in dates:
         df = df[(df['moneyness']<0)&(df['moneyness']>-0.5)]
         indexed = df.copy().set_index(['strike','days_to_maturity'])
         
-        s = spot
         T = np.sort(df['days_to_maturity'].unique()).tolist()
         K = np.sort(df['strike'].unique()).tolist()
-        volume_heatmap = pd.DataFrame(np.full((len(K), len(T)), np.nan), index=K, columns=T)
+        volume_heatmap = pd.DataFrame(
+            np.full((len(K), len(T)), np.nan), index=K, columns=T)
         for k in K:
             for t in T:
                 try:
@@ -134,7 +106,7 @@ for date in dates:
                 'hottest_contracts': hottest_contracts
                 }
         
-        chain[date] = link
-        print(f"\ncollected {printdate}")
+        return link
     except Exception as e:
-        print(f'\nerror for {printdate}:\n{e}')
+        print(f'error for {printdate}:\n{e}')
+        

@@ -15,6 +15,13 @@ chain_keys = []
 for key in chain.keys():
     chain_keys.append(key)
 
+
+
+
+
+
+
+
 store = pd.HDFStore(r'alphaVantage vanillas.h5')
 bar = tqdm(total=len(chain_keys))
 for date in chain_keys:
