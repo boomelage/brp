@@ -17,22 +17,22 @@ for key in chain.keys():
 
 store = pd.HDFStore(r'alphaVantage vanillas.h5')
 bar = tqdm(total=len(chain_keys))
-for key in chain_keys:
+for date in chain_keys:
     hdf_datekey = str('date_'+key.replace('-','_'))
+    
     store.append(
-        f"call/contracts/{hdf_datekey}",chain[key]['call']['contracts'],
+        f"{hdf_datekey}/raw_data",chain[date]['raw_data'],
         format='table', append=True
         )
     store.append(
-        f"call/surface/{hdf_datekey}",chain[key]['call']['surface'],
+        f"{hdf_datekey}/surface",chain[date]['surface'],
         format='table', append=True
         )
     store.append(
-        f"put/contracts/{hdf_datekey}",chain[key]['put']['contracts']
+        f"{hdf_datekey}/hottest_contracts",chain[date]['hottest_contracts'],
+        format='table', append=True
         )
-    store.append(
-        f"put/surface/{hdf_datekey}",chain[key]['put']['surface']
-        )
+
     bar.update(1)
 bar.close()
 
